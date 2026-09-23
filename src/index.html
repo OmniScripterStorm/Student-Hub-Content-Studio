@@ -1,0 +1,914 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TagSci G11 STEM â€¢ Visual Content Studio & Material Builder</title>
+  <link rel="icon" href="../tagsci logo.png" type="image/png">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            tagsci: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#0e3a24',
+              950: '#052e16',
+            },
+            g11pink: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              200: '#fbcfe8',
+              300: '#f9a8d4',
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+              800: '#9d174d',
+              900: '#831843',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            'mono-math': ['KaTeX_Math', 'Cambria Math', 'STIX Two Math', 'Consolas', 'Courier New', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.25); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.45); }
+    .dark ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.2); }
+    .dark ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.35); }
+
+    .block-card:hover .block-actions {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased h-full flex flex-col transition-colors duration-200">
+
+  <!-- ================= TOP APP BAR ================= -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md px-4 py-2.5 flex items-center justify-between shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-tagsci-900 flex items-center justify-center p-1.5 shadow-md shadow-tagsci-900/20 ring-1 ring-tagsci-700/50">
+        <img src="../tagsci logo.png" alt="TagSci" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/100x100/0e3a24/ffffff?text=TS'">
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-black text-sm sm:text-base tracking-tight text-tagsci-900 dark:text-white flex items-center gap-1.5">
+            TagSci Content Studio
+            <span class="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded-full bg-tagsci-100 dark:bg-tagsci-950 text-tagsci-800 dark:text-tagsci-300 border border-tagsci-300 dark:border-tagsci-800">
+              Visual Builder
+            </span>
+          </h1>
+        </div>
+        <p class="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium">Editorial Council WYSIWYG Authoring & Quiz Suite</p>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2">
+      <button id="btn-quick-export" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-semibold shadow-sm shadow-tagsci-900/20 transition-all">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Export updates.json</span>
+        <span class="sm:hidden">Export</span>
+      </button>
+
+      <button id="btn-copy-json" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-all">
+        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Copy JSON</span>
+      </button>
+
+      <button id="btn-theme-toggle" class="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+        <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+      </button>
+
+      <a href="../hompage_test.html" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-g11pink-50 hover:bg-g11pink-100 dark:bg-g11pink-950/60 dark:hover:bg-g11pink-900/60 text-g11pink-700 dark:text-g11pink-300 text-xs font-bold border border-g11pink-200 dark:border-g11pink-900/60 transition-all">
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        <span class="hidden md:inline">Student App</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= SUB HEADER / MAIN NAVIGATION TABS ================= -->
+  <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between overflow-x-auto">
+    <div class="flex space-x-1 sm:space-x-2 py-1.5 min-w-max" id="studio-tabs">
+      <button data-tab="reviewers" class="studio-tab-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 bg-tagsci-50 dark:bg-tagsci-950/80 text-tagsci-800 dark:text-tagsci-300 border border-tagsci-200 dark:border-tagsci-800 shadow-sm">
+        <i data-lucide="layout-grid" class="w-4 h-4 text-tagsci-600"></i>
+        Visual Reviewer Builder
+        <span id="badge-count-rev" class="px-1.5 py-0.2 rounded-full text-[10px] bg-tagsci-200 dark:bg-tagsci-900 text-tagsci-900 dark:text-tagsci-200 font-black">2</span>
+      </button>
+
+      <button data-tab="quizzes" class="studio-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+        <i data-lucide="brain-circuit" class="w-4 h-4 text-g11pink-500"></i>
+        Quiz & Drill Banks
+        <span id="badge-count-quiz" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">1</span>
+      </button>
+
+      <button data-tab="calendar" class="studio-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+        <i data-lucide="calendar" class="w-4 h-4 text-emerald-500"></i>
+        Calendar & Deadlines
+        <span id="badge-count-cal" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">3</span>
+      </button>
+
+      <button data-tab="json-hub" class="studio-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+        <i data-lucide="code-2" class="w-4 h-4 text-purple-500"></i>
+        JSON & Sync Hub
+      </button>
+
+      <button data-tab="guide" class="studio-tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all flex items-center gap-2">
+        <i data-lucide="help-circle" class="w-4 h-4 text-blue-500"></i>
+        Curriculum Guidelines
+      </button>
+    </div>
+
+    <!-- Quick Import Trigger -->
+    <div class="flex items-center gap-2 py-1 pl-2">
+      <label class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700">
+        <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+        <span>Import updates.json</span>
+        <input type="file" id="file-import-input" accept=".json,.md" class="hidden">
+      </label>
+    </div>
+  </nav>
+
+  <!-- ================= MAIN STUDIO VIEWPORT ================= -->
+  <main class="flex-1 flex overflow-hidden relative">
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 1: VISUAL BLOCK REVIEWER & STUDY NOTE BUILDER                -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-reviewers" class="studio-view flex-1 flex flex-col md:flex-row h-full overflow-hidden">
+      <!-- Left Column: Reviewer List & Articles -->
+      <aside class="w-full md:w-72 lg:w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-1/3 md:h-full shrink-0">
+        <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Drafts Vault</span>
+            <span id="rev-list-count" class="text-[11px] font-bold text-slate-400">(2 items)</span>
+          </div>
+          <button id="btn-add-reviewer" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            New Note
+          </button>
+        </div>
+
+        <div class="p-2 border-b border-slate-100 dark:border-slate-800">
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400"></i>
+            <input type="text" id="rev-search" placeholder="Search drafted notes..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-tagsci-600">
+          </div>
+        </div>
+
+        <div id="rev-cards-container" class="flex-1 overflow-y-auto p-2 space-y-2">
+          <!-- Dynamic Items Injected Here -->
+        </div>
+
+        <div class="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex items-center justify-between text-xs">
+          <button id="btn-download-md-rev" class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-tagsci-700 dark:hover:text-tagsci-400 font-semibold">
+            <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+            Export .MD
+          </button>
+          <button id="btn-delete-rev" class="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-semibold">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            Delete
+          </button>
+        </div>
+      </aside>
+
+      <!-- Right Area: Visual Section Builder & Preview -->
+      <div class="flex-1 flex flex-col h-2/3 md:h-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <!-- Reviewer Form Meta Bar -->
+        <div class="p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+          <div class="sm:col-span-3">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Subject</label>
+            <select id="rev-input-subject" class="w-full px-2.5 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-tagsci-600">
+              <optgroup label="Main Subjects">
+                <option value="Effective Communications">Effective Communications</option>
+                <option value="Mabisang Komunikasyon">Mabisang Komunikasyon</option>
+                <option value="Life and Career Skills">Life and Career Skills</option>
+                <option value="General Math">General Math</option>
+                <option value="General Science">General Science</option>
+              </optgroup>
+              <optgroup label="Elective Subjects">
+                <option value="Finite Math">Finite Math</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Biology">Biology</option>
+              </optgroup>
+              <option value="Custom">Custom Subject...</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Classification Tag</label>
+            <select id="rev-input-tag" class="w-full px-2.5 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-tagsci-600">
+              <option value="Main">Main</option>
+              <option value="Elective">Elective</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-4">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Article Title</label>
+            <input type="text" id="rev-input-title" placeholder="e.g. Kinematics in 1D & 2D Motion" class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-tagsci-600">
+          </div>
+
+          <div class="sm:col-span-3">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Editor Mode</label>
+            <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700">
+              <button id="btn-mode-visual" class="flex-1 py-1 text-[11px] font-bold rounded-md bg-white dark:bg-slate-900 text-tagsci-800 dark:text-tagsci-300 shadow-sm transition-all flex items-center justify-center gap-1">
+                <i data-lucide="layout-template" class="w-3 h-3"></i> Visual Blocks
+              </button>
+              <button id="btn-mode-source" class="flex-1 py-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-1">
+                <i data-lucide="code" class="w-3 h-3"></i> Source
+              </button>
+            </div>
+          </div>
+
+          <div class="sm:col-span-12">
+            <input type="text" id="rev-input-summary" placeholder="Short preview summary (1-2 sentences shown on card)..." class="w-full px-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-tagsci-600">
+          </div>
+        </div>
+
+        <!-- Visual Block Toolbar & Templates Bar -->
+        <div id="visual-builder-toolbar" class="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 flex items-center justify-between gap-2 overflow-visible relative z-30 flex-wrap sm:flex-nowrap">
+          <!-- Single Add Block Dropdown Button -->
+          <div class="relative z-50 inline-block text-left" id="add-block-dropdown-wrapper">
+            <button id="btn-add-block-dropdown" onclick="toggleAddBlockDropdown(event)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm shadow-tagsci-900/20 transition-all">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+              <span>Add Block</span>
+              <i data-lucide="chevron-down" class="w-3 h-3 text-tagsci-200"></i>
+            </button>
+            <div id="add-block-menu" class="hidden absolute left-0 mt-1.5 w-52 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl ring-1 ring-black/10 dark:ring-white/10 z-50 py-1 text-xs">
+              <button onclick="handleAddBlockSelect('heading')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
+                <i data-lucide="heading" class="w-4 h-4 text-blue-500 shrink-0"></i>
+                <div>
+                  <div class="font-bold text-slate-900 dark:text-white">Heading</div>
+                  <div class="text-[10px] text-slate-400">Section or subtopic header</div>
+                </div>
+              </button>
+              <button onclick="handleAddBlockSelect('paragraph')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
+                <i data-lucide="align-left" class="w-4 h-4 text-slate-500 shrink-0"></i>
+                <div>
+                  <div class="font-bold text-slate-900 dark:text-white">Concept Text</div>
+                  <div class="text-[10px] text-slate-400">Explanation & definitions</div>
+                </div>
+              </button>
+              <button onclick="handleAddBlockSelect('formula')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
+                <i data-lucide="sigma" class="w-4 h-4 text-tagsci-600 shrink-0"></i>
+                <div>
+                  <div class="font-bold text-slate-900 dark:text-white">Formula Card</div>
+                  <div class="text-[10px] text-slate-400">Centered equation card</div>
+                </div>
+              </button>
+              <button onclick="handleAddBlockSelect('bullets')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
+                <i data-lucide="list" class="w-4 h-4 text-g11pink-500 shrink-0"></i>
+                <div>
+                  <div class="font-bold text-slate-900 dark:text-white">Bullet Points</div>
+                  <div class="text-[10px] text-slate-400">Key takeaway list</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Word Formatting Tools (Bold, Italic, Underline, Math) -->
+          <div class="flex items-center gap-1 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 min-w-max shadow-sm">
+            <span class="text-[9.5px] uppercase font-bold text-slate-400 px-1.5 hidden sm:inline">Format:</span>
+            <button onclick="applyTextFormatting('bold')" title="Bold (Ctrl+B)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center w-7 h-7">
+              <span class="font-black text-xs">B</span>
+            </button>
+            <button onclick="applyTextFormatting('italic')" title="Italic (Ctrl+I)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 italic font-serif text-xs flex items-center justify-center w-7 h-7">
+              <span class="italic font-bold text-xs">I</span>
+            </button>
+            <button onclick="applyTextFormatting('underline')" title="Underline (Ctrl+U)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 underline text-xs flex items-center justify-center w-7 h-7">
+              <span class="underline font-bold text-xs">U</span>
+            </button>
+            <button onclick="applyTextFormatting('math')" title="Inline Math $...$ (Ctrl+M)" class="px-2 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-tagsci-700 dark:text-tagsci-300 font-mono font-bold text-xs h-7 flex items-center">
+              $x$
+            </button>
+          </div>
+
+          <!-- Formula Assistant Trigger & Template Loader -->
+          <div class="flex items-center gap-2 min-w-max">
+            <button onclick="openMathBuilderModal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm shadow-tagsci-900/20">
+              <i data-lucide="function-square" class="w-3.5 h-3.5"></i>
+              Visual Equation Studio
+            </button>
+            <select id="template-select" onchange="loadLessonTemplate(this.value); this.value='';" class="px-2.5 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 font-semibold">
+              <option value="">Insert Starter Template...</option>
+              <option value="stem_law">Principle & Formula Card</option>
+              <option value="derivation">Derivation Walkthrough</option>
+              <option value="key_takeaways">Summary & Key Points</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Split Pane: Visual Block Canvas Left vs Live Rendered View Right -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+          
+          <!-- LEFT: Dynamic Visual Block Canvas / Markdown Source -->
+          <div class="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 overflow-hidden">
+            
+            <!-- Visual Block Builder Viewport -->
+            <div id="pane-visual-blocks" class="flex-1 p-4 overflow-y-auto space-y-3.5">
+              <div id="blocks-container" class="space-y-3">
+                <!-- Visual cards rendered here dynamically -->
+              </div>
+
+              <div class="p-3.5 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-center">
+                <p class="text-xs text-slate-400 mb-2">Click any button above or insert a starter template to structure this lesson</p>
+                <button onclick="addContentBlock('paragraph')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add First Section
+                </button>
+              </div>
+            </div>
+
+            <!-- Raw Markdown Fallback (When toggled to source mode) -->
+            <div id="pane-markdown-source" class="hidden flex-1 flex flex-col bg-white dark:bg-slate-900/40">
+              <div class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] font-bold text-slate-500">
+                <span class="flex items-center gap-1"><i data-lucide="code" class="w-3.5 h-3.5"></i> Raw Markdown Source</span>
+                <span id="editor-char-count" class="text-slate-400">0 characters</span>
+              </div>
+              <textarea id="rev-input-body" class="flex-1 p-4 text-xs font-mono leading-relaxed bg-transparent resize-none focus:outline-none text-slate-800 dark:text-slate-100 overflow-y-auto" placeholder="Markdown source code..."></textarea>
+            </div>
+          </div>
+
+          <!-- RIGHT: Live Rendered Output -->
+          <div class="lg:col-span-5 flex flex-col bg-white dark:bg-slate-950 overflow-hidden">
+            <div class="px-3 py-2 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span class="flex items-center gap-1.5 text-tagsci-800 dark:text-tagsci-300">
+                <i data-lucide="eye" class="w-4 h-4"></i> Live Student Preview
+              </span>
+              <span class="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Synchronized
+              </span>
+            </div>
+            <div id="rev-live-preview" class="flex-1 p-5 overflow-y-auto prose dark:prose-invert max-w-none text-xs sm:text-sm">
+              <!-- Rendered preview output -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 2: QUIZ & DRILL BANK CREATOR STUDIO                         -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-quizzes" class="studio-view hidden flex-1 flex flex-col md:flex-row h-full overflow-hidden">
+      <!-- Left Column: Quiz Sets List -->
+      <aside class="w-full md:w-72 lg:w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-1/3 md:h-full shrink-0">
+        <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Quiz Sets</span>
+            <span id="quiz-list-count" class="text-[11px] font-bold text-slate-400">(1 bank)</span>
+          </div>
+          <button id="btn-add-quiz-set" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            New Quiz Set
+          </button>
+        </div>
+
+        <div id="quiz-sets-container" class="flex-1 overflow-y-auto p-2 space-y-2">
+          <!-- Quiz sets cards injected here -->
+        </div>
+
+        <div class="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex items-center justify-between text-xs">
+          <button id="btn-download-md-quiz" class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-g11pink-600 font-semibold">
+            <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+            Download .MD
+          </button>
+          <button id="btn-delete-quiz-set" class="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-semibold">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            Delete Set
+          </button>
+        </div>
+      </aside>
+
+      <!-- Right Area: Quiz Questions Builder -->
+      <div class="flex-1 flex flex-col h-2/3 md:h-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <!-- Quiz Set Meta Config -->
+        <div class="p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+          <div class="sm:col-span-3">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Subject</label>
+            <select id="quiz-input-subject" class="w-full px-2.5 py-1.5 text-xs font-semibold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
+              <optgroup label="Main Subjects">
+                <option value="Effective Communications">Effective Communications</option>
+                <option value="Mabisang Komunikasyon">Mabisang Komunikasyon</option>
+                <option value="Life and Career Skills">Life and Career Skills</option>
+                <option value="General Math">General Math</option>
+                <option value="General Science">General Science</option>
+              </optgroup>
+              <optgroup label="Elective Subjects">
+                <option value="Finite Math">Finite Math</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Biology">Biology</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="sm:col-span-5">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quiz Bank Title</label>
+            <input type="text" id="quiz-input-title" placeholder="Enter quiz bank title..." class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Time Limit (Min)</label>
+            <input type="number" id="quiz-input-timelimit" value="15" min="1" max="180" class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Action</label>
+            <button id="btn-add-question" class="w-full py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+              Add Question
+            </button>
+          </div>
+        </div>
+
+        <!-- Quiz Question Type Toolbar & Visual Equation Studio Trigger -->
+        <div id="quiz-builder-toolbar" class="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 py-1.5 flex items-center justify-between gap-2 overflow-visible relative z-30 flex-wrap sm:flex-nowrap">
+          <div class="flex items-center gap-1.5 flex-wrap min-w-max">
+            <span class="text-[10px] uppercase font-black text-slate-400 mr-1">Add Question:</span>
+            <button onclick="addQuestionBlock('mcq')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
+              <i data-lucide="list" class="w-3.5 h-3.5"></i>
+              <span>Multiple Choice</span>
+            </button>
+            <button onclick="addQuestionBlock('true_false')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold shadow-sm transition-all">
+              <i data-lucide="check-square" class="w-3.5 h-3.5 text-amber-500"></i>
+              <span>True / False</span>
+            </button>
+            <button onclick="addQuestionBlock('identification')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold shadow-sm transition-all">
+              <i data-lucide="type" class="w-3.5 h-3.5 text-purple-500"></i>
+              <span>Identification</span>
+            </button>
+            <button onclick="addQuestionBlock('numerical')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold shadow-sm transition-all">
+              <i data-lucide="hash" class="w-3.5 h-3.5 text-blue-500"></i>
+              <span>Numerical</span>
+            </button>
+            <button onclick="addQuestionBlock('multi_select')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold shadow-sm transition-all">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-teal-500"></i>
+              <span>Multi-Select</span>
+            </button>
+            <button onclick="addQuestionBlock('flashcard')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold shadow-sm transition-all">
+              <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span>Flashcard</span>
+            </button>
+          </div>
+
+          <!-- Equation Studio Modal Trigger -->
+          <div class="flex items-center gap-2 min-w-max ml-auto">
+            <button onclick="openMathBuilderModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm shadow-tagsci-900/20">
+              <i data-lucide="function-square" class="w-3.5 h-3.5"></i>
+              Visual Equation Studio
+            </button>
+          </div>
+        </div>
+
+        <!-- Questions List Manager & Interactive Test -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+          <div class="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4 bg-white dark:bg-slate-900/30">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="list-ordered" class="w-4 h-4 text-g11pink-500"></i>
+                Questions in this Bank
+              </h2>
+              <span id="question-count-badge" class="text-xs font-bold text-g11pink-600 dark:text-g11pink-400">0 Questions</span>
+            </div>
+
+            <div id="questions-builder-container" class="space-y-4">
+              <!-- Question blocks rendered here -->
+            </div>
+          </div>
+
+          <!-- Right: Interactive Live Drill Tester -->
+          <div class="lg:col-span-5 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
+            <div class="p-3 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="play-circle" class="w-4 h-4 text-emerald-500"></i>
+                Live Quiz Player Test
+              </span>
+              <button id="btn-reset-quiz-preview" class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
+                Restart Test
+              </button>
+            </div>
+
+            <div id="quiz-interactive-preview" class="flex-1 p-4 overflow-y-auto flex flex-col justify-center items-center text-center">
+              <!-- Live preview player mounted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 3: CALENDAR & DEADLINES AUTHORING                           -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-calendar" class="studio-view hidden flex-1 flex flex-col lg:flex-row h-full overflow-hidden">
+      <div class="w-full lg:w-96 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 overflow-y-auto">
+        <h2 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+          <i data-lucide="calendar-plus" class="w-4 h-4 text-emerald-500"></i>
+          Schedule New Deadline / Exam
+        </h2>
+
+        <form id="calendar-event-form" class="space-y-3.5 text-xs">
+          <div>
+            <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Event Date (YYYY-MM-DD)</label>
+            <input type="date" id="cal-input-date" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-xs focus:ring-1 focus:ring-tagsci-600">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Subject / Tag Category</label>
+            <select id="cal-input-subject" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-semibold text-xs focus:ring-1 focus:ring-tagsci-600">
+              <optgroup label="General / School-wide">
+                <option value="TagSci">TagSci (Institutional / Foundation Day / School Activities)</option>
+                <option value="DepEd">DepEd (DepEd Calendar / Term Exams / Sem Breaks)</option>
+              </optgroup>
+              <optgroup label="Main Subjects">
+                <option value="Effective Communications">Effective Communications</option>
+                <option value="Mabisang Komunikasyon">Mabisang Komunikasyon</option>
+                <option value="Life and Career Skills">Life and Career Skills</option>
+                <option value="General Math">General Math</option>
+                <option value="General Science">General Science</option>
+              </optgroup>
+              <optgroup label="Elective Subjects">
+                <option value="Finite Math">Finite Math</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Biology">Biology</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Title / Milestone</label>
+            <input type="text" id="cal-input-title" placeholder="e.g. Periodical Exam - Kinematics" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-xs focus:ring-1 focus:ring-tagsci-600">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Type</label>
+              <select id="cal-input-type" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-semibold text-xs focus:ring-1 focus:ring-tagsci-600">
+                <option value="exam">Major Exam</option>
+                <option value="quiz">Quiz / Drill</option>
+                <option value="peta">PETA / Project</option>
+                <option value="deadline">Submission Deadline</option>
+                <option value="event">School Activity</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Badge Tag</label>
+              <input type="text" id="cal-input-badge" placeholder="e.g. Exam / 60 pts" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-semibold text-xs focus:ring-1 focus:ring-tagsci-600">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-500 uppercase tracking-wider mb-1">Description / Instructions</label>
+            <textarea id="cal-input-desc" rows="3" placeholder="Coverage, formulas allowed, room assignments, etc." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-1 focus:ring-tagsci-600"></textarea>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Save Event to Timeline
+          </button>
+        </form>
+      </div>
+
+      <div class="flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 p-4 overflow-y-auto">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            Active Published Deadlines
+          </h3>
+          <span id="cal-events-count" class="text-xs text-slate-400 font-bold">3 events scheduled</span>
+        </div>
+
+        <div id="cal-events-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Calendar event cards rendered here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 4: JSON & OVER-THE-AIR SYNC HUB                            -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-json-hub" class="studio-view hidden flex-1 flex flex-col lg:flex-row h-full overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <div class="flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div>
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <i data-lucide="file-json" class="w-4 h-4 text-purple-500"></i>
+              Compiled updates.json Schema
+            </h2>
+            <p class="text-[10px] text-slate-400">Exact payload consumed by Google Apps Script & the Student WebApp</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btn-hub-copy-json" class="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+            </button>
+            <button id="btn-hub-download-json" class="px-3 py-1 rounded bg-tagsci-700 hover:bg-tagsci-800 text-xs font-bold text-white flex items-center gap-1">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i> Download updates.json
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 relative overflow-hidden bg-slate-950 text-slate-200">
+          <textarea id="hub-json-viewer" readonly class="w-full h-full p-4 font-mono text-xs leading-relaxed bg-transparent resize-none focus:outline-none overflow-y-auto text-emerald-400"></textarea>
+        </div>
+      </div>
+
+      <div class="w-full lg:w-96 flex flex-col p-4 bg-white dark:bg-slate-900 overflow-y-auto space-y-4">
+        <div>
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <i data-lucide="radio" class="w-4 h-4 text-tagsci-600"></i>
+            OTA Deployment Pipeline
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            Publishing new reviewers, quiz banks, and deadlines directly to students' devices without republishing the website.
+          </p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1">
+              <span class="w-4 h-4 rounded-full bg-tagsci-700 text-white text-[10px] flex items-center justify-center font-black">1</span>
+              Download / Copy JSON
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 text-[11px]">Click "Export updates.json" above or copy the raw JSON payload.</p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1">
+              <span class="w-4 h-4 rounded-full bg-tagsci-700 text-white text-[10px] flex items-center justify-center font-black">2</span>
+              Commit / Push to GitHub
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 text-[11px]">Commit the refreshed `updates.json` to the `Student-Hub` GitHub repository.</p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1">
+              <span class="w-4 h-4 rounded-full bg-tagsci-700 text-white text-[10px] flex items-center justify-center font-black">3</span>
+              Automatic Student Sync
+            </div>
+            <p class="text-slate-600 dark:text-slate-300 text-[11px]">When students open their WebApp, it automatically downloads and caches your updates locally from GitHub Pages CDN!</p>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-tagsci-50 dark:bg-tagsci-950/60 border border-tagsci-200 dark:border-tagsci-800">
+          <label class="block text-[11px] font-bold text-tagsci-900 dark:text-tagsci-200 mb-1.5">
+            Test Over-The-Air Endpoint:
+          </label>
+          <input type="url" id="hub-ota-endpoint-input" value="https://omniscripterstorm.github.io/Student-Hub/updates.json" class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-tagsci-300 dark:border-tagsci-700 rounded-lg text-slate-800 dark:text-slate-200 font-mono mb-2">
+          <button id="btn-test-ota-hub" class="w-full py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white font-bold text-xs flex items-center justify-center gap-1.5">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            Ping OTA Endpoint
+          </button>
+          <div id="hub-ota-status" class="mt-2 text-[11px] text-slate-500 hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------- -->
+    <!-- VIEW 5: FORMAT & SUBJECT GUIDE                                   -->
+    <!-- ----------------------------------------------------------------- -->
+    <section id="view-guide" class="studio-view hidden flex-1 p-6 overflow-y-auto bg-slate-50 dark:bg-slate-950">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h2 class="text-lg font-black text-tagsci-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="book" class="w-5 h-5 text-tagsci-600"></i>
+            Editorial Council Curriculum Taxonomy & Guidelines
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Grade 11 curriculum taxonomy and formatting standards for single-file offline distribution.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <h3 class="font-bold text-sm text-tagsci-800 dark:text-tagsci-300 flex items-center gap-2">
+              <i data-lucide="check-circle" class="w-4 h-4 text-tagsci-600"></i>
+              Main Subjects (Universal)
+            </h3>
+            <ul class="space-y-1.5 text-slate-600 dark:text-slate-300">
+              <li>&bull; <strong>Effective Communications</strong></li>
+              <li>&bull; <strong>Mabisang Komunikasyon</strong></li>
+              <li>&bull; <strong>Life and Career Skills</strong></li>
+              <li>&bull; <strong>General Math</strong></li>
+              <li>&bull; <strong>General Science</strong></li>
+            </ul>
+          </div>
+
+          <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <h3 class="font-bold text-sm text-purple-700 dark:text-purple-300 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-purple-600"></i>
+              Elective Subjects
+            </h3>
+            <ul class="space-y-1.5 text-slate-600 dark:text-slate-300">
+              <li>&bull; <strong>Finite Math</strong></li>
+              <li>&bull; <strong>Physics</strong></li>
+              <li>&bull; <strong>Chemistry</strong></li>
+              <li>&bull; <strong>Biology</strong></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= IMPROVED ADVANCED VISUAL MATH STUDIO MODAL ================= -->
+  <div id="modal-math-builder" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-5 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-tagsci-100 dark:bg-tagsci-950 text-tagsci-800 dark:text-tagsci-300 flex items-center justify-center font-bold">
+            &Sigma;
+          </div>
+          <div>
+            <h3 class="font-black text-sm text-slate-900 dark:text-white">Visual Equation Studio</h3>
+            <p class="text-[10.5px] text-slate-400">Click symbols and templates to build math without writing raw LaTeX</p>
+          </div>
+        </div>
+        <button onclick="closeMathBuilderModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
+        
+        <!-- Category Tabs -->
+        <div class="flex space-x-1.5 border-b border-slate-100 dark:border-slate-800 pb-1.5">
+          <button id="tab-math-templates" onclick="switchMathSubTab('templates')" class="px-3 py-1 rounded-md text-xs font-bold bg-tagsci-50 dark:bg-tagsci-950 text-tagsci-800 dark:text-tagsci-300 border border-tagsci-200 dark:border-tagsci-800">
+            Structure Templates
+          </button>
+          <button id="tab-math-symbols" onclick="switchMathSubTab('symbols')" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            Greek & Operators
+          </button>
+          <button id="tab-math-presets" onclick="switchMathSubTab('presets')" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            Standard STEM Formulas
+          </button>
+        </div>
+
+        <!-- TAB 1: STRUCTURE TEMPLATES (Fractions, Roots, Powers, Subscripts, Vectors) -->
+        <div id="math-subtab-templates" class="space-y-3">
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <button onclick="insertFormulaSnippet('\\frac{a}{b}')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-tagsci-500 text-center font-bold">
+              <span class="block text-sm">&frac12;</span>
+              <span class="text-[10px] text-slate-400">Fraction</span>
+            </button>
+            <button onclick="insertFormulaSnippet('\\sqrt{x}')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-tagsci-500 text-center font-bold">
+              <span class="block text-sm">&radic;x</span>
+              <span class="text-[10px] text-slate-400">Square Root</span>
+            </button>
+            <button onclick="insertFormulaSnippet('x^{2}')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-tagsci-500 text-center font-bold">
+              <span class="block text-sm">x<sup>n</sup></span>
+              <span class="text-[10px] text-slate-400">Exponent</span>
+            </button>
+            <button onclick="insertFormulaSnippet('v_{0}')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-tagsci-500 text-center font-bold">
+              <span class="block text-sm">v<sub>0</sub></span>
+              <span class="text-[10px] text-slate-400">Subscript</span>
+            </button>
+            <button onclick="insertFormulaSnippet('\\vec{v}')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-tagsci-500 text-center font-bold">
+              <span class="block text-sm">&rarr;v</span>
+              <span class="text-[10px] text-slate-400">Vector</span>
+            </button>
+            <button onclick="insertFormulaSnippet('\\left( x + y \\right)')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-tagsci-500 text-center font-bold">
+              <span class="block text-sm">( &hellip; )</span>
+              <span class="text-[10px] text-slate-400">Parentheses</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 2: GREEK & OPERATORS -->
+        <div id="math-subtab-symbols" class="hidden space-y-3">
+          <div>
+            <span class="text-[10px] font-black uppercase text-slate-400 block mb-1">Greek Alphabet:</span>
+            <div class="flex flex-wrap gap-1.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 font-mono font-bold text-xs">
+              <button onclick="insertFormulaSnippet('\\theta')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&theta; (theta)</button>
+              <button onclick="insertFormulaSnippet('\\pi')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&pi; (pi)</button>
+              <button onclick="insertFormulaSnippet('\\Delta')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&Delta; (delta)</button>
+              <button onclick="insertFormulaSnippet('\\alpha')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&alpha; (alpha)</button>
+              <button onclick="insertFormulaSnippet('\\beta')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&beta; (beta)</button>
+              <button onclick="insertFormulaSnippet('\\gamma')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&gamma; (gamma)</button>
+              <button onclick="insertFormulaSnippet('\\lambda')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&lambda; (lambda)</button>
+              <button onclick="insertFormulaSnippet('\\mu')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&mu; (mu)</button>
+              <button onclick="insertFormulaSnippet('\\omega')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&omega; (omega)</button>
+              <button onclick="insertFormulaSnippet('\\Omega')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&Omega; (Ohm)</button>
+              <button onclick="insertFormulaSnippet('\\rho')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&rho; (rho)</button>
+              <button onclick="insertFormulaSnippet('\\sigma')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&sigma; (sigma)</button>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-[10px] font-black uppercase text-slate-400 block mb-1">Mathematical Operators:</span>
+            <div class="flex flex-wrap gap-1.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 font-mono font-bold text-xs">
+              <button onclick="insertFormulaSnippet('\\pm')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&plusmn;</button>
+              <button onclick="insertFormulaSnippet('\\mp')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&#x2213;</button>
+              <button onclick="insertFormulaSnippet('\\times')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&times;</button>
+              <button onclick="insertFormulaSnippet('\\cdot')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&middot;</button>
+              <button onclick="insertFormulaSnippet('\\approx')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&asymp;</button>
+              <button onclick="insertFormulaSnippet('\\neq')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&ne;</button>
+              <button onclick="insertFormulaSnippet('\\le')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&le;</button>
+              <button onclick="insertFormulaSnippet('\\ge')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&ge;</button>
+              <button onclick="insertFormulaSnippet('\\infty')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&infin;</button>
+              <button onclick="insertFormulaSnippet('\\rightarrow')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&rarr;</button>
+              <button onclick="insertFormulaSnippet('\\partial')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&part;</button>
+              <button onclick="insertFormulaSnippet('\\sum')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&sum;</button>
+              <button onclick="insertFormulaSnippet('\\int')" class="px-2 py-1 rounded bg-white dark:bg-slate-700 hover:bg-tagsci-100">&int;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: STANDARD STEM FORMULAS -->
+        <div id="math-subtab-presets" class="hidden space-y-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button onclick="setFullEquation('v_f = v_0 + at')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-left border border-slate-200 dark:border-slate-700 hover:border-tagsci-500">
+              <span class="font-bold text-tagsci-700 dark:text-tagsci-300 block">Kinematics Velocity</span>
+              <span class="text-xs font-mono text-slate-500">v_f = v_0 + at</span>
+            </button>
+            <button onclick="setFullEquation('\\Delta x = v_0 t + \\frac{1}{2}at^2')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-left border border-slate-200 dark:border-slate-700 hover:border-tagsci-500">
+              <span class="font-bold text-tagsci-700 dark:text-tagsci-300 block">Position Displacement</span>
+              <span class="text-xs font-mono text-slate-500">&Delta;x = v_0 t + &frac12;at^2</span>
+            </button>
+            <button onclick="setFullEquation('v_f^2 = v_0^2 + 2a\\Delta x')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-left border border-slate-200 dark:border-slate-700 hover:border-tagsci-500">
+              <span class="font-bold text-tagsci-700 dark:text-tagsci-300 block">Torricelli Velocity Relation</span>
+              <span class="text-xs font-mono text-slate-500">v_f^2 = v_0^2 + 2a&Delta;x</span>
+            </button>
+            <button onclick="setFullEquation('x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-left border border-slate-200 dark:border-slate-700 hover:border-tagsci-500">
+              <span class="font-bold text-tagsci-700 dark:text-tagsci-300 block">Quadratic Formula</span>
+              <span class="text-xs font-mono text-slate-500">x = (-b &plusmn; &radic;(b^2-4ac)) / 2a</span>
+            </button>
+            <button onclick="setFullEquation('F_{net} = ma')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-left border border-slate-200 dark:border-slate-700 hover:border-tagsci-500">
+              <span class="font-bold text-tagsci-700 dark:text-tagsci-300 block">Newton 2nd Law</span>
+              <span class="text-xs font-mono text-slate-500">F_{net} = ma</span>
+            </button>
+            <button onclick="setFullEquation('PV = nRT')" class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-left border border-slate-200 dark:border-slate-700 hover:border-tagsci-500">
+              <span class="font-bold text-tagsci-700 dark:text-tagsci-300 block">Ideal Gas Law</span>
+              <span class="text-xs font-mono text-slate-500">PV = nRT</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Math Editor Input & Live Preview -->
+        <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">
+            Equation Canvas (Supports direct typing or clicking buttons above):
+          </label>
+          <input type="text" id="math-studio-input" oninput="updateMathStudioPreview()" placeholder="Type formula e.g. v_f = v_0 + at" class="w-full px-3 py-2 text-xs sm:text-sm font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-1 focus:ring-tagsci-500 text-tagsci-800 dark:text-emerald-400">
+
+          <!-- Live Rendered Result -->
+          <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center min-h-[60px] flex flex-col justify-center items-center">
+            <span class="text-[9.5px] text-slate-400 font-bold uppercase mb-1">Live Render:</span>
+            <div id="math-studio-preview" class="text-base font-bold text-tagsci-900 dark:text-emerald-300">$...$</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3 shrink-0">
+        <button onclick="closeMathBuilderModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+          Cancel
+        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="confirmMathInsert('inline')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-all">
+            Insert Inline ($...$)
+          </button>
+          <button onclick="confirmMathInsert('card')" class="px-3.5 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-md">
+            Insert as Card
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= NOTIFICATION TOAST ================= -->
+  <div id="toast-msg" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 border border-slate-700">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-text">Success!</span>
+  </div>
+
+  <!-- ================= EMBEDDED JAVASCRIPT LOGIC ================= -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
