@@ -105,10 +105,7 @@ window.revealTesterFlashcard = revealTesterFlashcard;
 window.nextTesterQ = nextTesterQ;
 window.prevTesterQ = prevTesterQ;
 
-window.deleteCalendarEvent = (id) => {
-  deleteCalendarEvent(id);
-  renderHubDashboard();
-};
+window.deleteCalendarEvent = deleteCalendarEvent;
 
 // GitHub Direct Publisher Bindings
 window.testGitHubAccess = testGitHubAccess;

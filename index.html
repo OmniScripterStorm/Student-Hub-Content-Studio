@@ -120,7 +120,7 @@
       </button>
 
       <!-- Link to Student App -->
-      <a href="../hompage_test.html" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-g11pink-50 hover:bg-g11pink-100 dark:bg-g11pink-950/60 dark:hover:bg-g11pink-900/60 text-g11pink-700 dark:text-g11pink-300 text-xs font-bold border border-g11pink-200 dark:border-g11pink-900/60 transition-all">
+      <a href="https://omniscripterstorm.github.io/Student-Hub/" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-g11pink-50 hover:bg-g11pink-100 dark:bg-g11pink-950/60 dark:hover:bg-g11pink-900/60 text-g11pink-700 dark:text-g11pink-300 text-xs font-bold border border-g11pink-200 dark:border-g11pink-900/60 transition-all">
         <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
         <span class="hidden lg:inline">Student App</span>
       </a>
@@ -2693,7 +2693,7 @@ function renderCalendarEvents() {
       </div>
       <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10.5px]">
         <span class="font-bold text-tagsci-700 dark:text-tagsci-400">${ev.badge || ev.type}</span>
-        <button onclick="window.deleteCalendarEvent(${idx})" class="text-slate-400 hover:text-red-500 font-semibold">Remove</button>
+        <button type="button" onclick="window.deleteCalendarEvent(${idx})" class="text-slate-400 hover:text-red-500 font-semibold transition-colors">Remove</button>
       </div>
     `;
     container.appendChild(card);
@@ -2701,8 +2701,16 @@ function renderCalendarEvents() {
   if (window.lucide) window.lucide.createIcons();
 }
 function deleteCalendarEvent(idx) {
-  STUDIO_DATA.calendarEvents.splice(idx, 1);
+  if (!STUDIO_DATA.calendarEvents) return;
+  const index = parseInt(idx, 10);
+  if (isNaN(index) || index < 0 || index >= STUDIO_DATA.calendarEvents.length) return;
+  STUDIO_DATA.calendarEvents.splice(index, 1);
   renderCalendarEvents();
+  if (typeof renderHubDashboard === 'function') {
+    renderHubDashboard();
+  } else if (window.renderHubDashboard) {
+    window.renderHubDashboard();
+  }
   if (window.showToast) window.showToast('Calendar event removed.');
 }
 function handleAddCalendarEvent(e) {
@@ -3554,10 +3562,7 @@ window.revealTesterFlashcard = revealTesterFlashcard;
 window.nextTesterQ = nextTesterQ;
 window.prevTesterQ = prevTesterQ;
 
-window.deleteCalendarEvent = (id) => {
-  deleteCalendarEvent(id);
-  renderHubDashboard();
-};
+window.deleteCalendarEvent = deleteCalendarEvent;
 
 // GitHub Direct Publisher Bindings
 window.testGitHubAccess = testGitHubAccess;

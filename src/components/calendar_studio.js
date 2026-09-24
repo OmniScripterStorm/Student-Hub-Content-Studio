@@ -55,7 +55,7 @@ export function renderCalendarEvents() {
       </div>
       <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10.5px]">
         <span class="font-bold text-tagsci-700 dark:text-tagsci-400">${ev.badge || ev.type}</span>
-        <button onclick="window.deleteCalendarEvent(${idx})" class="text-slate-400 hover:text-red-500 font-semibold">Remove</button>
+        <button type="button" onclick="window.deleteCalendarEvent(${idx})" class="text-slate-400 hover:text-red-500 font-semibold transition-colors">Remove</button>
       </div>
     `;
     container.appendChild(card);
@@ -64,8 +64,16 @@ export function renderCalendarEvents() {
 }
 
 export function deleteCalendarEvent(idx) {
-  STUDIO_DATA.calendarEvents.splice(idx, 1);
+  if (!STUDIO_DATA.calendarEvents) return;
+  const index = parseInt(idx, 10);
+  if (isNaN(index) || index < 0 || index >= STUDIO_DATA.calendarEvents.length) return;
+  STUDIO_DATA.calendarEvents.splice(index, 1);
   renderCalendarEvents();
+  if (typeof renderHubDashboard === 'function') {
+    renderHubDashboard();
+  } else if (window.renderHubDashboard) {
+    window.renderHubDashboard();
+  }
   if (window.showToast) window.showToast('Calendar event removed.');
 }
 
