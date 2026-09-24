@@ -7,10 +7,11 @@ import { STUDIO_DATA, setCurrentRevIndex, setCurrentQuizSetIndex } from '../data
 let currentVaultFilter = 'all';
 let vaultSearchQuery = '';
 
-export function setVaultFilter(filter) {
+export function applyVaultFilter(filter) {
   currentVaultFilter = filter;
   renderHubVault();
 }
+export const setVaultFilter = applyVaultFilter;
 
 export function setVaultSearchQuery(query) {
   vaultSearchQuery = (query || '').toLowerCase().trim();

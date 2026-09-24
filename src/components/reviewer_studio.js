@@ -322,7 +322,6 @@ export function syncBlocksToPreview() {
   if (sumEl) rev.summary = sumEl.value;
   rev.content = parseMarkdownToHtml(compiledMd);
 
-  const previewPane = document.getElementById('rev-live-preview');
   if (previewPane) {
     previewPane.innerHTML = `
       <div class="border-b border-slate-200 dark:border-slate-800 pb-3 mb-3">

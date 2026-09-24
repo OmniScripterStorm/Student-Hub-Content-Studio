@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TagSci G11 STEM • Visual Content Studio & Workspace Hub</title>
-  <link rel="icon" href="../tagsci logo.png" type="image/png">
+  <link rel="icon" href="./tagsci logo.png" type="image/png">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -72,7 +72,7 @@
   <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 backdrop-blur-md px-4 py-2 flex items-center justify-between shadow-sm shrink-0">
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 rounded-xl bg-tagsci-900 flex items-center justify-center p-1.5 shadow-md shadow-tagsci-900/20 ring-1 ring-tagsci-700/50 shrink-0">
-        <img src="../tagsci logo.png" alt="TagSci" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/100x100/0e3a24/ffffff?text=TS'">
+        <img src="./tagsci logo.png" alt="TagSci" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/100x100/0e3a24/ffffff?text=TS'">
       </div>
       
       <!-- Dynamic Breadcrumbs -->
@@ -1838,7 +1838,6 @@ function syncBlocksToPreview() {
   if (sumEl) rev.summary = sumEl.value;
   rev.content = parseMarkdownToHtml(compiledMd);
 
-  const previewPane = document.getElementById('rev-live-preview');
   if (previewPane) {
     previewPane.innerHTML = `
       <div class="border-b border-slate-200 dark:border-slate-800 pb-3 mb-3">
@@ -2824,10 +2823,11 @@ function handleAddCalendarEvent(e) {
 let currentVaultFilter = 'all';
 let vaultSearchQuery = '';
 
-function setVaultFilter(filter) {
+function applyVaultFilter(filter) {
   currentVaultFilter = filter;
   renderHubVault();
 }
+const setVaultFilter = applyVaultFilter;
 
 function setVaultSearchQuery(query) {
   vaultSearchQuery = (query || '').toLowerCase().trim();
@@ -3684,7 +3684,7 @@ window.setVaultFilter = (filter) => {
       btn.classList.add('text-slate-600', 'dark:text-slate-400');
     }
   });
-  setVaultFilter(filter);
+  applyVaultFilter(filter);
 };
 
 window.setVaultSearchQuery = setVaultSearchQuery;

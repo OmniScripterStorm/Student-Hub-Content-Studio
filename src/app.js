@@ -8,7 +8,7 @@ import { openMathBuilderModal, openMathBuilderForBlock, closeMathBuilderModal, s
 import { compileBlocksToMarkdown, parseMarkdownIntoBlocks, renderReviewersList, loadReviewerToEditor, renderBlockCanvas, syncBlocksToPreview, updateBlockField, moveBlock, duplicateBlock, deleteBlock, addBulletItem, updateBulletItem, removeBulletItem, addContentBlock, loadLessonTemplate, applyTextFormatting } from './components/reviewer_studio.js';
 import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, nextTesterQ, prevTesterQ, resetLiveTester } from './components/quiz_studio.js';
 import { renderCalendarEvents, deleteCalendarEvent, handleAddCalendarEvent } from './components/calendar_studio.js';
-import { renderHubDashboard, renderHubStats, renderSubjectPortals, renderHubVault, setVaultFilter, setVaultSearchQuery } from './components/hub_dashboard.js';
+import { renderHubDashboard, renderHubStats, renderSubjectPortals, renderHubVault, applyVaultFilter, setVaultSearchQuery } from './components/hub_dashboard.js';
 import { 
   generateProductionJson, 
   renderJsonHub, 
@@ -129,7 +129,7 @@ window.setVaultFilter = (filter) => {
       btn.classList.add('text-slate-600', 'dark:text-slate-400');
     }
   });
-  setVaultFilter(filter);
+  applyVaultFilter(filter);
 };
 
 window.setVaultSearchQuery = setVaultSearchQuery;
