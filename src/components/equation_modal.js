@@ -3,21 +3,58 @@
    ========================================================= */
 
 import { renderMathInHtml } from './math_engine.js';
-import { STUDIO_DATA, currentRevIndex } from '../data/studio_data.js';
+import { STUDIO_DATA, currentRevIndex, setCurrentRevIndex } from '../data/studio_data.js';
 
 let activeMathTargetBlockIdx = null;
 let lastFocusedInput = null;
+let lastSelectionStart = null;
+let lastSelectionEnd = null;
 
 export function setLastFocusedInput(elem) {
-  lastFocusedInput = elem;
+  if (elem && (elem.tagName === 'INPUT' || elem.tagName === 'TEXTAREA') && !elem.closest('#modal-math-builder')) {
+    lastFocusedInput = elem;
+    try {
+      lastSelectionStart = elem.selectionStart;
+      lastSelectionEnd = elem.selectionEnd;
+    } catch (e) {
+      lastSelectionStart = elem.value ? elem.value.length : 0;
+      lastSelectionEnd = lastSelectionStart;
+    }
+  }
 }
 
 export function getLastFocusedInput() {
   return lastFocusedInput;
 }
 
+// Global focus and selection tracking
+if (typeof document !== 'undefined') {
+  const recordFocus = (e) => {
+    const target = e.target;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+      if (!target.closest('#modal-math-builder')) {
+        lastFocusedInput = target;
+        try {
+          lastSelectionStart = target.selectionStart;
+          lastSelectionEnd = target.selectionEnd;
+        } catch (err) {}
+      }
+    }
+  };
+
+  document.addEventListener('focusin', recordFocus, true);
+  document.addEventListener('keyup', recordFocus, true);
+  document.addEventListener('mouseup', recordFocus, true);
+  document.addEventListener('select', recordFocus, true);
+}
+
 export function openMathBuilderModal() {
   activeMathTargetBlockIdx = null;
+  const active = document.activeElement;
+  if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+    setLastFocusedInput(active);
+  }
+
   const modal = document.getElementById('modal-math-builder');
   if (modal) {
     modal.classList.remove('hidden');
@@ -49,6 +86,7 @@ export function closeMathBuilderModal() {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
   }
+  activeMathTargetBlockIdx = null;
 }
 
 export function switchMathSubTab(subtab) {
@@ -104,33 +142,139 @@ export function confirmMathInsert(mode, onComplete) {
     return;
   }
 
-  if (mode === 'inline' || (lastFocusedInput && document.body.contains(lastFocusedInput) && mode !== 'card')) {
-    if (lastFocusedInput) {
-      const start = lastFocusedInput.selectionStart ?? lastFocusedInput.value.length;
-      const end = lastFocusedInput.selectionEnd ?? lastFocusedInput.value.length;
+  if (mode === 'inline') {
+    let target = lastFocusedInput;
+    if (!target || !document.body.contains(target) || target.closest('#modal-math-builder')) {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+        target = active;
+      } else {
+        target = document.querySelector('#rev-input-body:not(.hidden), #pane-visual-blocks textarea, #pane-visual-blocks input[type="text"], #q-input-question');
+      }
+    }
+
+    if (target) {
+      const start = (target === lastFocusedInput && typeof lastSelectionStart === 'number') 
+        ? lastSelectionStart 
+        : (target.selectionStart ?? target.value.length);
+      const end = (target === lastFocusedInput && typeof lastSelectionEnd === 'number') 
+        ? lastSelectionEnd 
+        : (target.selectionEnd ?? target.value.length);
       const snippet = `$${tex}$`;
-      lastFocusedInput.value = lastFocusedInput.value.substring(0, start) + snippet + lastFocusedInput.value.substring(end);
-      lastFocusedInput.focus();
-      lastFocusedInput.setSelectionRange(start + snippet.length, start + snippet.length);
-      lastFocusedInput.dispatchEvent(new Event('input', { bubbles: true }));
+      target.value = target.value.substring(0, start) + snippet + target.value.substring(end);
+      target.focus();
+      try {
+        target.setSelectionRange(start + snippet.length, start + snippet.length);
+      } catch (e) {}
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+      target.dispatchEvent(new Event('change', { bubbles: true }));
       closeMathBuilderModal();
-      if (window.showToast) window.showToast('Equation inserted into active field!');
+      if (typeof onComplete === 'function') onComplete();
+      if (window.showToast) window.showToast('Equation inserted inline ($...$)');
       return;
+    }
+
+    // If no target input exists, create or append an inline concept block
+    let rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+    if (!rev) {
+      rev = {
+        id: `reviewer_${Date.now()}`,
+        subject: "General Science",
+        tag: "Main",
+        color: "border-l-4 border-tagsci-600",
+        title: "New Reviewer Draft",
+        summary: "Curated learning notes and formulas",
+        blocks: [
+          { type: 'paragraph', text: `Key formula: $${tex}$` }
+        ],
+        rawMarkdown: "",
+        content: ""
+      };
+      STUDIO_DATA.stemReviewers = [rev];
+      setCurrentRevIndex(0);
+      if (typeof renderReviewersList === 'function') renderReviewersList();
+      if (typeof loadReviewerToEditor === 'function') loadReviewerToEditor();
+      if (window.renderReviewersList) window.renderReviewersList();
+      if (window.loadReviewerToEditor) window.loadReviewerToEditor();
+    } else {
+      if (!rev.blocks) rev.blocks = [];
+      rev.blocks.push({
+        type: 'paragraph',
+        text: `Formula: $${tex}$`
+      });
+      if (typeof renderBlockCanvas === 'function') renderBlockCanvas();
+      if (typeof syncBlocksToPreview === 'function') syncBlocksToPreview();
+      if (window.renderBlockCanvas) window.renderBlockCanvas();
+      if (window.syncBlocksToPreview) window.syncBlocksToPreview();
+    }
+
+    closeMathBuilderModal();
+    if (typeof onComplete === 'function') onComplete();
+    if (window.showToast) window.showToast('Equation inserted inline!');
+    return;
+  }
+
+  // mode === 'card'
+  if (activeMathTargetBlockIdx !== null) {
+    const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+    if (rev && rev.blocks && rev.blocks[activeMathTargetBlockIdx]) {
+      rev.blocks[activeMathTargetBlockIdx].formula = tex;
+      rev.blocks[activeMathTargetBlockIdx].type = 'formula';
+      if (!rev.blocks[activeMathTargetBlockIdx].title) {
+        rev.blocks[activeMathTargetBlockIdx].title = 'Formula Card';
+      }
+    }
+  } else {
+    let rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+    if (!rev) {
+      rev = {
+        id: `reviewer_${Date.now()}`,
+        subject: "General Science",
+        tag: "Main",
+        color: "border-l-4 border-tagsci-600",
+        title: "New Reviewer Draft",
+        summary: "Curated learning notes and formulas",
+        blocks: [
+          {
+            type: 'formula',
+            title: 'Formula Card',
+            formula: tex,
+            note: ''
+          }
+        ],
+        rawMarkdown: "",
+        content: ""
+      };
+      STUDIO_DATA.stemReviewers = [rev];
+      setCurrentRevIndex(0);
+      if (typeof renderReviewersList === 'function') renderReviewersList();
+      if (typeof loadReviewerToEditor === 'function') loadReviewerToEditor();
+      if (window.renderReviewersList) window.renderReviewersList();
+      if (window.loadReviewerToEditor) window.loadReviewerToEditor();
+    } else {
+      if (!rev.blocks) rev.blocks = [];
+      rev.blocks.push({
+        type: 'formula',
+        title: 'Formula Card',
+        formula: tex,
+        note: ''
+      });
+
+      const rawBody = document.getElementById('rev-input-body');
+      if (rawBody && !document.getElementById('pane-markdown-source')?.classList.contains('hidden')) {
+        const start = rawBody.selectionStart ?? rawBody.value.length;
+        const cardMd = `\n\n**Formula Card**\n$$ ${tex} $$\n`;
+        rawBody.value = rawBody.value.substring(0, start) + cardMd + rawBody.value.substring(start);
+        rawBody.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     }
   }
 
-  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
-  if (activeMathTargetBlockIdx !== null && rev && rev.blocks && rev.blocks[activeMathTargetBlockIdx]) {
-    rev.blocks[activeMathTargetBlockIdx].formula = tex;
-  } else if (rev) {
-    if (!rev.blocks) rev.blocks = [];
-    rev.blocks.push({
-      type: 'formula',
-      title: 'Formula Card',
-      formula: tex,
-      note: ''
-    });
-  }
+  if (typeof renderBlockCanvas === 'function') renderBlockCanvas();
+  if (typeof syncBlocksToPreview === 'function') syncBlocksToPreview();
+  if (window.renderBlockCanvas) window.renderBlockCanvas();
+  if (window.syncBlocksToPreview) window.syncBlocksToPreview();
+  if (window.renderHubDashboard) window.renderHubDashboard();
 
   closeMathBuilderModal();
   if (typeof onComplete === 'function') onComplete();
