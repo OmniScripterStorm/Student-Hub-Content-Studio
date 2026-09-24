@@ -636,7 +636,89 @@
         </div>
       </div>
 
-      <div class="w-full lg:w-96 flex flex-col p-4 bg-white dark:bg-slate-900 overflow-y-auto space-y-4">
+            <!-- Right Column: GitHub Direct Publisher & Pipeline -->
+      <div class="w-full lg:w-[420px] flex flex-col p-4 bg-white dark:bg-slate-900 overflow-y-auto space-y-4 shrink-0">
+        
+        <!-- DIRECT GITHUB CLOUD PUBLISHER -->
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white border border-slate-800 shadow-xl space-y-3.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-tagsci-600 flex items-center justify-center text-white shadow-md">
+                <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-black uppercase tracking-wider text-white">Direct GitHub Publisher</h3>
+                <p class="text-[10px] text-slate-400">Editorial Council Cloud Sync</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              Live API
+            </span>
+          </div>
+
+          <!-- Token Input Field -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[10.5px] font-bold text-slate-300 flex items-center gap-1">
+                <i data-lucide="key" class="w-3 h-3 text-tagsci-400"></i> GitHub Token (PAT)
+              </label>
+              <button id="btn-gh-clear-token" type="button" class="text-[10px] text-slate-400 hover:text-rose-400 underline">Clear</button>
+            </div>
+            <div class="relative">
+              <input type="password" id="gh-pat-token" placeholder="ghp_xxxxxxxxxxxx..." class="w-full pl-3 pr-8 py-1.5 text-xs bg-slate-800/80 border border-slate-700 rounded-lg text-white font-mono focus:border-tagsci-500 focus:outline-none placeholder:text-slate-500">
+              <button id="btn-gh-toggle-token" type="button" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+                <i id="gh-eye-icon" data-lucide="eye" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <p class="text-[9.5px] text-slate-400 mt-1">Stored safely in browser localStorage. Never committed or published.</p>
+          </div>
+
+          <!-- Repo & Branch Settings -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">Repository:</label>
+              <input type="text" id="gh-repo-name" value="OmniScripterStorm/Student-Hub" class="w-full px-2 py-1 text-[11px] bg-slate-800 border border-slate-700 rounded-md text-white font-mono focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">Target Branch:</label>
+              <input type="text" id="gh-branch-name" value="main" class="w-full px-2 py-1 text-[11px] bg-slate-800 border border-slate-700 rounded-md text-white font-mono focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">File Path:</label>
+              <input type="text" id="gh-file-path" value="updates.json" class="w-full px-2 py-1 text-[11px] bg-slate-800 border border-slate-700 rounded-md text-white font-mono focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">Verify Access:</label>
+              <button id="btn-gh-test-auth" type="button" class="w-full py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[11px] font-bold flex items-center justify-center gap-1">
+                <i data-lucide="shield-check" class="w-3 h-3 text-tagsci-400"></i> Check Access
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 mb-1">Commit Message:</label>
+            <input type="text" id="gh-commit-msg" placeholder="OTA Curriculum Sync via Content Studio" class="w-full px-2.5 py-1.5 text-[11px] bg-slate-800 border border-slate-700 rounded-md text-white focus:outline-none">
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-1 flex flex-col gap-2">
+            <button id="btn-gh-append-push" type="button" class="w-full py-2 rounded-xl bg-gradient-to-r from-tagsci-600 to-emerald-600 hover:from-tagsci-500 hover:to-emerald-500 text-white text-xs font-black shadow-lg flex items-center justify-center gap-2 transition-all">
+              <i data-lucide="git-merge" class="w-4 h-4"></i>
+              Smart Merge & Append to GitHub
+            </button>
+            
+            <button id="btn-gh-push-direct" type="button" class="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 flex items-center justify-center gap-1.5 transition-all">
+              <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-purple-400"></i>
+              Overwrite / Full Push updates.json
+            </button>
+          </div>
+
+          <!-- Live Status Container -->
+          <div id="gh-publish-status" class="hidden text-xs"></div>
+        </div>
         <div>
           <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
             <i data-lucide="radio" class="w-4 h-4 text-tagsci-600"></i>
@@ -2466,11 +2548,20 @@ function handleAddCalendarEvent(e) {
 
 
     /* =========================================================
-   TagSci Content Studio - JSON Hub & Export Pipeline
+   TagSci Content Studio - JSON Hub & Direct GitHub Publisher
    ========================================================= */
 
 
 
+
+// UTF-8 safe Base64 encoding/decoding helpers
+function utf8ToBase64(str) {
+  return window.btoa(unescape(encodeURIComponent(str)));
+}
+
+function base64ToUtf8(str) {
+  return decodeURIComponent(escape(window.atob(str)));
+}
 
 function generateProductionJson() {
   return {
@@ -2485,7 +2576,7 @@ function generateProductionJson() {
       color: r.color,
       title: r.title,
       summary: r.summary,
-      content: r.content
+      blocks: r.blocks || []
     })),
     studyMaterials: STUDIO_DATA.studyMaterials || [],
     problemSets: STUDIO_DATA.problemSets || [],
@@ -2494,10 +2585,11 @@ function generateProductionJson() {
 }
 
 function renderJsonHub() {
-  const codeEl = document.getElementById('raw-json-output');
+  const codeEl = document.getElementById('hub-json-viewer');
   if (codeEl) {
-    codeEl.innerText = JSON.stringify(generateProductionJson(), null, 2);
+    codeEl.value = JSON.stringify(generateProductionJson(), null, 2);
   }
+  loadGitHubConfig();
 }
 
 function downloadFile(filename, text, mimeType = 'text/plain') {
@@ -2554,7 +2646,7 @@ timeLimitMinutes: ${set.timeLimitMinutes || 15}
 ---
 
 `;
-  set.questions.forEach((q, i) => {
+  (set.questions || []).forEach((q, i) => {
     mdLines += `### Question ${i + 1} (${q.type})\n${q.prompt}\n\n`;
     if (q.type === 'mcq') {
       (q.options || []).forEach((opt, oIdx) => {
@@ -2620,9 +2712,328 @@ async function pingOtaEndpoint() {
     const resp = await fetch(cacheBustUrl);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
-    status.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">✓ Connected! Version: ${data.version || 'OK'}, Announcements: "${data.announcement || 'None'}"</span>`;
+    status.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">✓ Connected! Version: ${data.version || 'OK'}, Announcement: "${data.announcement || 'None'}"</span>`;
   } catch (err) {
     status.innerHTML = `<span class="text-red-500 font-bold">✕ Error: ${err.message}</span>`;
+  }
+}
+
+/* =========================================================
+   DIRECT GITHUB API INTEGRATION FOR EDITORIAL COUNCIL
+   ========================================================= */
+
+const STORAGE_KEYS = {
+  TOKEN: 'tagsci_cs_gh_token',
+  REPO: 'tagsci_cs_gh_repo',
+  BRANCH: 'tagsci_cs_gh_branch',
+  PATH: 'tagsci_cs_gh_path'
+};
+
+function getGitHubConfig() {
+  const tokenEl = document.getElementById('gh-pat-token');
+  const repoEl = document.getElementById('gh-repo-name');
+  const branchEl = document.getElementById('gh-branch-name');
+  const pathEl = document.getElementById('gh-file-path');
+
+  return {
+    token: (tokenEl ? tokenEl.value : '') || localStorage.getItem(STORAGE_KEYS.TOKEN) || '',
+    repo: (repoEl ? repoEl.value : '') || localStorage.getItem(STORAGE_KEYS.REPO) || 'OmniScripterStorm/Student-Hub',
+    branch: (branchEl ? branchEl.value : '') || localStorage.getItem(STORAGE_KEYS.BRANCH) || 'main',
+    path: (pathEl ? pathEl.value : '') || localStorage.getItem(STORAGE_KEYS.PATH) || 'updates.json'
+  };
+}
+
+function saveGitHubConfig() {
+  const config = getGitHubConfig();
+  if (config.token) localStorage.setItem(STORAGE_KEYS.TOKEN, config.token.trim());
+  if (config.repo) localStorage.setItem(STORAGE_KEYS.REPO, config.repo.trim());
+  if (config.branch) localStorage.setItem(STORAGE_KEYS.BRANCH, config.branch.trim());
+  if (config.path) localStorage.setItem(STORAGE_KEYS.PATH, config.path.trim());
+
+  if (window.showToast) window.showToast('GitHub credentials saved locally!');
+}
+
+function loadGitHubConfig() {
+  const tokenEl = document.getElementById('gh-pat-token');
+  const repoEl = document.getElementById('gh-repo-name');
+  const branchEl = document.getElementById('gh-branch-name');
+  const pathEl = document.getElementById('gh-file-path');
+
+  if (tokenEl && !tokenEl.value) tokenEl.value = localStorage.getItem(STORAGE_KEYS.TOKEN) || '';
+  if (repoEl && !repoEl.value) repoEl.value = localStorage.getItem(STORAGE_KEYS.REPO) || 'OmniScripterStorm/Student-Hub';
+  if (branchEl && !branchEl.value) branchEl.value = localStorage.getItem(STORAGE_KEYS.BRANCH) || 'main';
+  if (pathEl && !pathEl.value) pathEl.value = localStorage.getItem(STORAGE_KEYS.PATH) || 'updates.json';
+}
+
+function clearGitHubConfig() {
+  localStorage.removeItem(STORAGE_KEYS.TOKEN);
+  const tokenEl = document.getElementById('gh-pat-token');
+  if (tokenEl) tokenEl.value = '';
+  setPublishStatus('Token cleared from local storage.', 'slate');
+  if (window.showToast) window.showToast('Token cleared!');
+}
+
+function toggleTokenVisibility() {
+  const tokenEl = document.getElementById('gh-pat-token');
+  const eyeIcon = document.getElementById('gh-eye-icon');
+  if (!tokenEl) return;
+  if (tokenEl.type === 'password') {
+    tokenEl.type = 'text';
+    if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    tokenEl.type = 'password';
+    if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye');
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function setPublishStatus(message, type = 'info', extraHtml = '') {
+  const statusEl = document.getElementById('gh-publish-status');
+  if (!statusEl) return;
+  statusEl.classList.remove('hidden');
+
+  const colorMap = {
+    info: 'text-blue-500 border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/30',
+    success: 'text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/30',
+    error: 'text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/30',
+    slate: 'text-slate-500 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900'
+  };
+
+  statusEl.className = `p-3 rounded-xl border text-xs leading-relaxed ${colorMap[type] || colorMap.info}`;
+  statusEl.innerHTML = `<div>${message}</div>${extraHtml}`;
+}
+
+// Check GitHub repo & PAT validity
+async function testGitHubAccess() {
+  saveGitHubConfig();
+  const { token, repo } = getGitHubConfig();
+
+  if (!token) {
+    setPublishStatus('⚠️ Please enter a GitHub Personal Access Token (PAT).', 'error');
+    return;
+  }
+
+  setPublishStatus('🔄 Connecting to GitHub API...', 'info');
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('Invalid or expired Personal Access Token.');
+      if (res.status === 404) throw new Error(`Repository "${repo}" not found or token lacks access.`);
+      throw new Error(`GitHub API Error: HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const canPush = data.permissions && (data.permissions.push || data.permissions.admin);
+    const writeStatus = canPush 
+      ? '<span class="text-emerald-500 font-bold">Write / Push: Authorized</span>' 
+      : '<span class="text-amber-500 font-bold">Read-Only (Ensure token has Contents: Read and Write permission)</span>';
+
+    setPublishStatus(
+      `✓ Authenticated as repository collaborator!<br><b>Repo:</b> ${data.full_name} (${data.private ? 'Private' : 'Public'})<br><b>Permissions:</b> ${writeStatus}`,
+      canPush ? 'success' : 'info'
+    );
+  } catch (err) {
+    setPublishStatus(`✕ Access test failed: ${err.message}`, 'error');
+  }
+}
+
+// Direct Overwrite / Upload of updates.json
+async function pushDirectUpdatesJsonToGitHub() {
+  saveGitHubConfig();
+  const { token, repo, branch, path } = getGitHubConfig();
+
+  if (!token) {
+    setPublishStatus('⚠️ Please input your GitHub Personal Access Token first.', 'error');
+    return;
+  }
+
+  const payload = generateProductionJson();
+  const jsonString = JSON.stringify(payload, null, 2);
+  const commitMsgInput = document.getElementById('gh-commit-msg');
+  const commitMessage = (commitMsgInput && commitMsgInput.value.trim()) || `OTA Curriculum Sync (${new Date().toLocaleString()}) via TagSci Content Studio`;
+
+  setPublishStatus('🔄 Fetching current file SHA from GitHub...', 'info');
+
+  try {
+    // 1. Get current file SHA if exists
+    let existingSha = null;
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (getRes.ok) {
+      const getData = await getRes.json();
+      existingSha = getData.sha;
+    }
+
+    // 2. Commit and upload to GitHub
+    setPublishStatus('🚀 Uploading and committing to GitHub...', 'info');
+    const putBody = {
+      message: commitMessage,
+      content: utf8ToBase64(jsonString),
+      branch: branch
+    };
+    if (existingSha) {
+      putBody.sha = existingSha;
+    }
+
+    const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP ${putRes.status}`);
+    }
+
+    const result = await putRes.json();
+    const commitUrl = result.commit ? result.commit.html_url : `https://github.com/${repo}/commits/${branch}`;
+
+    setPublishStatus(
+      `🎉 <b>Successfully published updates.json directly to GitHub!</b><br>
+       <b>File:</b> <code>${path}</code> on <code>${branch}</code><br>
+       <b>Commit:</b> <a href="${commitUrl}" target="_blank" class="underline text-tagsci-600 dark:text-tagsci-400 font-bold">${result.commit ? result.commit.sha.substring(0, 7) : 'View on GitHub'}</a><br>
+       <span class="text-[10.5px] opacity-80 mt-1 block">GitHub Pages is building the OTA update. Students will receive it on their next sync!</span>`,
+      'success'
+    );
+
+    if (window.showToast) window.showToast('Published updates.json to GitHub!');
+  } catch (err) {
+    setPublishStatus(`✕ Direct Push Failed: ${err.message}`, 'error');
+  }
+}
+
+// Smart Append: Reads remote updates.json from GitHub, merges studio data, and commits back
+async function appendAndPushToGitHub() {
+  saveGitHubConfig();
+  const { token, repo, branch, path } = getGitHubConfig();
+
+  if (!token) {
+    setPublishStatus('⚠️ Please input your GitHub Personal Access Token first.', 'error');
+    return;
+  }
+
+  setPublishStatus('🔄 Fetching remote updates.json from GitHub...', 'info');
+
+  try {
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    let remoteJson = {
+      version: "1.4.0",
+      calendarEvents: [],
+      stemReviewers: [],
+      studyMaterials: [],
+      problemSets: [],
+      quizSets: []
+    };
+    let fileSha = null;
+
+    if (getRes.ok) {
+      const getData = await getRes.json();
+      fileSha = getData.sha;
+      const decodedContent = base64ToUtf8(getData.content.replace(/\s/g, ''));
+      remoteJson = JSON.parse(decodedContent);
+    }
+
+    // Merge stemReviewers (match by id)
+    STUDIO_DATA.stemReviewers.forEach(localRev => {
+      const existingIdx = (remoteJson.stemReviewers || []).findIndex(r => r.id === localRev.id);
+      if (existingIdx >= 0) {
+        remoteJson.stemReviewers[existingIdx] = localRev;
+      } else {
+        if (!remoteJson.stemReviewers) remoteJson.stemReviewers = [];
+        remoteJson.stemReviewers.push(localRev);
+      }
+    });
+
+    // Merge quizSets (match by id)
+    STUDIO_DATA.quizSets.forEach(localQuiz => {
+      const existingIdx = (remoteJson.quizSets || []).findIndex(q => q.id === localQuiz.id);
+      if (existingIdx >= 0) {
+        remoteJson.quizSets[existingIdx] = localQuiz;
+      } else {
+        if (!remoteJson.quizSets) remoteJson.quizSets = [];
+        remoteJson.quizSets.push(localQuiz);
+      }
+    });
+
+    // Merge calendarEvents (match by id)
+    STUDIO_DATA.calendarEvents.forEach(localEvent => {
+      const existingIdx = (remoteJson.calendarEvents || []).findIndex(e => e.id === localEvent.id);
+      if (existingIdx >= 0) {
+        remoteJson.calendarEvents[existingIdx] = localEvent;
+      } else {
+        if (!remoteJson.calendarEvents) remoteJson.calendarEvents = [];
+        remoteJson.calendarEvents.push(localEvent);
+      }
+    });
+
+    // Update metadata
+    remoteJson.updatedAt = new Date().toISOString();
+    remoteJson.announcement = `Merged updates: ${remoteJson.stemReviewers.length} Reviewers, ${remoteJson.calendarEvents.length} Deadlines, ${remoteJson.quizSets.length} Quizzes.`;
+
+    // Commit back
+    const jsonString = JSON.stringify(remoteJson, null, 2);
+    const commitMessage = `OTA Append: Merged materials into ${path} via TagSci Content Studio`;
+
+    setPublishStatus('🚀 Merging and committing to GitHub...', 'info');
+
+    const putBody = {
+      message: commitMessage,
+      content: utf8ToBase64(jsonString),
+      branch: branch
+    };
+    if (fileSha) putBody.sha = fileSha;
+
+    const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP ${putRes.status}`);
+    }
+
+    const result = await putRes.json();
+    const commitUrl = result.commit ? result.commit.html_url : `https://github.com/${repo}/commits/${branch}`;
+
+    setPublishStatus(
+      `🎉 <b>Appended and merged successfully!</b><br>
+       Total Reviewers: ${remoteJson.stemReviewers.length} | Quiz Banks: ${remoteJson.quizSets.length}<br>
+       <b>Commit:</b> <a href="${commitUrl}" target="_blank" class="underline text-tagsci-600 dark:text-tagsci-400 font-bold">${result.commit ? result.commit.sha.substring(0, 7) : 'View on GitHub'}</a>`,
+      'success'
+    );
+
+    if (window.showToast) window.showToast('Appended and synced to GitHub!');
+  } catch (err) {
+    setPublishStatus(`✕ Append Failed: ${err.message}`, 'error');
   }
 }
 
@@ -2718,6 +3129,14 @@ window.nextTesterQ = nextTesterQ;
 window.prevTesterQ = prevTesterQ;
 
 window.deleteCalendarEvent = deleteCalendarEvent;
+
+// GitHub Direct Publisher Bindings
+window.testGitHubAccess = testGitHubAccess;
+window.pushDirectUpdatesJsonToGitHub = pushDirectUpdatesJsonToGitHub;
+window.appendAndPushToGitHub = appendAndPushToGitHub;
+window.saveGitHubConfig = saveGitHubConfig;
+window.clearGitHubConfig = clearGitHubConfig;
+window.toggleTokenVisibility = toggleTokenVisibility;
 
 // Tab Routing Controller
 function switchTab(tabId) {
@@ -2958,9 +3377,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Markdown Export & Hub Download Listeners
   document.getElementById('btn-download-md-rev')?.addEventListener('click', exportReviewerMarkdown);
   document.getElementById('btn-download-md-quiz')?.addEventListener('click', exportQuizSetMarkdown);
-  document.getElementById('btn-export-json-hub')?.addEventListener('click', exportUpdatesJson);
-  document.getElementById('btn-copy-json-hub')?.addEventListener('click', copyUpdatesJson);
+  document.getElementById('btn-hub-download-json')?.addEventListener('click', exportUpdatesJson);
+  document.getElementById('btn-hub-copy-json')?.addEventListener('click', copyUpdatesJson);
   document.getElementById('btn-test-ota-hub')?.addEventListener('click', pingOtaEndpoint);
+
+  // GitHub Direct Publisher Event Listeners
+  document.getElementById('btn-gh-test-auth')?.addEventListener('click', testGitHubAccess);
+  document.getElementById('btn-gh-push-direct')?.addEventListener('click', pushDirectUpdatesJsonToGitHub);
+  document.getElementById('btn-gh-append-push')?.addEventListener('click', appendAndPushToGitHub);
+  document.getElementById('btn-gh-clear-token')?.addEventListener('click', clearGitHubConfig);
+  document.getElementById('btn-gh-toggle-token')?.addEventListener('click', toggleTokenVisibility);
 
   document.getElementById('file-import-input')?.addEventListener('change', (e) => {
     handleImportJsonFile(e, () => {

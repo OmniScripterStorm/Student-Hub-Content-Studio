@@ -8,7 +8,22 @@ import { openMathBuilderModal, openMathBuilderForBlock, closeMathBuilderModal, s
 import { compileBlocksToMarkdown, parseMarkdownIntoBlocks, renderReviewersList, loadReviewerToEditor, renderBlockCanvas, syncBlocksToPreview, updateBlockField, moveBlock, duplicateBlock, deleteBlock, addBulletItem, updateBulletItem, removeBulletItem, addContentBlock, loadLessonTemplate, applyTextFormatting } from './components/reviewer_studio.js';
 import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, nextTesterQ, prevTesterQ, resetLiveTester } from './components/quiz_studio.js';
 import { renderCalendarEvents, deleteCalendarEvent, handleAddCalendarEvent } from './components/calendar_studio.js';
-import { generateProductionJson, renderJsonHub, exportUpdatesJson, copyUpdatesJson, exportReviewerMarkdown, exportQuizSetMarkdown, handleImportJsonFile, pingOtaEndpoint } from './components/json_hub.js';
+import { 
+  generateProductionJson, 
+  renderJsonHub, 
+  exportUpdatesJson, 
+  copyUpdatesJson, 
+  exportReviewerMarkdown, 
+  exportQuizSetMarkdown, 
+  handleImportJsonFile, 
+  pingOtaEndpoint,
+  testGitHubAccess,
+  pushDirectUpdatesJsonToGitHub,
+  appendAndPushToGitHub,
+  saveGitHubConfig,
+  clearGitHubConfig,
+  toggleTokenVisibility
+} from './components/json_hub.js';
 
 // Global Toast Utility
 window.showToast = function(message) {
@@ -89,6 +104,14 @@ window.nextTesterQ = nextTesterQ;
 window.prevTesterQ = prevTesterQ;
 
 window.deleteCalendarEvent = deleteCalendarEvent;
+
+// GitHub Direct Publisher Bindings
+window.testGitHubAccess = testGitHubAccess;
+window.pushDirectUpdatesJsonToGitHub = pushDirectUpdatesJsonToGitHub;
+window.appendAndPushToGitHub = appendAndPushToGitHub;
+window.saveGitHubConfig = saveGitHubConfig;
+window.clearGitHubConfig = clearGitHubConfig;
+window.toggleTokenVisibility = toggleTokenVisibility;
 
 // Tab Routing Controller
 export function switchTab(tabId) {
@@ -329,9 +352,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Markdown Export & Hub Download Listeners
   document.getElementById('btn-download-md-rev')?.addEventListener('click', exportReviewerMarkdown);
   document.getElementById('btn-download-md-quiz')?.addEventListener('click', exportQuizSetMarkdown);
-  document.getElementById('btn-export-json-hub')?.addEventListener('click', exportUpdatesJson);
-  document.getElementById('btn-copy-json-hub')?.addEventListener('click', copyUpdatesJson);
+  document.getElementById('btn-hub-download-json')?.addEventListener('click', exportUpdatesJson);
+  document.getElementById('btn-hub-copy-json')?.addEventListener('click', copyUpdatesJson);
   document.getElementById('btn-test-ota-hub')?.addEventListener('click', pingOtaEndpoint);
+
+  // GitHub Direct Publisher Event Listeners
+  document.getElementById('btn-gh-test-auth')?.addEventListener('click', testGitHubAccess);
+  document.getElementById('btn-gh-push-direct')?.addEventListener('click', pushDirectUpdatesJsonToGitHub);
+  document.getElementById('btn-gh-append-push')?.addEventListener('click', appendAndPushToGitHub);
+  document.getElementById('btn-gh-clear-token')?.addEventListener('click', clearGitHubConfig);
+  document.getElementById('btn-gh-toggle-token')?.addEventListener('click', toggleTokenVisibility);
 
   document.getElementById('file-import-input')?.addEventListener('change', (e) => {
     handleImportJsonFile(e, () => {
