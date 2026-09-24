@@ -26,6 +26,7 @@ def build_content_studio():
     reviewer_studio_js = clean_module(os.path.join(src_dir, 'components', 'reviewer_studio.js'))
     quiz_studio_js = clean_module(os.path.join(src_dir, 'components', 'quiz_studio.js'))
     calendar_studio_js = clean_module(os.path.join(src_dir, 'components', 'calendar_studio.js'))
+    hub_dashboard_js = clean_module(os.path.join(src_dir, 'components', 'hub_dashboard.js'))
     json_hub_js = clean_module(os.path.join(src_dir, 'components', 'json_hub.js'))
     app_js = clean_module(os.path.join(src_dir, 'app.js'))
 
@@ -44,6 +45,8 @@ def build_content_studio():
     {quiz_studio_js}
 
     {calendar_studio_js}
+
+    {hub_dashboard_js}
 
     {json_hub_js}
 

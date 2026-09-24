@@ -1,5 +1,5 @@
 /* =========================================================
-   TagSci Content Studio - Main Application Bootstrap
+   TagSci Content Studio - Main Application Bootstrap (Concept 1: Document Hub)
    ========================================================= */
 
 import { STUDIO_DATA, currentRevIndex, currentQuizSetIndex, currentEditorMode, setCurrentRevIndex, setCurrentQuizSetIndex, setCurrentEditorMode, getSubjectClassification } from './data/studio_data.js';
@@ -8,6 +8,7 @@ import { openMathBuilderModal, openMathBuilderForBlock, closeMathBuilderModal, s
 import { compileBlocksToMarkdown, parseMarkdownIntoBlocks, renderReviewersList, loadReviewerToEditor, renderBlockCanvas, syncBlocksToPreview, updateBlockField, moveBlock, duplicateBlock, deleteBlock, addBulletItem, updateBulletItem, removeBulletItem, addContentBlock, loadLessonTemplate, applyTextFormatting } from './components/reviewer_studio.js';
 import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, nextTesterQ, prevTesterQ, resetLiveTester } from './components/quiz_studio.js';
 import { renderCalendarEvents, deleteCalendarEvent, handleAddCalendarEvent } from './components/calendar_studio.js';
+import { renderHubDashboard, renderHubStats, renderSubjectPortals, renderHubVault, setVaultFilter, setVaultSearchQuery } from './components/hub_dashboard.js';
 import { 
   generateProductionJson, 
   renderJsonHub, 
@@ -50,6 +51,7 @@ window.updateMathStudioPreview = updateMathStudioPreview;
 window.confirmMathInsert = (mode) => confirmMathInsert(mode, () => {
   renderBlockCanvas();
   syncBlocksToPreview();
+  renderHubDashboard();
 });
 
 window.updateBlockField = updateBlockField;
@@ -103,7 +105,10 @@ window.revealTesterFlashcard = revealTesterFlashcard;
 window.nextTesterQ = nextTesterQ;
 window.prevTesterQ = prevTesterQ;
 
-window.deleteCalendarEvent = deleteCalendarEvent;
+window.deleteCalendarEvent = (id) => {
+  deleteCalendarEvent(id);
+  renderHubDashboard();
+};
 
 // GitHub Direct Publisher Bindings
 window.testGitHubAccess = testGitHubAccess;
@@ -113,18 +118,182 @@ window.saveGitHubConfig = saveGitHubConfig;
 window.clearGitHubConfig = clearGitHubConfig;
 window.toggleTokenVisibility = toggleTokenVisibility;
 
-// Tab Routing Controller
-export function switchTab(tabId) {
-  document.querySelectorAll('.studio-tab-btn').forEach(btn => {
-    if (btn.dataset.tab === tabId) {
-      btn.classList.add('active', 'bg-tagsci-50', 'dark:bg-tagsci-950/80', 'text-tagsci-800', 'dark:text-tagsci-300', 'border', 'border-tagsci-200', 'dark:border-tagsci-800', 'shadow-sm');
+// Hub & Document Portal Bindings
+window.setVaultFilter = (filter) => {
+  document.querySelectorAll('.vault-filter-btn').forEach(btn => {
+    if (btn.dataset.filter === filter) {
+      btn.classList.add('bg-tagsci-50', 'dark:bg-tagsci-950', 'text-tagsci-800', 'dark:text-tagsci-300', 'border-tagsci-200', 'dark:border-tagsci-800', 'font-bold');
       btn.classList.remove('text-slate-600', 'dark:text-slate-400');
     } else {
-      btn.classList.remove('active', 'bg-tagsci-50', 'dark:bg-tagsci-950/80', 'text-tagsci-800', 'dark:text-tagsci-300', 'border', 'border-tagsci-200', 'dark:border-tagsci-800', 'shadow-sm');
+      btn.classList.remove('bg-tagsci-50', 'dark:bg-tagsci-950', 'text-tagsci-800', 'dark:text-tagsci-300', 'border-tagsci-200', 'dark:border-tagsci-800', 'font-bold');
+      btn.classList.add('text-slate-600', 'dark:text-slate-400');
+    }
+  });
+  setVaultFilter(filter);
+};
+
+window.setVaultSearchQuery = setVaultSearchQuery;
+
+window.openVaultItem = function(type, index) {
+  if (type === 'reviewer') {
+    setCurrentRevIndex(index);
+    loadReviewerToEditor();
+    renderReviewersList();
+    switchTab('reviewers');
+  } else if (type === 'quiz') {
+    setCurrentQuizSetIndex(index);
+    loadQuizSetToEditor();
+    renderQuizSetsList();
+    switchTab('quizzes');
+  } else if (type === 'calendar') {
+    switchTab('calendar');
+  }
+};
+
+window.openSubjectEditor = function(subjectName) {
+  // Find matching reviewer or create one
+  const revIdx = STUDIO_DATA.stemReviewers.findIndex(r => (r.subject || '').toLowerCase() === subjectName.toLowerCase());
+  if (revIdx !== -1) {
+    setCurrentRevIndex(revIdx);
+    loadReviewerToEditor();
+    renderReviewersList();
+    switchTab('reviewers');
+    return;
+  }
+
+  // Else find matching quiz
+  const qIdx = STUDIO_DATA.quizSets.findIndex(q => (q.subject || '').toLowerCase() === subjectName.toLowerCase());
+  if (qIdx !== -1) {
+    setCurrentQuizSetIndex(qIdx);
+    loadQuizSetToEditor();
+    renderQuizSetsList();
+    switchTab('quizzes');
+    return;
+  }
+
+  // Else create new reviewer under that subject
+  const meta = getSubjectClassification(subjectName);
+  const newRev = {
+    id: `rev_${Date.now()}`,
+    subject: subjectName,
+    tag: meta.type || 'Main',
+    color: meta.color || 'border-l-4 border-tagsci-600',
+    title: `${subjectName} Study Module`,
+    summary: `Curated learning notes and formulas for ${subjectName}`,
+    blocks: [
+      { type: 'heading', level: 'h3', text: '1. Topic Introduction' },
+      { type: 'paragraph', text: `Enter core concepts, formulas, and examples for ${subjectName}.` }
+    ],
+    rawMarkdown: "",
+    content: ""
+  };
+  STUDIO_DATA.stemReviewers.unshift(newRev);
+  setCurrentRevIndex(0);
+  renderReviewersList();
+  loadReviewerToEditor();
+  renderHubDashboard();
+  switchTab('reviewers');
+};
+
+window.createQuickReviewer = function() {
+  const newRev = {
+    id: `reviewer_${Date.now()}`,
+    subject: "General Math",
+    tag: "Main",
+    color: "border-l-4 border-tagsci-600",
+    title: "New Reviewer Draft",
+    summary: "Enter short summary...",
+    blocks: [
+      { type: 'heading', level: 'h3', text: '1. Topic Introduction' },
+      { type: 'paragraph', text: 'Start typing concepts or insert a template from the toolbar.' }
+    ],
+    rawMarkdown: "",
+    content: ""
+  };
+  STUDIO_DATA.stemReviewers.unshift(newRev);
+  setCurrentRevIndex(0);
+  renderReviewersList();
+  loadReviewerToEditor();
+  renderHubDashboard();
+  switchTab('reviewers');
+  window.showToast('New reviewer draft opened!');
+};
+
+window.createQuickQuizSet = function() {
+  const newSet = {
+    id: `quiz_${Date.now()}`,
+    subject: 'General Math',
+    tag: 'Main',
+    title: 'New Quiz Bank Draft',
+    desc: 'Interactive examination & drill questions',
+    timeLimitMinutes: 15,
+    questions: [
+      {
+        type: 'mcq',
+        question: 'Sample Question: What is the primary characteristic of this concept?',
+        options: ['Option A', 'Option B', 'Option C', 'Option D'],
+        correct: 0,
+        explanation: 'Explanation of why Option A is correct.'
+      }
+    ]
+  };
+  STUDIO_DATA.quizSets.unshift(newSet);
+  setCurrentQuizSetIndex(0);
+  renderQuizSetsList();
+  loadQuizSetToEditor();
+  renderHubDashboard();
+  switchTab('quizzes');
+  window.showToast('New quiz bank created!');
+};
+
+// Breadcrumbs Controller
+export function updateBreadcrumbs(tabId) {
+  const sep = document.getElementById('breadcrumb-separator');
+  const curr = document.getElementById('breadcrumb-current');
+  const backBtn = document.getElementById('btn-back-to-hub');
+  
+  if (!curr) return;
+
+  if (tabId === 'hub') {
+    curr.innerText = 'Overview & Hub Dashboard';
+    if (backBtn) backBtn.classList.add('hidden');
+    if (sep) sep.classList.remove('hidden');
+  } else if (tabId === 'reviewers') {
+    const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+    curr.innerText = rev ? `${rev.subject || 'Reviewer'} / ${rev.title || 'Untitled Draft'}` : 'Reviewers Studio';
+    if (backBtn) backBtn.classList.remove('hidden');
+    if (sep) sep.classList.remove('hidden');
+  } else if (tabId === 'quizzes') {
+    const qSet = STUDIO_DATA.quizSets[currentQuizSetIndex];
+    curr.innerText = qSet ? `${qSet.subject || 'Quiz Bank'} / ${qSet.title || 'Untitled Set'}` : 'Quiz & Exam Banks';
+    if (backBtn) backBtn.classList.remove('hidden');
+    if (sep) sep.classList.remove('hidden');
+  } else if (tabId === 'calendar') {
+    curr.innerText = 'Academic Calendar & Deadlines';
+    if (backBtn) backBtn.classList.remove('hidden');
+  } else if (tabId === 'json-hub') {
+    curr.innerText = 'JSON & Over-The-Air GitHub Sync';
+    if (backBtn) backBtn.classList.remove('hidden');
+  } else if (tabId === 'guide') {
+    curr.innerText = 'Curriculum Taxonomy & Guidelines';
+    if (backBtn) backBtn.classList.remove('hidden');
+  }
+}
+
+// Tab & View Routing Controller
+export function switchTab(tabId) {
+  // Update sidebar active button styles
+  document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
+    if (btn.dataset.tab === tabId) {
+      btn.classList.add('bg-tagsci-50', 'dark:bg-tagsci-950/80', 'text-tagsci-800', 'dark:text-tagsci-300', 'font-bold', 'border', 'border-tagsci-200', 'dark:border-tagsci-800/80');
+      btn.classList.remove('text-slate-600', 'dark:text-slate-400');
+    } else {
+      btn.classList.remove('bg-tagsci-50', 'dark:bg-tagsci-950/80', 'text-tagsci-800', 'dark:text-tagsci-300', 'font-bold', 'border', 'border-tagsci-200', 'dark:border-tagsci-800/80');
       btn.classList.add('text-slate-600', 'dark:text-slate-400');
     }
   });
 
+  // Switch visible main viewport section
   document.querySelectorAll('.studio-view').forEach(view => {
     if (view.id === `view-${tabId}`) {
       view.classList.remove('hidden');
@@ -133,10 +302,17 @@ export function switchTab(tabId) {
     }
   });
 
-  if (tabId === 'json-hub') {
+  updateBreadcrumbs(tabId);
+
+  if (tabId === 'hub') {
+    renderHubDashboard();
+  } else if (tabId === 'json-hub') {
     renderJsonHub();
   }
+
+  if (window.lucide) window.lucide.createIcons();
 }
+window.switchTab = switchTab;
 
 // Bootstrap Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -184,14 +360,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCopy = document.getElementById('btn-copy-json');
   if (btnCopy) btnCopy.addEventListener('click', copyUpdatesJson);
 
-  // Tabs routing
-  const tabsContainer = document.getElementById('studio-tabs');
-  if (tabsContainer) {
-    tabsContainer.addEventListener('click', (e) => {
-      const btn = e.target.closest('.studio-tab-btn');
-      if (btn) switchTab(btn.dataset.tab);
+  // Vault search in Hub
+  const vaultSearch = document.getElementById('hub-vault-search');
+  if (vaultSearch) {
+    vaultSearch.addEventListener('input', (e) => {
+      setVaultSearchQuery(e.target.value);
     });
   }
+
+  // Sidebar navigation listeners
+  document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab) switchTab(btn.dataset.tab);
+    });
+  });
 
   // Reviewer Editor Mode Switches (Visual vs Source)
   const btnVisual = document.getElementById('btn-mode-visual');
@@ -230,8 +412,17 @@ document.addEventListener('DOMContentLoaded', () => {
     syncBlocksToPreview();
   });
 
-  document.getElementById('rev-input-title')?.addEventListener('input', syncBlocksToPreview);
-  document.getElementById('rev-input-summary')?.addEventListener('input', syncBlocksToPreview);
+  document.getElementById('rev-input-title')?.addEventListener('input', () => {
+    syncBlocksToPreview();
+    updateBreadcrumbs('reviewers');
+    renderHubDashboard();
+  });
+
+  document.getElementById('rev-input-summary')?.addEventListener('input', () => {
+    syncBlocksToPreview();
+    renderHubDashboard();
+  });
+
   document.getElementById('rev-input-subject')?.addEventListener('change', () => {
     const subj = document.getElementById('rev-input-subject').value;
     const meta = getSubjectClassification(subj);
@@ -242,30 +433,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     syncBlocksToPreview();
     renderReviewersList();
+    updateBreadcrumbs('reviewers');
+    renderHubDashboard();
   });
+
   document.getElementById('rev-input-tag')?.addEventListener('change', syncBlocksToPreview);
   document.getElementById('rev-search')?.addEventListener('input', renderReviewersList);
 
   document.getElementById('btn-add-reviewer')?.addEventListener('click', () => {
-    const newRev = {
-      id: `reviewer_${Date.now()}`,
-      subject: "Physics",
-      tag: "Elective",
-      color: "border-l-4 border-tagsci-600",
-      title: "New Reviewer Draft",
-      summary: "Enter short summary...",
-      blocks: [
-        { type: 'heading', level: 'h3', text: 'Topic Introduction' },
-        { type: 'paragraph', text: 'Start typing concepts or insert a template from the toolbar.' }
-      ],
-      rawMarkdown: "",
-      content: ""
-    };
-    STUDIO_DATA.stemReviewers.unshift(newRev);
-    setCurrentRevIndex(0);
-    renderReviewersList();
-    loadReviewerToEditor();
-    window.showToast('New reviewer draft created!');
+    createQuickReviewer();
   });
 
   document.getElementById('btn-delete-rev')?.addEventListener('click', () => {
@@ -277,17 +453,23 @@ document.addEventListener('DOMContentLoaded', () => {
     setCurrentRevIndex(0);
     renderReviewersList();
     loadReviewerToEditor();
+    renderHubDashboard();
     window.showToast('Reviewer draft removed.');
   });
 
   // Quiz Sets Listeners
-  document.getElementById('btn-add-question')?.addEventListener('click', () => addQuestionBlock('mcq'));
+  document.getElementById('btn-add-question')?.addEventListener('click', () => {
+    addQuestionBlock('mcq');
+    renderHubDashboard();
+  });
   document.getElementById('btn-reset-quiz-preview')?.addEventListener('click', resetLiveTester);
 
   document.getElementById('quiz-input-title')?.addEventListener('input', (e) => {
     if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
     STUDIO_DATA.quizSets[currentQuizSetIndex].title = e.target.value;
     renderQuizSetsList();
+    updateBreadcrumbs('quizzes');
+    renderHubDashboard();
   });
 
   document.getElementById('quiz-input-subject')?.addEventListener('change', (e) => {
@@ -296,6 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const classification = getSubjectClassification(e.target.value);
     STUDIO_DATA.quizSets[currentQuizSetIndex].tag = classification.type;
     renderQuizSetsList();
+    updateBreadcrumbs('quizzes');
+    renderHubDashboard();
   });
 
   document.getElementById('quiz-input-timelimit')?.addEventListener('input', (e) => {
@@ -304,20 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-add-quiz-set')?.addEventListener('click', () => {
-    const newSet = {
-      id: `quiz_${Date.now()}`,
-      subject: 'Effective Communications',
-      tag: 'Main',
-      title: '',
-      desc: '',
-      timeLimitMinutes: 15,
-      questions: []
-    };
-    STUDIO_DATA.quizSets.push(newSet);
-    setCurrentQuizSetIndex(STUDIO_DATA.quizSets.length - 1);
-    renderQuizSetsList();
-    loadQuizSetToEditor();
-    window.showToast('New quiz set created!');
+    createQuickQuizSet();
   });
 
   document.getElementById('btn-delete-quiz-set')?.addEventListener('click', () => {
@@ -334,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setCurrentQuizSetIndex(0);
       renderQuizSetsList();
       loadQuizSetToEditor();
+      renderHubDashboard();
       window.showToast('Quiz set reset.');
       return;
     }
@@ -343,11 +515,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     renderQuizSetsList();
     loadQuizSetToEditor();
+    renderHubDashboard();
     window.showToast('Quiz set deleted.');
   });
 
   // Calendar Listeners
-  document.getElementById('calendar-event-form')?.addEventListener('submit', handleAddCalendarEvent);
+  document.getElementById('calendar-event-form')?.addEventListener('submit', (e) => {
+    handleAddCalendarEvent(e);
+    renderHubDashboard();
+  });
 
   // Markdown Export & Hub Download Listeners
   document.getElementById('btn-download-md-rev')?.addEventListener('click', exportReviewerMarkdown);
@@ -372,6 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderQuizSetsList();
       loadQuizSetToEditor();
       renderCalendarEvents();
+      renderHubDashboard();
+      window.showToast('Successfully imported curriculum dataset!');
     });
   });
 
@@ -379,6 +557,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const themeBtn = document.getElementById('btn-theme-toggle');
   if (themeBtn) {
     themeBtn.addEventListener('click', () => {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+    });
+  }
+
+  const themeBtnSidebar = document.getElementById('theme-btn-sidebar');
+  if (themeBtnSidebar) {
+    themeBtnSidebar.addEventListener('click', () => {
       if (document.documentElement.classList.contains('dark')) {
         document.documentElement.classList.remove('dark');
         localStorage.theme = 'light';
@@ -401,5 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderQuizSetsList();
   loadQuizSetToEditor();
   renderCalendarEvents();
+  renderHubDashboard();
+  switchTab('hub'); // Start in Hub Dashboard by default
   if (window.lucide) window.lucide.createIcons();
 });
