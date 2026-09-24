@@ -3,7 +3,7 @@
    ========================================================= */
 
 import { STUDIO_DATA, currentRevIndex, setCurrentRevIndex, getSubjectClassification } from '../data/studio_data.js';
-import { renderMathInHtml, parseMarkdownToHtml } from './math_engine.js';
+import { renderMathInHtml, parseMarkdownToHtml, renderBlocksToHtml, renderCartesianPlaneSvg, renderTableToHtml } from './math_engine.js';
 import { getLastFocusedInput, setLastFocusedInput } from './equation_modal.js';
 
 export function compileBlocksToMarkdown(blocks) {
@@ -24,6 +24,17 @@ export function compileBlocksToMarkdown(blocks) {
         b.items.forEach(it => { md += `- ${it}\n`; });
         md += '\n';
       }
+    } else if (b.type === 'table') {
+      if (b.title) md += `**${b.title}**\n\n`;
+      const headers = b.headers && b.headers.length > 0 ? b.headers : ['Col 1', 'Col 2'];
+      md += `| ${headers.join(' | ')} |\n`;
+      md += `| ${headers.map(() => '---').join(' | ')} |\n`;
+      (b.rows || []).forEach(row => {
+        md += `| ${(row || []).join(' | ')} |\n`;
+      });
+      md += '\n';
+    } else if (b.type === 'cartesian' || b.type === 'plot') {
+      md += `\`\`\`plot\n${JSON.stringify(b, null, 2)}\n\`\`\`\n\n`;
     }
   });
   return md.trim();
@@ -34,9 +45,71 @@ export function parseMarkdownIntoBlocks(md) {
   const lines = md.split('\n');
   const blocks = [];
   let currentBulletBlock = null;
+  let inPlotBlock = false;
+  let plotJsonAccumulator = '';
+  let inTable = false;
+  let tableHeaders = [];
+  let tableRows = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+
+    // Plot codeblock detection
+    if (line.startsWith('```plot')) {
+      if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
+      inPlotBlock = true;
+      plotJsonAccumulator = '';
+      continue;
+    }
+    if (inPlotBlock) {
+      if (line.startsWith('```')) {
+        inPlotBlock = false;
+        try {
+          const plotObj = JSON.parse(plotJsonAccumulator);
+          blocks.push(plotObj);
+        } catch (e) {
+          blocks.push({
+            type: 'cartesian',
+            title: 'Cartesian Plot',
+            xMin: -10, xMax: 10, yMin: -10, yMax: 10, gridStep: 1,
+            pieces: [{ expr: 'x', domainMin: -10, domainMax: 10, minInclusive: true, maxInclusive: true, color: '#10b981', style: 'solid' }]
+          });
+        }
+      } else {
+        plotJsonAccumulator += rawLine + '\n';
+      }
+      continue;
+    }
+
+    // Table detection: line with pipes |
+    if (line.startsWith('|') && line.endsWith('|')) {
+      if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
+      const cells = line.slice(1, -1).split('|').map(c => c.trim());
+      if (cells.every(c => /^:?-+:?$/.test(c))) {
+        // Divider row: skip
+        continue;
+      }
+      if (!inTable) {
+        inTable = true;
+        tableHeaders = cells;
+        tableRows = [];
+      } else {
+        tableRows.push(cells);
+      }
+      continue;
+    } else if (inTable) {
+      blocks.push({
+        type: 'table',
+        title: '',
+        headers: tableHeaders,
+        rows: tableRows
+      });
+      inTable = false;
+      tableHeaders = [];
+      tableRows = [];
+    }
+
     if (!line) {
       if (currentBulletBlock) {
         blocks.push(currentBulletBlock);
@@ -51,7 +124,7 @@ export function parseMarkdownIntoBlocks(md) {
       blocks.push({ type: 'heading', level, text: line.replace(/^#+\s*/, '') });
     } else if (line.startsWith('$$') && line.endsWith('$$')) {
       if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
-      blocks.push({ type: 'formula', title: 'Formula', formula: line.replace(/\$\$/g, '').trim(), note: '' });
+      blocks.push({ type: 'formula', title: 'Formula Card', formula: line.replace(/\$\$/g, '').trim(), note: '' });
     } else if (line.startsWith('- ') || line.startsWith('* ')) {
       if (!currentBulletBlock) {
         currentBulletBlock = { type: 'bullets', items: [] };
@@ -62,7 +135,12 @@ export function parseMarkdownIntoBlocks(md) {
       blocks.push({ type: 'paragraph', text: line });
     }
   }
+
   if (currentBulletBlock) blocks.push(currentBulletBlock);
+  if (inTable && tableHeaders.length > 0) {
+    blocks.push({ type: 'table', title: '', headers: tableHeaders, rows: tableRows });
+  }
+
   return blocks;
 }
 
@@ -98,26 +176,28 @@ export function renderReviewersList() {
     }
     const isActive = idx === currentRevIndex;
     const card = document.createElement('div');
-    card.className = `p-3 rounded-xl border cursor-pointer transition-all ${
-      isActive
-        ? 'bg-tagsci-50/80 dark:bg-tagsci-950/70 border-tagsci-500 shadow-sm'
-        : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 hover:border-slate-300'
+    card.className = `p-3 rounded-xl cursor-pointer border transition-all ${
+      isActive 
+        ? 'bg-tagsci-50 dark:bg-tagsci-950/80 border-tagsci-500 text-tagsci-950 dark:text-white shadow-sm' 
+        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
     }`;
-    card.innerHTML = `
-      <div class="flex items-center justify-between mb-1">
-        <span class="text-[10px] font-black uppercase tracking-wider text-tagsci-700 dark:text-tagsci-400">${rev.subject || 'General Math'}</span>
-        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${rev.tag || 'Main'}</span>
-      </div>
-      <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">${rev.title || 'Untitled'}</h4>
-      <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${rev.summary || 'No summary provided...'}</p>
-    `;
     card.onclick = () => {
       setCurrentRevIndex(idx);
-      loadReviewerToEditor();
       renderReviewersList();
+      loadReviewerToEditor();
     };
+
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-tagsci-100 dark:bg-tagsci-900 text-tagsci-800 dark:text-tagsci-300">${rev.subject}</span>
+        <span class="text-[10px] text-slate-400">${rev.tag || 'Main'}</span>
+      </div>
+      <h4 class="font-bold text-xs truncate">${rev.title || 'Untitled Article'}</h4>
+      <p class="text-[11px] text-slate-400 truncate mt-0.5">${rev.summary || 'No summary...'}</p>
+    `;
     container.appendChild(card);
   });
+
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -125,63 +205,64 @@ export function loadReviewerToEditor() {
   const revs = STUDIO_DATA.stemReviewers || [];
   const rev = revs[currentRevIndex];
 
-  const subjEl = document.getElementById('rev-input-subject');
-  const tagEl = document.getElementById('rev-input-tag');
-  const titleEl = document.getElementById('rev-input-title');
-  const sumEl = document.getElementById('rev-input-summary');
-  const bodyInput = document.getElementById('rev-input-body');
+  const emptyState = document.getElementById('reviewer-editor-empty-state');
+  const mainWorkspace = document.getElementById('reviewer-editor-main-workspace');
 
   if (!rev) {
-    if (titleEl) titleEl.value = '';
-    if (sumEl) sumEl.value = '';
-    if (bodyInput) bodyInput.value = '';
-    renderBlockCanvas();
-    syncBlocksToPreview();
+    if (emptyState) emptyState.classList.remove('hidden');
+    if (mainWorkspace) mainWorkspace.classList.add('hidden');
     return;
   }
 
-  if (subjEl) subjEl.value = rev.subject || 'General Math';
-  if (tagEl) tagEl.value = rev.tag || 'Main';
-  if (titleEl) titleEl.value = rev.title || '';
-  if (sumEl) sumEl.value = rev.summary || '';
+  if (emptyState) emptyState.classList.add('hidden');
+  if (mainWorkspace) mainWorkspace.classList.remove('hidden');
+
+  const titleInput = document.getElementById('rev-input-title');
+  const subjectInput = document.getElementById('rev-input-subject');
+  const tagInput = document.getElementById('rev-input-tag');
+  const summaryInput = document.getElementById('rev-input-summary');
+  const bodyInput = document.getElementById('rev-input-body');
+
+  if (titleInput) titleInput.value = rev.title || '';
+  if (subjectInput) subjectInput.value = rev.subject || 'General Math';
+  if (tagInput) tagInput.value = rev.tag || 'Main';
+  if (summaryInput) summaryInput.value = rev.summary || '';
 
   if (!rev.blocks || rev.blocks.length === 0) {
-    rev.blocks = parseMarkdownIntoBlocks(rev.rawMarkdown || '');
+    if (rev.rawMarkdown) {
+      rev.blocks = parseMarkdownIntoBlocks(rev.rawMarkdown);
+    } else {
+      rev.blocks = [
+        { type: 'heading', level: 'h3', text: '1. Topic Introduction' },
+        { type: 'paragraph', text: 'Enter core concepts, formulas, and examples.' }
+      ];
+    }
   }
+
+  const compiled = compileBlocksToMarkdown(rev.blocks);
+  rev.rawMarkdown = compiled;
+  if (bodyInput) bodyInput.value = compiled;
 
   renderBlockCanvas();
   syncBlocksToPreview();
 }
 
 export function renderBlockCanvas() {
-  const revs = STUDIO_DATA.stemReviewers || [];
-  const rev = revs[currentRevIndex];
   const container = document.getElementById('blocks-container');
   if (!container) return;
 
-  if (!rev) {
-    container.innerHTML = `
-      <div class="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2.5">
-        <i data-lucide="file-plus" class="w-8 h-8 mx-auto text-slate-400 opacity-60"></i>
-        <p class="font-bold text-slate-700 dark:text-slate-200">No Reviewer Draft Selected</p>
-        <p class="text-[11px] text-slate-400 max-w-xs mx-auto">Create a new reviewer draft to begin authoring concepts, formulas, and notes.</p>
-        <button onclick="window.createQuickReviewer()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Create New Reviewer
-        </button>
-      </div>
-    `;
-    if (window.lucide) window.lucide.createIcons();
+  const revs = STUDIO_DATA.stemReviewers || [];
+  const rev = revs[currentRevIndex];
+  if (!rev || !rev.blocks) {
+    container.innerHTML = '';
     return;
   }
 
-  if (!rev.blocks) {
-    rev.blocks = parseMarkdownIntoBlocks(rev.rawMarkdown || '');
-  }
-
   container.innerHTML = '';
+
   rev.blocks.forEach((b, bIdx) => {
     const card = document.createElement('div');
-    card.className = 'block-card p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:border-tagsci-400 dark:hover:border-tagsci-700 space-y-2.5';
+    card.className = `p-3.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 transition-all`;
 
     let headerLeft = '';
     let bodyHtml = '';
@@ -252,6 +333,179 @@ export function renderBlockCanvas() {
           `).join('')}
         </div>
       `;
+    } else if (b.type === 'table') {
+      headerLeft = `
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 flex items-center gap-1">
+            <i data-lucide="table" class="w-3 h-3"></i> Structured Table
+          </span>
+          <button onclick="window.addTableCol(${bIdx})" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10.5px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100">
+            + Col
+          </button>
+          <button onclick="window.addTableRow(${bIdx})" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10.5px] font-bold text-tagsci-700 dark:text-tagsci-400 bg-tagsci-50 dark:bg-tagsci-950/60 hover:bg-tagsci-100">
+            + Row
+          </button>
+        </div>
+      `;
+
+      const headers = b.headers || ['Col 1', 'Col 2'];
+      const rows = b.rows || [['', '']];
+
+      bodyHtml = `
+        <div class="space-y-2">
+          <input type="text" value="${b.title || ''}" oninput="window.updateBlockField(${bIdx}, 'title', this.value)" placeholder="Table Title / Comparison (optional)..." class="w-full px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+          
+          <div class="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-lg">
+            <table class="w-full border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
+                  ${headers.map((h, cIdx) => `
+                    <th class="p-1.5 min-w-[120px]">
+                      <div class="flex items-center gap-1">
+                        <input type="text" value="${h}" oninput="window.updateTableHeader(${bIdx}, ${cIdx}, this.value)" placeholder="Header..." class="w-full px-2 py-1 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded">
+                        ${headers.length > 1 ? `<button onclick="window.removeTableCol(${bIdx}, ${cIdx})" title="Delete Column" class="text-slate-400 hover:text-red-500 p-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
+                      </div>
+                    </th>
+                  `).join('')}
+                  <th class="w-8 p-1"></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map((row, rIdx) => `
+                  <tr class="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    ${headers.map((_, cIdx) => `
+                      <td class="p-1.5 min-w-[120px]">
+                        <input type="text" value="${row[cIdx] || ''}" oninput="window.updateTableCell(${bIdx}, ${rIdx}, ${cIdx}, this.value)" placeholder="Cell data..." class="w-full px-2 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded">
+                      </td>
+                    `).join('')}
+                    <td class="p-1 text-center">
+                      ${rows.length > 1 ? `<button onclick="window.removeTableRow(${bIdx}, ${rIdx})" title="Delete Row" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    } else if (b.type === 'cartesian' || b.type === 'plot') {
+      headerLeft = `
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 flex items-center gap-1">
+            <i data-lucide="line-chart" class="w-3 h-3"></i> Cartesian Plane & Piecewise Plot
+          </span>
+          <button onclick="window.addPiecewiseSegment(${bIdx})" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[10.5px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100">
+            + Add Piecewise Branch
+          </button>
+        </div>
+      `;
+
+      const pieces = b.pieces || [];
+
+      bodyHtml = `
+        <div class="space-y-3">
+          <!-- Meta titles -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="text" value="${b.title || ''}" oninput="window.updateBlockField(${bIdx}, 'title', this.value)" placeholder="Plot Title (e.g. Piecewise Function f(x))" class="w-full px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+            <input type="text" value="${b.caption || ''}" oninput="window.updateBlockField(${bIdx}, 'caption', this.value)" placeholder="Caption / Description..." class="w-full px-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+          </div>
+
+          <!-- Coordinate Bounds -->
+          <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+            <span class="text-[10px] font-black uppercase text-slate-400 block mb-1">Axis Window & Grid Bounds:</span>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div>
+                <label class="text-[9.5px] text-slate-400 font-bold block">X Min</label>
+                <input type="number" value="${b.xMin ?? -10}" onchange="window.updateBlockField(${bIdx}, 'xMin', parseFloat(this.value))" class="w-full px-2 py-1 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-bold">
+              </div>
+              <div>
+                <label class="text-[9.5px] text-slate-400 font-bold block">X Max</label>
+                <input type="number" value="${b.xMax ?? 10}" onchange="window.updateBlockField(${bIdx}, 'xMax', parseFloat(this.value))" class="w-full px-2 py-1 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-bold">
+              </div>
+              <div>
+                <label class="text-[9.5px] text-slate-400 font-bold block">Y Min</label>
+                <input type="number" value="${b.yMin ?? -10}" onchange="window.updateBlockField(${bIdx}, 'yMin', parseFloat(this.value))" class="w-full px-2 py-1 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-bold">
+              </div>
+              <div>
+                <label class="text-[9.5px] text-slate-400 font-bold block">Y Max</label>
+                <input type="number" value="${b.yMax ?? 10}" onchange="window.updateBlockField(${bIdx}, 'yMax', parseFloat(this.value))" class="w-full px-2 py-1 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-bold">
+              </div>
+              <div>
+                <label class="text-[9.5px] text-slate-400 font-bold block">Grid Step</label>
+                <input type="number" value="${b.gridStep ?? 1}" min="0.1" step="0.5" onchange="window.updateBlockField(${bIdx}, 'gridStep', parseFloat(this.value))" class="w-full px-2 py-1 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-bold">
+              </div>
+            </div>
+          </div>
+
+          <!-- Piecewise Function Segments -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-black uppercase text-slate-500 tracking-wider">Piecewise Function Branches (${pieces.length}):</span>
+              <div class="flex items-center gap-1 text-[10px]">
+                <button onclick="window.loadPlotPreset(${bIdx}, 'piecewise_standard')" class="text-tagsci-700 dark:text-tagsci-400 hover:underline font-bold">Preset: Split Line & Parabola</button>
+                <span class="text-slate-300">&bull;</span>
+                <button onclick="window.loadPlotPreset(${bIdx}, 'step_function')" class="text-tagsci-700 dark:text-tagsci-400 hover:underline font-bold">Preset: Step Function</button>
+              </div>
+            </div>
+
+            ${pieces.map((piece, pIdx) => `
+              <div class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/40 space-y-2 text-xs">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 flex-1">
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${piece.color || '#10b981'}"></span>
+                    <span class="font-black text-[11px] text-slate-700 dark:text-slate-300">Branch ${pIdx + 1}: f(x) =</span>
+                    <input type="text" value="${piece.expr || ''}" oninput="window.updatePiecewiseSegment(${bIdx}, ${pIdx}, 'expr', this.value)" placeholder="e.g. 2*x + 1, x^2 - 4, 3" class="flex-1 px-2.5 py-1 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded">
+                  </div>
+                  <button onclick="window.removePiecewiseSegment(${bIdx}, ${pIdx})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1 border-t border-slate-200 dark:border-slate-700 text-[11px]">
+                  <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase">Domain Start (x ≥ / >)</label>
+                    <div class="flex items-center gap-1">
+                      <input type="number" value="${piece.domainMin !== undefined && piece.domainMin !== null ? piece.domainMin : (b.xMin ?? -10)}" onchange="window.updatePiecewiseSegment(${bIdx}, ${pIdx}, 'domainMin', parseFloat(this.value))" class="w-full px-2 py-0.5 font-mono text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded">
+                      <button onclick="window.togglePiecewiseEndpoint(${bIdx}, ${pIdx}, 'minInclusive')" title="Toggle Open/Closed Endpoint" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${piece.minInclusive !== false ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'}">
+                        ${piece.minInclusive !== false ? '● [Closed]' : '○ (Open)'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase">Domain End (x ≤ / <)</label>
+                    <div class="flex items-center gap-1">
+                      <input type="number" value="${piece.domainMax !== undefined && piece.domainMax !== null ? piece.domainMax : (b.xMax ?? 10)}" onchange="window.updatePiecewiseSegment(${bIdx}, ${pIdx}, 'domainMax', parseFloat(this.value))" class="w-full px-2 py-0.5 font-mono text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded">
+                      <button onclick="window.togglePiecewiseEndpoint(${bIdx}, ${pIdx}, 'maxInclusive')" title="Toggle Open/Closed Endpoint" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${piece.maxInclusive !== false ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'}">
+                        ${piece.maxInclusive !== false ? '● [Closed]' : '○ (Open)'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase">Stroke Color</label>
+                    <select onchange="window.updatePiecewiseSegment(${bIdx}, ${pIdx}, 'color', this.value)" class="w-full px-2 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-semibold">
+                      <option value="#10b981" ${piece.color === '#10b981' ? 'selected' : ''}>Emerald (#10b981)</option>
+                      <option value="#3b82f6" ${piece.color === '#3b82f6' ? 'selected' : ''}>Blue (#3b82f6)</option>
+                      <option value="#ec4899" ${piece.color === '#ec4899' ? 'selected' : ''}>Pink (#ec4899)</option>
+                      <option value="#8b5cf6" ${piece.color === '#8b5cf6' ? 'selected' : ''}>Purple (#8b5cf6)</option>
+                      <option value="#f59e0b" ${piece.color === '#f59e0b' ? 'selected' : ''}>Amber (#f59e0b)</option>
+                      <option value="#06b6d4" ${piece.color === '#06b6d4' ? 'selected' : ''}>Cyan (#06b6d4)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase">Line Style</label>
+                    <select onchange="window.updatePiecewiseSegment(${bIdx}, ${pIdx}, 'style', this.value)" class="w-full px-2 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-semibold">
+                      <option value="solid" ${piece.style === 'solid' ? 'selected' : ''}>Solid</option>
+                      <option value="dashed" ${piece.style === 'dashed' ? 'selected' : ''}>Dashed</option>
+                      <option value="dotted" ${piece.style === 'dotted' ? 'selected' : ''}>Dotted</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
     }
 
     const headerActions = `
@@ -320,7 +574,8 @@ export function syncBlocksToPreview() {
   if (tagEl) rev.tag = tagEl.value;
   if (titleEl) rev.title = titleEl.value;
   if (sumEl) rev.summary = sumEl.value;
-  rev.content = parseMarkdownToHtml(compiledMd);
+
+  rev.content = renderBlocksToHtml(rev.blocks);
 
   if (previewPane) {
     previewPane.innerHTML = `
@@ -329,8 +584,8 @@ export function syncBlocksToPreview() {
           <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-tagsci-100 dark:bg-tagsci-950 text-tagsci-800 dark:text-tagsci-300">${rev.subject}</span>
           <span class="text-[10px] font-bold text-slate-400">&bull; ${rev.tag}</span>
         </div>
-        <h1 class="text-base sm:text-lg font-black text-slate-900 dark:text-white">${rev.title || 'Untitled Article'}</h1>
-        <p class="text-xs text-slate-500 italic mt-1">${rev.summary || ''}</p>
+        <h1 class="text-base sm:text-lg font-black text-slate-900 dark:text-white">${renderMathInHtml(rev.title || 'Untitled Article')}</h1>
+        <p class="text-xs text-slate-500 italic mt-1">${renderMathInHtml(rev.summary || '')}</p>
       </div>
       <div class="mt-3 text-slate-800 dark:text-slate-100">${rev.content || '<span class="text-slate-400 italic">No content blocks added yet...</span>'}</div>
     `;
@@ -377,9 +632,9 @@ export function deleteBlock(bIdx) {
 
 export function addBulletItem(bIdx) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
-  if (!rev || !rev.blocks) return;
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
   if (!rev.blocks[bIdx].items) rev.blocks[bIdx].items = [];
-  rev.blocks[bIdx].items.push('New key point');
+  rev.blocks[bIdx].items.push('New key takeaway point');
   renderBlockCanvas();
   syncBlocksToPreview();
 }
@@ -401,6 +656,178 @@ export function removeBulletItem(bIdx, itIdx) {
   }
 }
 
+/* =========================================================
+   Table Block Manipulation Functions
+   ========================================================= */
+export function updateTableHeader(bIdx, cIdx, val) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (rev && rev.blocks && rev.blocks[bIdx]) {
+    if (!rev.blocks[bIdx].headers) rev.blocks[bIdx].headers = [];
+    rev.blocks[bIdx].headers[cIdx] = val;
+    syncBlocksToPreview();
+  }
+}
+
+export function updateTableCell(bIdx, rIdx, cIdx, val) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (rev && rev.blocks && rev.blocks[bIdx]) {
+    if (!rev.blocks[bIdx].rows) rev.blocks[bIdx].rows = [];
+    if (!rev.blocks[bIdx].rows[rIdx]) rev.blocks[bIdx].rows[rIdx] = [];
+    rev.blocks[bIdx].rows[rIdx][cIdx] = val;
+    syncBlocksToPreview();
+  }
+}
+
+export function addTableCol(bIdx) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (!block.headers) block.headers = ['Col 1'];
+  block.headers.push(`Col ${block.headers.length + 1}`);
+  if (block.rows) {
+    block.rows.forEach(r => r.push(''));
+  }
+  renderBlockCanvas();
+  syncBlocksToPreview();
+}
+
+export function removeTableCol(bIdx, cIdx) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (block.headers && block.headers.length > 1) {
+    block.headers.splice(cIdx, 1);
+    if (block.rows) {
+      block.rows.forEach(r => r.splice(cIdx, 1));
+    }
+    renderBlockCanvas();
+    syncBlocksToPreview();
+  }
+}
+
+export function addTableRow(bIdx) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (!block.rows) block.rows = [];
+  const colCount = block.headers ? block.headers.length : 2;
+  const newRow = new Array(colCount).fill('');
+  block.rows.push(newRow);
+  renderBlockCanvas();
+  syncBlocksToPreview();
+}
+
+export function removeTableRow(bIdx, rIdx) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (block.rows && block.rows.length > 1) {
+    block.rows.splice(rIdx, 1);
+    renderBlockCanvas();
+    syncBlocksToPreview();
+  }
+}
+
+/* =========================================================
+   Cartesian Plot Manipulation Functions
+   ========================================================= */
+export function addPiecewiseSegment(bIdx) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (!block.pieces) block.pieces = [];
+  const colors = ['#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4'];
+  const nextColor = colors[block.pieces.length % colors.length];
+
+  block.pieces.push({
+    expr: '2*x',
+    domainMin: 0,
+    domainMax: 5,
+    minInclusive: true,
+    maxInclusive: true,
+    color: nextColor,
+    style: 'solid'
+  });
+  renderBlockCanvas();
+  syncBlocksToPreview();
+}
+
+export function removePiecewiseSegment(bIdx, pIdx) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (block.pieces && block.pieces.length > 1) {
+    block.pieces.splice(pIdx, 1);
+    renderBlockCanvas();
+    syncBlocksToPreview();
+  }
+}
+
+export function updatePiecewiseSegment(bIdx, pIdx, field, val) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (block.pieces && block.pieces[pIdx]) {
+    block.pieces[pIdx][field] = val;
+    syncBlocksToPreview();
+  }
+}
+
+export function togglePiecewiseEndpoint(bIdx, pIdx, field) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+  if (block.pieces && block.pieces[pIdx]) {
+    block.pieces[pIdx][field] = !(block.pieces[pIdx][field] !== false);
+    renderBlockCanvas();
+    syncBlocksToPreview();
+  }
+}
+
+export function loadPlotPreset(bIdx, presetType) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+
+  if (presetType === 'piecewise_standard') {
+    block.title = 'Piecewise Function: Linear & Parabolic Branch';
+    block.caption = 'f(x) with open circle at x = 0 on the linear branch and closed circle on the quadratic branch.';
+    block.xMin = -6;
+    block.xMax = 6;
+    block.yMin = -6;
+    block.yMax = 8;
+    block.gridStep = 1;
+    block.pieces = [
+      { expr: '-x - 2', domainMin: -6, domainMax: 0, minInclusive: false, maxInclusive: false, color: '#3b82f6', style: 'solid' },
+      { expr: 'x^2 - 1', domainMin: 0, domainMax: 3, minInclusive: true, maxInclusive: true, color: '#10b981', style: 'solid' },
+      { expr: '4', domainMin: 3, domainMax: 6, minInclusive: false, maxInclusive: false, color: '#ec4899', style: 'solid' }
+    ];
+  } else if (presetType === 'step_function') {
+    block.title = 'Greatest Integer Step Function';
+    block.caption = 'Unit steps with closed left endpoints and open right endpoints.';
+    block.xMin = -4;
+    block.xMax = 5;
+    block.yMin = -4;
+    block.yMax = 5;
+    block.gridStep = 1;
+    block.pieces = [
+      { expr: '-2', domainMin: -2, domainMax: -1, minInclusive: true, maxInclusive: false, color: '#8b5cf6', style: 'solid' },
+      { expr: '-1', domainMin: -1, domainMax: 0, minInclusive: true, maxInclusive: false, color: '#8b5cf6', style: 'solid' },
+      { expr: '0', domainMin: 0, domainMax: 1, minInclusive: true, maxInclusive: false, color: '#8b5cf6', style: 'solid' },
+      { expr: '1', domainMin: 1, domainMax: 2, minInclusive: true, maxInclusive: false, color: '#8b5cf6', style: 'solid' },
+      { expr: '2', domainMin: 2, domainMax: 3, minInclusive: true, maxInclusive: false, color: '#8b5cf6', style: 'solid' },
+      { expr: '3', domainMin: 3, domainMax: 4, minInclusive: true, maxInclusive: false, color: '#8b5cf6', style: 'solid' }
+    ];
+  }
+
+  renderBlockCanvas();
+  syncBlocksToPreview();
+  if (window.showToast) window.showToast('Applied piecewise plot preset!');
+}
+
+/* =========================================================
+   Add Content Block Controller
+   ========================================================= */
 export function addContentBlock(type) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev) return;
@@ -413,6 +840,57 @@ export function addContentBlock(type) {
     rev.blocks.push({ type: 'formula', title: 'Formula Card', formula: 'v = \\frac{d}{t}', note: 'Standard constant velocity equation.' });
   } else if (type === 'bullets') {
     rev.blocks.push({ type: 'bullets', items: ['First key point', 'Second key point'] });
+  } else if (type === 'table') {
+    rev.blocks.push({
+      type: 'table',
+      title: 'Kinematics Formulas Comparison',
+      headers: ['Equation Name', 'Formula', 'Unknown / Missing'],
+      rows: [
+        ['Velocity Relation', '$v_f = v_0 + at$', 'Displacement ($\\Delta x$)'],
+        ['Position Relation', '$\\Delta x = v_0 t + \\frac{1}{2}at^2$', 'Final Velocity ($v_f$)'],
+        ['Torricelli Theorem', '$v_f^2 = v_0^2 + 2a\\Delta x$', 'Time ($t$)']
+      ]
+    });
+  } else if (type === 'cartesian' || type === 'plot') {
+    rev.blocks.push({
+      type: 'cartesian',
+      title: 'Piecewise Function Graph',
+      caption: 'Visual Cartesian coordinate plane with piecewise branches and open/closed boundary circles.',
+      xMin: -6,
+      xMax: 6,
+      yMin: -6,
+      yMax: 8,
+      gridStep: 1,
+      pieces: [
+        {
+          expr: '-2*x - 1',
+          domainMin: -6,
+          domainMax: -1,
+          minInclusive: false,
+          maxInclusive: true,
+          color: '#3b82f6',
+          style: 'solid'
+        },
+        {
+          expr: 'x^2 - 2',
+          domainMin: -1,
+          domainMax: 2.5,
+          minInclusive: false,
+          maxInclusive: false,
+          color: '#10b981',
+          style: 'solid'
+        },
+        {
+          expr: '4',
+          domainMin: 2.5,
+          domainMax: 6,
+          minInclusive: true,
+          maxInclusive: false,
+          color: '#ec4899',
+          style: 'solid'
+        }
+      ]
+    });
   }
   renderBlockCanvas();
   syncBlocksToPreview();

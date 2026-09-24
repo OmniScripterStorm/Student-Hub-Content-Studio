@@ -5,7 +5,35 @@
 import { STUDIO_DATA, currentRevIndex, currentQuizSetIndex, currentEditorMode, setCurrentRevIndex, setCurrentQuizSetIndex, setCurrentEditorMode, getSubjectClassification } from './data/studio_data.js';
 import { parseMathSyntax, renderMathInHtml, formatRichText, parseMarkdownToHtml } from './components/math_engine.js';
 import { openMathBuilderModal, openMathBuilderForBlock, closeMathBuilderModal, switchMathSubTab, insertFormulaSnippet, setFullEquation, updateMathStudioPreview, confirmMathInsert, setLastFocusedInput } from './components/equation_modal.js';
-import { compileBlocksToMarkdown, parseMarkdownIntoBlocks, renderReviewersList, loadReviewerToEditor, renderBlockCanvas, syncBlocksToPreview, updateBlockField, moveBlock, duplicateBlock, deleteBlock, addBulletItem, updateBulletItem, removeBulletItem, addContentBlock, loadLessonTemplate, applyTextFormatting } from './components/reviewer_studio.js';
+import { 
+  compileBlocksToMarkdown, 
+  parseMarkdownIntoBlocks, 
+  renderReviewersList, 
+  loadReviewerToEditor, 
+  renderBlockCanvas, 
+  syncBlocksToPreview, 
+  updateBlockField, 
+  moveBlock, 
+  duplicateBlock, 
+  deleteBlock, 
+  addBulletItem, 
+  updateBulletItem, 
+  removeBulletItem, 
+  addContentBlock, 
+  loadLessonTemplate, 
+  applyTextFormatting,
+  updateTableHeader,
+  updateTableCell,
+  addTableCol,
+  removeTableCol,
+  addTableRow,
+  removeTableRow,
+  addPiecewiseSegment,
+  removePiecewiseSegment,
+  updatePiecewiseSegment,
+  togglePiecewiseEndpoint,
+  loadPlotPreset
+} from './components/reviewer_studio.js';
 import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, nextTesterQ, prevTesterQ, resetLiveTester } from './components/quiz_studio.js';
 import { renderCalendarEvents, deleteCalendarEvent, handleAddCalendarEvent } from './components/calendar_studio.js';
 import { renderHubDashboard, renderHubStats, renderSubjectPortals, renderHubVault, applyVaultFilter, setVaultSearchQuery } from './components/hub_dashboard.js';
@@ -60,6 +88,21 @@ window.removeBulletItem = removeBulletItem;
 window.addContentBlock = addContentBlock;
 window.loadLessonTemplate = loadLessonTemplate;
 window.applyTextFormatting = applyTextFormatting;
+
+// Table Block Bindings
+window.updateTableHeader = updateTableHeader;
+window.updateTableCell = updateTableCell;
+window.addTableCol = addTableCol;
+window.removeTableCol = removeTableCol;
+window.addTableRow = addTableRow;
+window.removeTableRow = removeTableRow;
+
+// Cartesian Plot & Piecewise Bindings
+window.addPiecewiseSegment = addPiecewiseSegment;
+window.removePiecewiseSegment = removePiecewiseSegment;
+window.updatePiecewiseSegment = updatePiecewiseSegment;
+window.togglePiecewiseEndpoint = togglePiecewiseEndpoint;
+window.loadPlotPreset = loadPlotPreset;
 
 window.toggleAddBlockDropdown = function(event) {
   if (event) event.stopPropagation();
