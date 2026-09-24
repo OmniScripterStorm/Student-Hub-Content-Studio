@@ -826,12 +826,42 @@ export function loadPlotPreset(bIdx, presetType) {
 }
 
 /* =========================================================
-   Add Content Block Controller
+   Add Content Block Controller (Zero-state Resilient)
    ========================================================= */
 export function addContentBlock(type) {
+  // Ensure a reviewer draft exists if zero state
+  if (!STUDIO_DATA.stemReviewers || STUDIO_DATA.stemReviewers.length === 0) {
+    const newRev = {
+      id: `reviewer_${Date.now()}`,
+      subject: "General Math",
+      tag: "Main",
+      color: "border-l-4 border-tagsci-600",
+      title: "New Reviewer Draft",
+      summary: "Curated learning notes and formulas",
+      blocks: [],
+      rawMarkdown: "",
+      content: ""
+    };
+    STUDIO_DATA.stemReviewers = [newRev];
+    setCurrentRevIndex(0);
+    renderReviewersList();
+    loadReviewerToEditor();
+  }
+
+  if (currentRevIndex < 0 || currentRevIndex >= STUDIO_DATA.stemReviewers.length) {
+    setCurrentRevIndex(0);
+  }
+
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev) return;
   if (!rev.blocks) rev.blocks = [];
+
+  // Reveal workspace if it was hidden in empty state
+  const emptyState = document.getElementById('reviewer-editor-empty-state');
+  const mainWorkspace = document.getElementById('reviewer-editor-main-workspace');
+  if (emptyState) emptyState.classList.add('hidden');
+  if (mainWorkspace) mainWorkspace.classList.remove('hidden');
+
   if (type === 'heading') {
     rev.blocks.push({ type: 'heading', level: 'h3', text: 'New Topic Title' });
   } else if (type === 'paragraph') {
@@ -892,14 +922,40 @@ export function addContentBlock(type) {
       ]
     });
   }
+
   renderBlockCanvas();
   syncBlocksToPreview();
+  if (window.renderHubDashboard) window.renderHubDashboard();
   if (window.showToast) window.showToast('Block added to canvas!');
 }
 
 export function loadLessonTemplate(templateType) {
+  if (!STUDIO_DATA.stemReviewers || STUDIO_DATA.stemReviewers.length === 0) {
+    const newRev = {
+      id: `reviewer_${Date.now()}`,
+      subject: "General Math",
+      tag: "Main",
+      color: "border-l-4 border-tagsci-600",
+      title: "New Reviewer Draft",
+      summary: "Curated learning notes and formulas",
+      blocks: [],
+      rawMarkdown: "",
+      content: ""
+    };
+    STUDIO_DATA.stemReviewers = [newRev];
+    setCurrentRevIndex(0);
+    renderReviewersList();
+    loadReviewerToEditor();
+  }
+
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev || !templateType) return;
+
+  const emptyState = document.getElementById('reviewer-editor-empty-state');
+  const mainWorkspace = document.getElementById('reviewer-editor-main-workspace');
+  if (emptyState) emptyState.classList.add('hidden');
+  if (mainWorkspace) mainWorkspace.classList.remove('hidden');
+
   if (templateType === 'stem_law') {
     rev.blocks = [
       { type: 'heading', level: 'h3', text: 'Theoretical Principle' },
@@ -923,6 +979,7 @@ export function loadLessonTemplate(templateType) {
   }
   renderBlockCanvas();
   syncBlocksToPreview();
+  if (window.renderHubDashboard) window.renderHubDashboard();
   if (window.showToast) window.showToast('Loaded starter template!');
 }
 
