@@ -207,7 +207,7 @@ export function renderHubVault() {
         <i data-lucide="inbox" class="w-8 h-8 mx-auto opacity-40"></i>
         <div>
           <p class="font-bold text-slate-700 dark:text-slate-200">No Materials in Session</p>
-          <p class="text-[11px] text-slate-400 mt-0.5">Start authoring materials from scratch or import an existing updates.json dataset.</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Start authoring materials from scratch or upload an existing updates.json dataset.</p>
         </div>
         <div class="flex items-center justify-center gap-2 pt-1">
           <button onclick="window.createQuickReviewer()" class="px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">

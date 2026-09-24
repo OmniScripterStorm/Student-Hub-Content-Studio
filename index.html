@@ -1225,7 +1225,6 @@
     /* =========================================================
    TagSci Content Studio - Data Store & Subject Taxonomy
    ========================================================= */
-
 const OFFICIAL_SUBJECTS = {
   'TagSci': { type: 'Institutional', color: 'border-l-4 border-tagsci-700' },
   'DepEd': { type: 'DepEd', color: 'border-l-4 border-blue-600' },
@@ -1239,11 +1238,9 @@ const OFFICIAL_SUBJECTS = {
   'Chemistry': { type: 'Elective', color: 'border-l-4 border-indigo-500' },
   'Biology': { type: 'Elective', color: 'border-l-4 border-green-600' }
 };
-
 function getSubjectClassification(subj) {
   return OFFICIAL_SUBJECTS[subj] || { type: 'Main', color: 'border-l-4 border-tagsci-600' };
 }
-
 const STUDIO_DATA = {
   version: "1.4.0",
   updatedAt: new Date().toISOString(),
@@ -1254,11 +1251,9 @@ const STUDIO_DATA = {
   problemSets: [],
   quizSets: []
 };
-
 let currentRevIndex = 0;
 let currentQuizSetIndex = 0;
 let currentEditorMode = 'visual';
-
 function setCurrentRevIndex(idx) { currentRevIndex = idx; }
 function setCurrentQuizSetIndex(idx) { currentQuizSetIndex = idx; }
 function setCurrentEditorMode(mode) { currentEditorMode = mode; }
@@ -1267,7 +1262,6 @@ function setCurrentEditorMode(mode) { currentEditorMode = mode; }
     /* =========================================================
    TagSci Content Studio - Offline Math & Markdown Engine
    ========================================================= */
-
 const GREEK_SYMBOLS = {
   '\\alpha': '&alpha;', '\\beta': '&beta;', '\\gamma': '&gamma;', '\\delta': '&delta;',
   '\\Delta': '&Delta;', '\\epsilon': '&epsilon;', '\\varepsilon': '&#x03B5;', '\\theta': '&theta;',
@@ -1275,7 +1269,6 @@ const GREEK_SYMBOLS = {
   '\\pi': '&pi;', '\\Pi': '&Pi;', '\\rho': '&rho;', '\\sigma': '&sigma;', '\\Sigma': '&Sigma;',
   '\\tau': '&tau;', '\\phi': '&phi;', '\\Phi': '&Phi;', '\\omega': '&omega;', '\\Omega': '&Omega;'
 };
-
 const MATH_OPERATORS = {
   '\\cdot': '&middot;', '\\times': '&times;', '\\pm': '&plusmn;', '\\mp': '&#x2213;',
   '\\approx': '&asymp;', '\\neq': '&ne;', '\\le': '&le;', '\\ge': '&ge;', '\\infty': '&infin;',
@@ -1286,7 +1279,6 @@ const MATH_OPERATORS = {
   '\\sum': '<span class="text-lg leading-none font-bold">&sum;</span>',
   '\\sqrt': '&radic;'
 };
-
 function parseMathSyntax(tex) {
   let s = (tex || '').trim();
   s = s.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, (match, num, den) => {
@@ -1308,7 +1300,6 @@ function parseMathSyntax(tex) {
   s = s.replace(/\\text\{([^{}]+)\}/g, '<span class="font-sans font-normal">$1</span>');
   return s;
 }
-
 function renderMathInHtml(htmlString) {
   if (!htmlString) return '';
   let res = htmlString.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
@@ -1319,7 +1310,6 @@ function renderMathInHtml(htmlString) {
   });
   return res;
 }
-
 function formatRichText(str) {
   if (!str) return '';
   let res = str;
@@ -1332,7 +1322,6 @@ function formatRichText(str) {
   res = res.replace(/(?<!\*)\*(?!\*)([^\*]+?)(?<!\*)\*(?!\*)/g, '<em class="italic">$1</em>');
   return res;
 }
-
 function parseMarkdownToHtml(md) {
   if (!md) return '';
   const lines = md.trim().split('\n');
@@ -1377,21 +1366,14 @@ function parseMarkdownToHtml(md) {
     /* =========================================================
    TagSci Content Studio - Visual Equation Studio Modal
    ========================================================= */
-
-
-
-
 let activeMathTargetBlockIdx = null;
 let lastFocusedInput = null;
-
 function setLastFocusedInput(elem) {
   lastFocusedInput = elem;
 }
-
 function getLastFocusedInput() {
   return lastFocusedInput;
 }
-
 function openMathBuilderModal() {
   activeMathTargetBlockIdx = null;
   const modal = document.getElementById('modal-math-builder');
@@ -1404,7 +1386,6 @@ function openMathBuilderModal() {
   updateMathStudioPreview();
   switchMathSubTab('templates');
 }
-
 function openMathBuilderForBlock(bIdx) {
   activeMathTargetBlockIdx = bIdx;
   const modal = document.getElementById('modal-math-builder');
@@ -1418,7 +1399,6 @@ function openMathBuilderForBlock(bIdx) {
   updateMathStudioPreview();
   switchMathSubTab('templates');
 }
-
 function closeMathBuilderModal() {
   const modal = document.getElementById('modal-math-builder');
   if (modal) {
@@ -1426,7 +1406,6 @@ function closeMathBuilderModal() {
     modal.classList.remove('flex');
   }
 }
-
 function switchMathSubTab(subtab) {
   ['templates', 'symbols', 'presets'].forEach(t => {
     const pane = document.getElementById(`math-subtab-${t}`);
@@ -1444,7 +1423,6 @@ function switchMathSubTab(subtab) {
     }
   });
 }
-
 function insertFormulaSnippet(snippet) {
   const input = document.getElementById('math-studio-input');
   if (!input) return;
@@ -1455,14 +1433,12 @@ function insertFormulaSnippet(snippet) {
   input.selectionStart = input.selectionEnd = start + snippet.length;
   updateMathStudioPreview();
 }
-
 function setFullEquation(eq) {
   const input = document.getElementById('math-studio-input');
   if (!input) return;
   input.value = eq;
   updateMathStudioPreview();
 }
-
 function updateMathStudioPreview() {
   const input = document.getElementById('math-studio-input');
   const preview = document.getElementById('math-studio-preview');
@@ -1470,7 +1446,6 @@ function updateMathStudioPreview() {
   const tex = input.value.trim() || '...';
   preview.innerHTML = renderMathInHtml(`$$ ${tex} $$`);
 }
-
 function confirmMathInsert(mode, onComplete) {
   const input = document.getElementById('math-studio-input');
   if (!input) return;
@@ -1517,11 +1492,6 @@ function confirmMathInsert(mode, onComplete) {
     /* =========================================================
    TagSci Content Studio - Reviewer Visual Canvas & Editor
    ========================================================= */
-
-
-
-
-
 function compileBlocksToMarkdown(blocks) {
   if (!blocks || blocks.length === 0) return '';
   let md = '';
@@ -1544,7 +1514,6 @@ function compileBlocksToMarkdown(blocks) {
   });
   return md.trim();
 }
-
 function parseMarkdownIntoBlocks(md) {
   if (!md) return [];
   const lines = md.split('\n');
@@ -1581,7 +1550,6 @@ function parseMarkdownIntoBlocks(md) {
   if (currentBulletBlock) blocks.push(currentBulletBlock);
   return blocks;
 }
-
 function renderReviewersList() {
   const container = document.getElementById('rev-cards-container');
   const badgeCount = document.getElementById('badge-count-rev');
@@ -1636,7 +1604,6 @@ function renderReviewersList() {
   });
   if (window.lucide) window.lucide.createIcons();
 }
-
 function loadReviewerToEditor() {
   const revs = STUDIO_DATA.stemReviewers || [];
   const rev = revs[currentRevIndex];
@@ -1668,7 +1635,6 @@ function loadReviewerToEditor() {
   renderBlockCanvas();
   syncBlocksToPreview();
 }
-
 function renderBlockCanvas() {
   const revs = STUDIO_DATA.stemReviewers || [];
   const rev = revs[currentRevIndex];
@@ -1799,7 +1765,6 @@ function renderBlockCanvas() {
 
   if (window.lucide) window.lucide.createIcons();
 }
-
 function syncBlocksToPreview() {
   const revs = STUDIO_DATA.stemReviewers || [];
   const rev = revs[currentRevIndex];
@@ -1852,7 +1817,6 @@ function syncBlocksToPreview() {
     `;
   }
 }
-
 function updateBlockField(bIdx, field, val) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (rev && rev.blocks && rev.blocks[bIdx]) {
@@ -1860,7 +1824,6 @@ function updateBlockField(bIdx, field, val) {
     syncBlocksToPreview();
   }
 }
-
 function moveBlock(bIdx, dir) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev || !rev.blocks) return;
@@ -1872,7 +1835,6 @@ function moveBlock(bIdx, dir) {
   renderBlockCanvas();
   syncBlocksToPreview();
 }
-
 function duplicateBlock(bIdx) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev || !rev.blocks) return;
@@ -1882,7 +1844,6 @@ function duplicateBlock(bIdx) {
   syncBlocksToPreview();
   if (window.showToast) window.showToast('Block duplicated!');
 }
-
 function deleteBlock(bIdx) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev || !rev.blocks) return;
@@ -1890,7 +1851,6 @@ function deleteBlock(bIdx) {
   renderBlockCanvas();
   syncBlocksToPreview();
 }
-
 function addBulletItem(bIdx) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev || !rev.blocks) return;
@@ -1899,7 +1859,6 @@ function addBulletItem(bIdx) {
   renderBlockCanvas();
   syncBlocksToPreview();
 }
-
 function updateBulletItem(bIdx, itIdx, val) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (rev && rev.blocks && rev.blocks[bIdx] && rev.blocks[bIdx].items) {
@@ -1907,7 +1866,6 @@ function updateBulletItem(bIdx, itIdx, val) {
     syncBlocksToPreview();
   }
 }
-
 function removeBulletItem(bIdx, itIdx) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (rev && rev.blocks && rev.blocks[bIdx] && rev.blocks[bIdx].items) {
@@ -1916,7 +1874,6 @@ function removeBulletItem(bIdx, itIdx) {
     syncBlocksToPreview();
   }
 }
-
 function addContentBlock(type) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev) return;
@@ -1934,7 +1891,6 @@ function addContentBlock(type) {
   syncBlocksToPreview();
   if (window.showToast) window.showToast('Block added to canvas!');
 }
-
 function loadLessonTemplate(templateType) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev || !templateType) return;
@@ -1963,7 +1919,6 @@ function loadLessonTemplate(templateType) {
   syncBlocksToPreview();
   if (window.showToast) window.showToast('Loaded starter template!');
 }
-
 function applyTextFormatting(type) {
   let activeElem = document.activeElement;
   const lastInput = getLastFocusedInput();
@@ -2036,14 +1991,9 @@ function applyTextFormatting(type) {
     /* =========================================================
    TagSci Content Studio - Quiz & Drill Studio
    ========================================================= */
-
-
-
-
 let testerQuestionIdx = 0;
 let testerRevealed = false;
 let testerSelectedMulti = [];
-
 function renderQuizSetsList() {
   const container = document.getElementById('quiz-sets-container');
   const badgeCount = document.getElementById('badge-count-quiz');
@@ -2094,7 +2044,6 @@ function renderQuizSetsList() {
   });
   if (window.lucide) window.lucide.createIcons();
 }
-
 function loadQuizSetToEditor() {
   const sets = STUDIO_DATA.quizSets || [];
   const set = sets[currentQuizSetIndex];
@@ -2118,7 +2067,6 @@ function loadQuizSetToEditor() {
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
-
 function renderQuestionsBuilder() {
   const sets = STUDIO_DATA.quizSets || [];
   const set = sets[currentQuizSetIndex];
@@ -2295,7 +2243,6 @@ function renderQuestionsBuilder() {
   });
   if (window.lucide) window.lucide.createIcons();
 }
-
 function updateQuestionField(qIdx, field, val) {
   const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
   if (set && set.questions && set.questions[qIdx]) {
@@ -2303,7 +2250,6 @@ function updateQuestionField(qIdx, field, val) {
     renderLiveQuizTester();
   }
 }
-
 function changeQuestionType(qIdx, type) {
   const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
   if (!q) return;
@@ -2319,13 +2265,11 @@ function changeQuestionType(qIdx, type) {
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
-
 function updateTrueFalse(qIdx, boolVal) {
   STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx].answerBoolean = boolVal;
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
-
 function toggleMultiSelectOption(qIdx, oIdx) {
   const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
   if (!q) return;
@@ -2336,7 +2280,6 @@ function toggleMultiSelectOption(qIdx, oIdx) {
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
-
 function moveQuestion(qIdx, dir) {
   const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
   if (!set) return;
@@ -2348,7 +2291,6 @@ function moveQuestion(qIdx, dir) {
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
-
 function duplicateQuestion(qIdx) {
   const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
   if (!set) return;
@@ -2359,7 +2301,6 @@ function duplicateQuestion(qIdx) {
   renderQuizSetsList();
   if (window.showToast) window.showToast('Question duplicated!');
 }
-
 function addQuestionBlock(type) {
   let newQ = null;
   if (type === 'mcq') {
@@ -2449,17 +2390,14 @@ function addQuestionBlock(type) {
     if (window.showToast) window.showToast(`Added ${type.toUpperCase().replace('_', ' ')} question!`);
   }
 }
-
 function updateCorrectMcq(qIdx, oIdx) {
   STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx].answerIndex = oIdx;
   renderLiveQuizTester();
 }
-
 function updateMcqOption(qIdx, oIdx, val) {
   STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx].options[oIdx] = val;
   renderLiveQuizTester();
 }
-
 function removeMcqOption(qIdx, oIdx) {
   const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
   if (!q) return;
@@ -2475,7 +2413,6 @@ function removeMcqOption(qIdx, oIdx) {
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
-
 function addMcqOption(qIdx) {
   const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
   if (!q) return;
@@ -2483,7 +2420,6 @@ function addMcqOption(qIdx) {
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
-
 function deleteQuestion(qIdx) {
   const set = (STUDIO_DATA.quizSets || [])[currentQuizSetIndex];
   if (!set || !set.questions) return;
@@ -2492,7 +2428,6 @@ function deleteQuestion(qIdx) {
   renderLiveQuizTester();
   renderQuizSetsList();
 }
-
 function renderLiveQuizTester() {
   const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
   const container = document.getElementById('quiz-interactive-preview');
@@ -2652,44 +2587,36 @@ function renderLiveQuizTester() {
   `;
   if (window.lucide) window.lucide.createIcons();
 }
-
 function checkTesterAnswer(idx) {
   testerRevealed = true;
   renderLiveQuizTester();
 }
-
 function checkTesterTrueFalse(boolVal) {
   testerRevealed = true;
   renderLiveQuizTester();
 }
-
 function checkTesterIdentification() {
   testerRevealed = true;
   renderLiveQuizTester();
 }
-
 function checkTesterNumerical() {
   testerRevealed = true;
   renderLiveQuizTester();
 }
-
 function toggleTesterMultiSelectOption(oIdx) {
   const pos = testerSelectedMulti.indexOf(oIdx);
   if (pos > -1) testerSelectedMulti.splice(pos, 1);
   else testerSelectedMulti.push(oIdx);
   renderLiveQuizTester();
 }
-
 function checkTesterMultiSelect() {
   testerRevealed = true;
   renderLiveQuizTester();
 }
-
 function revealTesterFlashcard() {
   testerRevealed = true;
   renderLiveQuizTester();
 }
-
 function nextTesterQ() {
   testerRevealed = false;
   testerSelectedMulti = [];
@@ -2698,14 +2625,12 @@ function nextTesterQ() {
   testerQuestionIdx = (testerQuestionIdx + 1) % set.questions.length;
   renderLiveQuizTester();
 }
-
 function prevTesterQ() {
   testerRevealed = false;
   testerSelectedMulti = [];
   if (testerQuestionIdx > 0) testerQuestionIdx--;
   renderLiveQuizTester();
 }
-
 function resetLiveTester() {
   testerQuestionIdx = 0;
   testerRevealed = false;
@@ -2717,9 +2642,6 @@ function resetLiveTester() {
     /* =========================================================
    TagSci Content Studio - Calendar & Deadlines Controller
    ========================================================= */
-
-
-
 function renderCalendarEvents() {
   const container = document.getElementById('cal-events-list-container');
   const badgeCount = document.getElementById('badge-count-cal');
@@ -2778,13 +2700,11 @@ function renderCalendarEvents() {
   });
   if (window.lucide) window.lucide.createIcons();
 }
-
 function deleteCalendarEvent(idx) {
   STUDIO_DATA.calendarEvents.splice(idx, 1);
   renderCalendarEvents();
   if (window.showToast) window.showToast('Calendar event removed.');
 }
-
 function handleAddCalendarEvent(e) {
   e.preventDefault();
   const dateInput = document.getElementById('cal-input-date');
@@ -2817,29 +2737,22 @@ function handleAddCalendarEvent(e) {
     /* =========================================================
    TagSci Content Studio - Hub & Workspace Dashboard Component
    ========================================================= */
-
-
-
 let currentVaultFilter = 'all';
 let vaultSearchQuery = '';
-
 function applyVaultFilter(filter) {
   currentVaultFilter = filter;
   renderHubVault();
 }
 const setVaultFilter = applyVaultFilter;
-
 function setVaultSearchQuery(query) {
   vaultSearchQuery = (query || '').toLowerCase().trim();
   renderHubVault();
 }
-
 function renderHubDashboard() {
   renderHubStats();
   renderSubjectPortals();
   renderHubVault();
 }
-
 function renderHubStats() {
   const revCount = STUDIO_DATA.stemReviewers ? STUDIO_DATA.stemReviewers.length : 0;
   
@@ -2874,7 +2787,6 @@ function renderHubStats() {
   const badgeCal = document.getElementById('badge-count-cal');
   if (badgeCal) badgeCal.innerText = calCount;
 }
-
 function renderSubjectPortals() {
   const container = document.getElementById('hub-subjects-grid');
   if (!container) return;
@@ -2939,7 +2851,6 @@ function renderSubjectPortals() {
   container.innerHTML = html;
   if (window.lucide) window.lucide.createIcons();
 }
-
 function renderHubVault() {
   const container = document.getElementById('hub-vault-container');
   const countBadge = document.getElementById('hub-vault-count');
@@ -3023,7 +2934,18 @@ function renderHubVault() {
         <i data-lucide="inbox" class="w-8 h-8 mx-auto opacity-40"></i>
         <div>
           <p class="font-bold text-slate-700 dark:text-slate-200">No Materials in Session</p>
-          <p class="text-[11px] text-slate-400 mt-0.5">Start authoring materials from scratch or 
+          <p class="text-[11px] text-slate-400 mt-0.5">Start authoring materials from scratch or upload an existing updates.json dataset.</p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <button onclick="window.createQuickReviewer()" class="px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Reviewer
+          </button>
+          <button onclick="window.createQuickQuizSet()" class="px-3 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i> New Quiz Bank
+          </button>
+        </div>
+      </div>
+    `;
     if (window.lucide) window.lucide.createIcons();
     return;
   }
@@ -3080,10 +3002,6 @@ function renderHubVault() {
     /* =========================================================
    TagSci Content Studio - JSON Hub & Direct GitHub Publisher
    ========================================================= */
-
-
-
-
 // UTF-8 safe Base64 encoding/decoding helpers
 function utf8ToBase64(str) {
   return window.btoa(unescape(encodeURIComponent(str)));
@@ -3092,7 +3010,6 @@ function utf8ToBase64(str) {
 function base64ToUtf8(str) {
   return decodeURIComponent(escape(window.atob(str)));
 }
-
 function generateProductionJson() {
   return {
     version: STUDIO_DATA.version || "1.4.0",
@@ -3113,7 +3030,6 @@ function generateProductionJson() {
     quizSets: STUDIO_DATA.quizSets
   };
 }
-
 function renderJsonHub() {
   const codeEl = document.getElementById('hub-json-viewer');
   if (codeEl) {
@@ -3121,7 +3037,6 @@ function renderJsonHub() {
   }
   loadGitHubConfig();
 }
-
 function downloadFile(filename, text, mimeType = 'text/plain') {
   const element = document.createElement('a');
   element.setAttribute('href', `data:${mimeType};charset=utf-8,` + encodeURIComponent(text));
@@ -3131,20 +3046,17 @@ function downloadFile(filename, text, mimeType = 'text/plain') {
   element.click();
   document.body.removeChild(element);
 }
-
 function exportUpdatesJson() {
   const json = generateProductionJson();
   downloadFile('updates.json', JSON.stringify(json, null, 2), 'application/json');
   if (window.showToast) window.showToast('Downloaded updates.json!');
 }
-
 function copyUpdatesJson() {
   const jsonStr = JSON.stringify(generateProductionJson(), null, 2);
   navigator.clipboard.writeText(jsonStr).then(() => {
     if (window.showToast) window.showToast('Copied updates.json to clipboard!');
   });
 }
-
 function exportReviewerMarkdown() {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev) return;
@@ -3162,7 +3074,6 @@ ${mdBody}
   downloadFile(`${rev.id || 'reviewer'}.md`, mdContent, 'text/markdown');
   if (window.showToast) window.showToast(`Downloaded ${rev.id}.md!`);
 }
-
 function exportQuizSetMarkdown() {
   const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
   if (!set) return;
@@ -3206,7 +3117,6 @@ timeLimitMinutes: ${set.timeLimitMinutes || 15}
   downloadFile(`${set.id || 'quiz_set'}.md`, mdLines, 'text/markdown');
   if (window.showToast) window.showToast(`Downloaded ${set.id}.md!`);
 }
-
 function handleImportJsonFile(e, onComplete) {
   const file = e.target.files[0];
   if (!file) return;
@@ -3227,7 +3137,6 @@ function handleImportJsonFile(e, onComplete) {
   };
   reader.readAsText(file);
 }
-
 async function pingOtaEndpoint() {
   const input = document.getElementById('hub-ota-endpoint-input');
   if (!input) return;
@@ -3258,7 +3167,6 @@ const STORAGE_KEYS = {
   BRANCH: 'tagsci_cs_gh_branch',
   PATH: 'tagsci_cs_gh_path'
 };
-
 function getGitHubConfig() {
   const tokenEl = document.getElementById('gh-pat-token');
   const repoEl = document.getElementById('gh-repo-name');
@@ -3272,7 +3180,6 @@ function getGitHubConfig() {
     path: (pathEl ? pathEl.value : '') || localStorage.getItem(STORAGE_KEYS.PATH) || 'updates.json'
   };
 }
-
 function saveGitHubConfig() {
   const config = getGitHubConfig();
   if (config.token) localStorage.setItem(STORAGE_KEYS.TOKEN, config.token.trim());
@@ -3282,7 +3189,6 @@ function saveGitHubConfig() {
 
   if (window.showToast) window.showToast('GitHub credentials saved locally!');
 }
-
 function loadGitHubConfig() {
   const tokenEl = document.getElementById('gh-pat-token');
   const repoEl = document.getElementById('gh-repo-name');
@@ -3294,7 +3200,6 @@ function loadGitHubConfig() {
   if (branchEl && !branchEl.value) branchEl.value = localStorage.getItem(STORAGE_KEYS.BRANCH) || 'main';
   if (pathEl && !pathEl.value) pathEl.value = localStorage.getItem(STORAGE_KEYS.PATH) || 'updates.json';
 }
-
 function clearGitHubConfig() {
   localStorage.removeItem(STORAGE_KEYS.TOKEN);
   const tokenEl = document.getElementById('gh-pat-token');
@@ -3302,7 +3207,6 @@ function clearGitHubConfig() {
   setPublishStatus('Token cleared from local storage.', 'slate');
   if (window.showToast) window.showToast('Token cleared!');
 }
-
 function toggleTokenVisibility() {
   const tokenEl = document.getElementById('gh-pat-token');
   const eyeIcon = document.getElementById('gh-eye-icon');
@@ -3571,16 +3475,6 @@ async function appendAndPushToGitHub() {
     /* =========================================================
    TagSci Content Studio - Main Application Bootstrap (Concept 1: Document Hub)
    ========================================================= */
-
-
-
-
-
-
-
-
-
-
 // Global Toast Utility
 window.showToast = function(message) {
   const toast = document.getElementById('toast-msg');

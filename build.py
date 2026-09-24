@@ -12,12 +12,12 @@ def build_content_studio():
     def clean_module(file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
             code = f.read()
-        # Remove import statements
-        code = re.sub(r'import\s+[^;]+;', '', code)
-        # Strip export statements
-        code = re.sub(r'export\s+(const|let|var)\s+', r'\1 ', code)
-        code = re.sub(r'export\s+(async\s+)?function\s+', r'\1function ', code)
-        code = re.sub(r'export\s+default\s+', '', code)
+        # Remove ES import statements (only at start of line)
+        code = re.sub(r'^\s*import\s+[\s\S]*?;\s*\n?', '', code, flags=re.MULTILINE)
+        # Strip export statements at start of line
+        code = re.sub(r'^\s*export\s+(const|let|var)\s+', r'\1 ', code, flags=re.MULTILINE)
+        code = re.sub(r'^\s*export\s+(async\s+)?function\s+', r'\1function ', code, flags=re.MULTILINE)
+        code = re.sub(r'^\s*export\s+default\s+', '', code, flags=re.MULTILINE)
         return code
 
     studio_data_js = clean_module(os.path.join(src_dir, 'data', 'studio_data.js'))
