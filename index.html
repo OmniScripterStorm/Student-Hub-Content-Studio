@@ -3649,11 +3649,7 @@ window.switchMathSubTab = switchMathSubTab;
 window.insertFormulaSnippet = insertFormulaSnippet;
 window.setFullEquation = setFullEquation;
 window.updateMathStudioPreview = updateMathStudioPreview;
-window.confirmMathInsert = (mode) => confirmMathInsert(mode, () => {
-  renderBlockCanvas();
-  syncBlocksToPreview();
-  renderHubDashboard();
-});
+window.confirmMathInsert = confirmMathInsert;
 
 window.updateBlockField = updateBlockField;
 window.moveBlock = moveBlock;
