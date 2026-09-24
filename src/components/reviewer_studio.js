@@ -73,12 +73,26 @@ export function renderReviewersList() {
   const searchInput = document.getElementById('rev-search');
   const search = searchInput ? searchInput.value.toLowerCase() : '';
 
-  if (badgeCount) badgeCount.innerText = STUDIO_DATA.stemReviewers.length;
-  if (countLabel) countLabel.innerText = `(${STUDIO_DATA.stemReviewers.length} items)`;
+  const revs = STUDIO_DATA.stemReviewers || [];
+  if (badgeCount) badgeCount.innerText = revs.length;
+  if (countLabel) countLabel.innerText = `(${revs.length} items)`;
 
   if (!container) return;
   container.innerHTML = '';
-  STUDIO_DATA.stemReviewers.forEach((rev, idx) => {
+
+  if (revs.length === 0) {
+    container.innerHTML = `
+      <div class="p-6 text-center text-slate-400 text-xs">
+        <i data-lucide="book-open" class="w-7 h-7 mx-auto mb-1.5 opacity-40"></i>
+        <p class="font-medium text-slate-500 dark:text-slate-400">No notes drafted yet.</p>
+        <p class="text-[10px] text-slate-400 mt-1">Click "+ New Note" above or in the Hub to create one.</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  revs.forEach((rev, idx) => {
     if (search && !rev.title.toLowerCase().includes(search) && !rev.subject.toLowerCase().includes(search)) {
       return;
     }
@@ -91,8 +105,8 @@ export function renderReviewersList() {
     }`;
     card.innerHTML = `
       <div class="flex items-center justify-between mb-1">
-        <span class="text-[10px] font-black uppercase tracking-wider text-tagsci-700 dark:text-tagsci-400">${rev.subject}</span>
-        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${rev.tag}</span>
+        <span class="text-[10px] font-black uppercase tracking-wider text-tagsci-700 dark:text-tagsci-400">${rev.subject || 'General Math'}</span>
+        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${rev.tag || 'Main'}</span>
       </div>
       <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">${rev.title || 'Untitled'}</h4>
       <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${rev.summary || 'No summary provided...'}</p>
@@ -104,18 +118,29 @@ export function renderReviewersList() {
     };
     container.appendChild(card);
   });
+  if (window.lucide) window.lucide.createIcons();
 }
 
 export function loadReviewerToEditor() {
-  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
-  if (!rev) return;
+  const revs = STUDIO_DATA.stemReviewers || [];
+  const rev = revs[currentRevIndex];
 
   const subjEl = document.getElementById('rev-input-subject');
   const tagEl = document.getElementById('rev-input-tag');
   const titleEl = document.getElementById('rev-input-title');
   const sumEl = document.getElementById('rev-input-summary');
+  const bodyInput = document.getElementById('rev-input-body');
 
-  if (subjEl) subjEl.value = rev.subject;
+  if (!rev) {
+    if (titleEl) titleEl.value = '';
+    if (sumEl) sumEl.value = '';
+    if (bodyInput) bodyInput.value = '';
+    renderBlockCanvas();
+    syncBlocksToPreview();
+    return;
+  }
+
+  if (subjEl) subjEl.value = rev.subject || 'General Math';
   if (tagEl) tagEl.value = rev.tag || 'Main';
   if (titleEl) titleEl.value = rev.title || '';
   if (sumEl) sumEl.value = rev.summary || '';
@@ -129,9 +154,25 @@ export function loadReviewerToEditor() {
 }
 
 export function renderBlockCanvas() {
-  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  const revs = STUDIO_DATA.stemReviewers || [];
+  const rev = revs[currentRevIndex];
   const container = document.getElementById('blocks-container');
-  if (!rev || !container) return;
+  if (!container) return;
+
+  if (!rev) {
+    container.innerHTML = `
+      <div class="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2.5">
+        <i data-lucide="file-plus" class="w-8 h-8 mx-auto text-slate-400 opacity-60"></i>
+        <p class="font-bold text-slate-700 dark:text-slate-200">No Reviewer Draft Selected</p>
+        <p class="text-[11px] text-slate-400 max-w-xs mx-auto">Create a new reviewer draft to begin authoring concepts, formulas, and notes.</p>
+        <button onclick="window.createQuickReviewer()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Create New Reviewer
+        </button>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
 
   if (!rev.blocks) {
     rev.blocks = parseMarkdownIntoBlocks(rev.rawMarkdown || '');
@@ -244,8 +285,23 @@ export function renderBlockCanvas() {
 }
 
 export function syncBlocksToPreview() {
-  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
-  if (!rev) return;
+  const revs = STUDIO_DATA.stemReviewers || [];
+  const rev = revs[currentRevIndex];
+  const previewPane = document.getElementById('rev-live-preview');
+
+  if (!rev) {
+    if (previewPane) {
+      previewPane.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center text-center text-slate-400 text-xs py-16">
+          <i data-lucide="eye-off" class="w-8 h-8 mb-2 opacity-40"></i>
+          <p class="font-medium text-slate-500 dark:text-slate-400">Live student preview will appear here.</p>
+          <p class="text-[10.5px] text-slate-400 mt-1">Select or create a reviewer draft to view output.</p>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+    }
+    return;
+  }
 
   const compiledMd = compileBlocksToMarkdown(rev.blocks);
   rev.rawMarkdown = compiledMd;

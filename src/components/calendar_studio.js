@@ -9,12 +9,26 @@ export function renderCalendarEvents() {
   const badgeCount = document.getElementById('badge-count-cal');
   const countLabel = document.getElementById('cal-events-count');
 
-  if (badgeCount) badgeCount.innerText = STUDIO_DATA.calendarEvents.length;
-  if (countLabel) countLabel.innerText = `${STUDIO_DATA.calendarEvents.length} events scheduled`;
+  const events = STUDIO_DATA.calendarEvents || [];
+  if (badgeCount) badgeCount.innerText = events.length;
+  if (countLabel) countLabel.innerText = `${events.length} events scheduled`;
 
   if (!container) return;
   container.innerHTML = '';
-  STUDIO_DATA.calendarEvents.forEach((ev, idx) => {
+
+  if (events.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+        <i data-lucide="calendar" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+        <p class="font-medium text-slate-600 dark:text-slate-300">No deadlines or events scheduled yet.</p>
+        <p class="text-[10.5px] text-slate-400 mt-0.5">Use the form on the left to schedule major exams, submission deadlines, and milestones.</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  events.forEach((ev, idx) => {
     const isTagSci = ev.subject === 'TagSci' || ev.tag === 'TagSci';
     const isDepEd = ev.subject === 'DepEd' || ev.tag === 'DepEd';
     let badgeColorClass = 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300';
@@ -46,6 +60,7 @@ export function renderCalendarEvents() {
     `;
     container.appendChild(card);
   });
+  if (window.lucide) window.lucide.createIcons();
 }
 
 export function deleteCalendarEvent(idx) {

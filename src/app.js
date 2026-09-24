@@ -445,14 +445,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-delete-rev')?.addEventListener('click', () => {
-    if (STUDIO_DATA.stemReviewers.length <= 1) {
-      window.showToast('At least 1 reviewer must remain in session.');
+    if (!STUDIO_DATA.stemReviewers || STUDIO_DATA.stemReviewers.length === 0) {
+      window.showToast('No reviewers to delete.');
       return;
     }
     STUDIO_DATA.stemReviewers.splice(currentRevIndex, 1);
-    setCurrentRevIndex(0);
+    if (currentRevIndex >= STUDIO_DATA.stemReviewers.length) {
+      setCurrentRevIndex(Math.max(0, STUDIO_DATA.stemReviewers.length - 1));
+    }
     renderReviewersList();
     loadReviewerToEditor();
+    updateBreadcrumbs('reviewers');
     renderHubDashboard();
     window.showToast('Reviewer draft removed.');
   });
@@ -465,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-reset-quiz-preview')?.addEventListener('click', resetLiveTester);
 
   document.getElementById('quiz-input-title')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
+    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
     STUDIO_DATA.quizSets[currentQuizSetIndex].title = e.target.value;
     renderQuizSetsList();
     updateBreadcrumbs('quizzes');
@@ -473,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('quiz-input-subject')?.addEventListener('change', (e) => {
-    if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
+    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
     STUDIO_DATA.quizSets[currentQuizSetIndex].subject = e.target.value;
     const classification = getSubjectClassification(e.target.value);
     STUDIO_DATA.quizSets[currentQuizSetIndex].tag = classification.type;
@@ -483,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('quiz-input-timelimit')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
+    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
     STUDIO_DATA.quizSets[currentQuizSetIndex].timeLimitMinutes = parseInt(e.target.value) || 15;
   });
 
@@ -492,31 +495,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-delete-quiz-set')?.addEventListener('click', () => {
-    if (STUDIO_DATA.quizSets.length <= 1) {
-      STUDIO_DATA.quizSets = [{
-        id: `quiz_${Date.now()}`,
-        subject: 'Effective Communications',
-        tag: 'Main',
-        title: '',
-        desc: '',
-        timeLimitMinutes: 15,
-        questions: []
-      }];
-      setCurrentQuizSetIndex(0);
-      renderQuizSetsList();
-      loadQuizSetToEditor();
-      renderHubDashboard();
-      window.showToast('Quiz set reset.');
+    if (!STUDIO_DATA.quizSets || STUDIO_DATA.quizSets.length === 0) {
+      window.showToast('No quiz sets to delete.');
       return;
     }
     STUDIO_DATA.quizSets.splice(currentQuizSetIndex, 1);
     if (currentQuizSetIndex >= STUDIO_DATA.quizSets.length) {
-      setCurrentQuizSetIndex(STUDIO_DATA.quizSets.length - 1);
+      setCurrentQuizSetIndex(Math.max(0, STUDIO_DATA.quizSets.length - 1));
     }
     renderQuizSetsList();
     loadQuizSetToEditor();
+    updateBreadcrumbs('quizzes');
     renderHubDashboard();
-    window.showToast('Quiz set deleted.');
+    window.showToast('Quiz bank removed.');
   });
 
   // Calendar Listeners

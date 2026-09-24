@@ -202,9 +202,20 @@ export function renderHubVault() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center text-slate-400 text-xs">
-        <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-        <p class="font-medium">No matching items found in vault.</p>
+      <div class="p-8 text-center text-slate-400 text-xs space-y-3">
+        <i data-lucide="inbox" class="w-8 h-8 mx-auto opacity-40"></i>
+        <div>
+          <p class="font-bold text-slate-700 dark:text-slate-200">No Materials in Session</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Start authoring materials from scratch or import an existing updates.json dataset.</p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <button onclick="window.createQuickReviewer()" class="px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Reviewer
+          </button>
+          <button onclick="window.createQuickQuizSet()" class="px-3 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i> New Quiz Bank
+          </button>
+        </div>
       </div>
     `;
     if (window.lucide) window.lucide.createIcons();

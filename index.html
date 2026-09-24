@@ -1248,83 +1248,11 @@ const STUDIO_DATA = {
   version: "1.4.0",
   updatedAt: new Date().toISOString(),
   announcement: "Materials authored via TagSci G11 Content Studio.",
-  calendarEvents: [
-    {
-      id: 1,
-      date: "2026-09-25",
-      subject: "Physics",
-      title: "Periodical Exam - Kinematics & Dynamics",
-      type: "exam",
-      badge: "Exam / 60 pts",
-      desc: "Coverage: 1D & 2D Motion, Projectile Motion, Newton's Laws. Scientific calculators allowed."
-    },
-    {
-      id: 2,
-      date: "2026-09-28",
-      subject: "Finite Math",
-      title: "PETA 1 Submission - Mathematical Modeling",
-      type: "peta",
-      badge: "Performance Task",
-      desc: "Matrix operations, linear programming, and real-world system optimization."
-    },
-    {
-      id: 3,
-      date: "2026-10-02",
-      subject: "Chemistry",
-      title: "Long Quiz #2 - Stoichiometry & Gas Laws",
-      type: "quiz",
-      badge: "Quiz / 30 pts",
-      desc: "Ideal Gas Law, Dalton's Law, Limiting Reactants."
-    }
-  ],
-  stemReviewers: [
-    {
-      id: "physics_kinematics",
-      subject: "Physics",
-      tag: "Elective",
-      color: "border-l-4 border-tagsci-600",
-      title: "Kinematics in 1D & 2D Motion",
-      summary: "Master velocity, acceleration, free fall, and projectile trajectories with derivations.",
-      blocks: [
-        { type: 'heading', level: 'h3', text: '1. Fundamental Kinematic Equations' },
-        { type: 'paragraph', text: 'For linear particle motion with constant acceleration $a$:' },
-        { type: 'formula', title: 'Torricelli Velocity Relation', formula: 'v_f^2 = v_0^2 + 2a\\Delta x', note: 'Relates initial and final velocities to displacement without time dependence.' },
-        { type: 'formula', title: 'Position-Time Equation', formula: '\\Delta x = v_0 t + \\frac{1}{2}at^2', note: 'Calculates total distance traveled under constant acceleration.' },
-        { type: 'bullets', items: ['Horizontal velocity $v_x = v_0\\cos\\theta$ is strictly constant.', 'Vertical motion is influenced by downward gravitational acceleration $g = 9.8\\text{ m/s}^2$.'] }
-      ],
-      rawMarkdown: "",
-      content: ""
-    },
-    {
-      id: "gen_math_functions",
-      subject: "General Math",
-      tag: "Main",
-      color: "border-l-4 border-g11pink-500",
-      title: "Functions, Rational Equations & Inverses",
-      summary: "Domain, range, rational functions, asymptotes, and inverse function properties.",
-      blocks: [
-        { type: 'heading', level: 'h3', text: '1. Rational Functions & Asymptotes' },
-        { type: 'paragraph', text: 'A rational function is defined as a fraction of polynomials $f(x) = \\frac{P(x)}{Q(x)}$ where $Q(x) \\neq 0$.' },
-        { type: 'formula', title: 'Standard Rational Form', formula: 'f(x) = \\frac{a_n x^n + \\dots}{b_m x^m + \\dots}', note: 'Compare degree n and degree m to find horizontal asymptotes.' },
-        { type: 'bullets', items: ['Vertical Asymptote: Values of x where denominator Q(x) = 0.', 'Horizontal Asymptote: If n < m, y = 0. If n = m, y = a_n / b_m.'] }
-      ],
-      rawMarkdown: "",
-      content: ""
-    }
-  ],
+  calendarEvents: [],
+  stemReviewers: [],
   studyMaterials: [],
   problemSets: [],
-  quizSets: [
-    {
-      id: "quiz_set_1",
-      subject: "Effective Communications",
-      tag: "Main",
-      title: "Untitled Quiz Set",
-      desc: "",
-      timeLimitMinutes: 15,
-      questions: []
-    }
-  ]
+  quizSets: []
 };
 
 let currentRevIndex = 0;
@@ -1661,12 +1589,26 @@ function renderReviewersList() {
   const searchInput = document.getElementById('rev-search');
   const search = searchInput ? searchInput.value.toLowerCase() : '';
 
-  if (badgeCount) badgeCount.innerText = STUDIO_DATA.stemReviewers.length;
-  if (countLabel) countLabel.innerText = `(${STUDIO_DATA.stemReviewers.length} items)`;
+  const revs = STUDIO_DATA.stemReviewers || [];
+  if (badgeCount) badgeCount.innerText = revs.length;
+  if (countLabel) countLabel.innerText = `(${revs.length} items)`;
 
   if (!container) return;
   container.innerHTML = '';
-  STUDIO_DATA.stemReviewers.forEach((rev, idx) => {
+
+  if (revs.length === 0) {
+    container.innerHTML = `
+      <div class="p-6 text-center text-slate-400 text-xs">
+        <i data-lucide="book-open" class="w-7 h-7 mx-auto mb-1.5 opacity-40"></i>
+        <p class="font-medium text-slate-500 dark:text-slate-400">No notes drafted yet.</p>
+        <p class="text-[10px] text-slate-400 mt-1">Click "+ New Note" above or in the Hub to create one.</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  revs.forEach((rev, idx) => {
     if (search && !rev.title.toLowerCase().includes(search) && !rev.subject.toLowerCase().includes(search)) {
       return;
     }
@@ -1679,8 +1621,8 @@ function renderReviewersList() {
     }`;
     card.innerHTML = `
       <div class="flex items-center justify-between mb-1">
-        <span class="text-[10px] font-black uppercase tracking-wider text-tagsci-700 dark:text-tagsci-400">${rev.subject}</span>
-        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${rev.tag}</span>
+        <span class="text-[10px] font-black uppercase tracking-wider text-tagsci-700 dark:text-tagsci-400">${rev.subject || 'General Math'}</span>
+        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${rev.tag || 'Main'}</span>
       </div>
       <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">${rev.title || 'Untitled'}</h4>
       <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${rev.summary || 'No summary provided...'}</p>
@@ -1692,18 +1634,29 @@ function renderReviewersList() {
     };
     container.appendChild(card);
   });
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function loadReviewerToEditor() {
-  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
-  if (!rev) return;
+  const revs = STUDIO_DATA.stemReviewers || [];
+  const rev = revs[currentRevIndex];
 
   const subjEl = document.getElementById('rev-input-subject');
   const tagEl = document.getElementById('rev-input-tag');
   const titleEl = document.getElementById('rev-input-title');
   const sumEl = document.getElementById('rev-input-summary');
+  const bodyInput = document.getElementById('rev-input-body');
 
-  if (subjEl) subjEl.value = rev.subject;
+  if (!rev) {
+    if (titleEl) titleEl.value = '';
+    if (sumEl) sumEl.value = '';
+    if (bodyInput) bodyInput.value = '';
+    renderBlockCanvas();
+    syncBlocksToPreview();
+    return;
+  }
+
+  if (subjEl) subjEl.value = rev.subject || 'General Math';
   if (tagEl) tagEl.value = rev.tag || 'Main';
   if (titleEl) titleEl.value = rev.title || '';
   if (sumEl) sumEl.value = rev.summary || '';
@@ -1717,9 +1670,25 @@ function loadReviewerToEditor() {
 }
 
 function renderBlockCanvas() {
-  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  const revs = STUDIO_DATA.stemReviewers || [];
+  const rev = revs[currentRevIndex];
   const container = document.getElementById('blocks-container');
-  if (!rev || !container) return;
+  if (!container) return;
+
+  if (!rev) {
+    container.innerHTML = `
+      <div class="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2.5">
+        <i data-lucide="file-plus" class="w-8 h-8 mx-auto text-slate-400 opacity-60"></i>
+        <p class="font-bold text-slate-700 dark:text-slate-200">No Reviewer Draft Selected</p>
+        <p class="text-[11px] text-slate-400 max-w-xs mx-auto">Create a new reviewer draft to begin authoring concepts, formulas, and notes.</p>
+        <button onclick="window.createQuickReviewer()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Create New Reviewer
+        </button>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
 
   if (!rev.blocks) {
     rev.blocks = parseMarkdownIntoBlocks(rev.rawMarkdown || '');
@@ -1832,8 +1801,23 @@ function renderBlockCanvas() {
 }
 
 function syncBlocksToPreview() {
-  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
-  if (!rev) return;
+  const revs = STUDIO_DATA.stemReviewers || [];
+  const rev = revs[currentRevIndex];
+  const previewPane = document.getElementById('rev-live-preview');
+
+  if (!rev) {
+    if (previewPane) {
+      previewPane.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center text-center text-slate-400 text-xs py-16">
+          <i data-lucide="eye-off" class="w-8 h-8 mb-2 opacity-40"></i>
+          <p class="font-medium text-slate-500 dark:text-slate-400">Live student preview will appear here.</p>
+          <p class="text-[10.5px] text-slate-400 mt-1">Select or create a reviewer draft to view output.</p>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+    }
+    return;
+  }
 
   const compiledMd = compileBlocksToMarkdown(rev.blocks);
   rev.rawMarkdown = compiledMd;
@@ -2066,12 +2050,26 @@ function renderQuizSetsList() {
   const badgeCount = document.getElementById('badge-count-quiz');
   const countLabel = document.getElementById('quiz-list-count');
 
-  if (badgeCount) badgeCount.innerText = STUDIO_DATA.quizSets.length;
-  if (countLabel) countLabel.innerText = `(${STUDIO_DATA.quizSets.length} sets)`;
+  const sets = STUDIO_DATA.quizSets || [];
+  if (badgeCount) badgeCount.innerText = sets.length;
+  if (countLabel) countLabel.innerText = `(${sets.length} sets)`;
 
   if (!container) return;
   container.innerHTML = '';
-  STUDIO_DATA.quizSets.forEach((set, idx) => {
+
+  if (sets.length === 0) {
+    container.innerHTML = `
+      <div class="p-6 text-center text-slate-400 text-xs">
+        <i data-lucide="brain-circuit" class="w-7 h-7 mx-auto mb-1.5 opacity-40"></i>
+        <p class="font-medium text-slate-500 dark:text-slate-400">No quiz banks drafted yet.</p>
+        <p class="text-[10px] text-slate-400 mt-1">Click "+ New Quiz Set" above or in the Hub to create one.</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  sets.forEach((set, idx) => {
     const isActive = idx === currentQuizSetIndex;
     const card = document.createElement('div');
     card.className = `p-3 rounded-xl border cursor-pointer transition-all ${
@@ -2079,10 +2077,11 @@ function renderQuizSetsList() {
         ? 'bg-g11pink-50/80 dark:bg-g11pink-950/70 border-g11pink-500 shadow-sm'
         : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 hover:border-slate-300'
     }`;
+    const qCount = set.questions ? set.questions.length : 0;
     card.innerHTML = `
       <div class="flex items-center justify-between mb-1">
-        <span class="text-[10px] font-black uppercase tracking-wider text-g11pink-600 dark:text-g11pink-400">${set.subject}</span>
-        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${set.questions.length} Qs</span>
+        <span class="text-[10px] font-black uppercase tracking-wider text-g11pink-600 dark:text-g11pink-400">${set.subject || 'General Math'}</span>
+        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${qCount} Qs</span>
       </div>
       <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">${set.title || 'Untitled Quiz'}</h4>
       <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${set.desc || 'No description...'}</p>
@@ -2094,15 +2093,24 @@ function renderQuizSetsList() {
     };
     container.appendChild(card);
   });
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function loadQuizSetToEditor() {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
-  if (!set) return;
+  const sets = STUDIO_DATA.quizSets || [];
+  const set = sets[currentQuizSetIndex];
 
   const subjEl = document.getElementById('quiz-input-subject');
   const titleEl = document.getElementById('quiz-input-title');
   const timeEl = document.getElementById('quiz-input-timelimit');
+
+  if (!set) {
+    if (titleEl) titleEl.value = '';
+    if (timeEl) timeEl.value = 15;
+    renderQuestionsBuilder();
+    renderLiveQuizTester();
+    return;
+  }
 
   if (subjEl) subjEl.value = set.subject || 'Effective Communications';
   if (titleEl) titleEl.value = set.title || '';
@@ -2113,10 +2121,27 @@ function loadQuizSetToEditor() {
 }
 
 function renderQuestionsBuilder() {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
+  const sets = STUDIO_DATA.quizSets || [];
+  const set = sets[currentQuizSetIndex];
   const container = document.getElementById('questions-builder-container');
   const badge = document.getElementById('question-count-badge');
-  if (!set || !container) return;
+  if (!container) return;
+
+  if (!set || !set.questions || set.questions.length === 0) {
+    if (badge) badge.innerText = '0 Questions';
+    container.innerHTML = `
+      <div class="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2.5">
+        <i data-lucide="help-circle" class="w-8 h-8 mx-auto text-slate-400 opacity-60"></i>
+        <p class="font-bold text-slate-700 dark:text-slate-200">No Questions in this Bank</p>
+        <p class="text-[11px] text-slate-400 max-w-xs mx-auto">Click any question type button above to add Multiple Choice, True/False, Identification, Numerical, Multi-Select, or Flashcards.</p>
+        <button onclick="window.addQuestionBlock('mcq')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Multiple Choice
+        </button>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
 
   if (badge) badge.innerText = `${set.questions.length} Questions`;
 
@@ -2461,7 +2486,9 @@ function addMcqOption(qIdx) {
 }
 
 function deleteQuestion(qIdx) {
-  STUDIO_DATA.quizSets[currentQuizSetIndex].questions.splice(qIdx, 1);
+  const set = (STUDIO_DATA.quizSets || [])[currentQuizSetIndex];
+  if (!set || !set.questions) return;
+  set.questions.splice(qIdx, 1);
   renderQuestionsBuilder();
   renderLiveQuizTester();
   renderQuizSetsList();
@@ -2699,12 +2726,26 @@ function renderCalendarEvents() {
   const badgeCount = document.getElementById('badge-count-cal');
   const countLabel = document.getElementById('cal-events-count');
 
-  if (badgeCount) badgeCount.innerText = STUDIO_DATA.calendarEvents.length;
-  if (countLabel) countLabel.innerText = `${STUDIO_DATA.calendarEvents.length} events scheduled`;
+  const events = STUDIO_DATA.calendarEvents || [];
+  if (badgeCount) badgeCount.innerText = events.length;
+  if (countLabel) countLabel.innerText = `${events.length} events scheduled`;
 
   if (!container) return;
   container.innerHTML = '';
-  STUDIO_DATA.calendarEvents.forEach((ev, idx) => {
+
+  if (events.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+        <i data-lucide="calendar" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+        <p class="font-medium text-slate-600 dark:text-slate-300">No deadlines or events scheduled yet.</p>
+        <p class="text-[10.5px] text-slate-400 mt-0.5">Use the form on the left to schedule major exams, submission deadlines, and milestones.</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  events.forEach((ev, idx) => {
     const isTagSci = ev.subject === 'TagSci' || ev.tag === 'TagSci';
     const isDepEd = ev.subject === 'DepEd' || ev.tag === 'DepEd';
     let badgeColorClass = 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300';
@@ -2736,6 +2777,7 @@ function renderCalendarEvents() {
     `;
     container.appendChild(card);
   });
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function deleteCalendarEvent(idx) {
@@ -2977,11 +3019,11 @@ function renderHubVault() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center text-slate-400 text-xs">
-        <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-        <p class="font-medium">No matching items found in vault.</p>
-      </div>
-    `;
+      <div class="p-8 text-center text-slate-400 text-xs space-y-3">
+        <i data-lucide="inbox" class="w-8 h-8 mx-auto opacity-40"></i>
+        <div>
+          <p class="font-bold text-slate-700 dark:text-slate-200">No Materials in Session</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Start authoring materials from scratch or 
     if (window.lucide) window.lucide.createIcons();
     return;
   }
@@ -3958,14 +4000,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-delete-rev')?.addEventListener('click', () => {
-    if (STUDIO_DATA.stemReviewers.length <= 1) {
-      window.showToast('At least 1 reviewer must remain in session.');
+    if (!STUDIO_DATA.stemReviewers || STUDIO_DATA.stemReviewers.length === 0) {
+      window.showToast('No reviewers to delete.');
       return;
     }
     STUDIO_DATA.stemReviewers.splice(currentRevIndex, 1);
-    setCurrentRevIndex(0);
+    if (currentRevIndex >= STUDIO_DATA.stemReviewers.length) {
+      setCurrentRevIndex(Math.max(0, STUDIO_DATA.stemReviewers.length - 1));
+    }
     renderReviewersList();
     loadReviewerToEditor();
+    updateBreadcrumbs('reviewers');
     renderHubDashboard();
     window.showToast('Reviewer draft removed.');
   });
@@ -3978,7 +4023,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-reset-quiz-preview')?.addEventListener('click', resetLiveTester);
 
   document.getElementById('quiz-input-title')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
+    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
     STUDIO_DATA.quizSets[currentQuizSetIndex].title = e.target.value;
     renderQuizSetsList();
     updateBreadcrumbs('quizzes');
@@ -3986,7 +4031,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('quiz-input-subject')?.addEventListener('change', (e) => {
-    if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
+    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
     STUDIO_DATA.quizSets[currentQuizSetIndex].subject = e.target.value;
     const classification = getSubjectClassification(e.target.value);
     STUDIO_DATA.quizSets[currentQuizSetIndex].tag = classification.type;
@@ -3996,7 +4041,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('quiz-input-timelimit')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
+    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
     STUDIO_DATA.quizSets[currentQuizSetIndex].timeLimitMinutes = parseInt(e.target.value) || 15;
   });
 
@@ -4005,31 +4050,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-delete-quiz-set')?.addEventListener('click', () => {
-    if (STUDIO_DATA.quizSets.length <= 1) {
-      STUDIO_DATA.quizSets = [{
-        id: `quiz_${Date.now()}`,
-        subject: 'Effective Communications',
-        tag: 'Main',
-        title: '',
-        desc: '',
-        timeLimitMinutes: 15,
-        questions: []
-      }];
-      setCurrentQuizSetIndex(0);
-      renderQuizSetsList();
-      loadQuizSetToEditor();
-      renderHubDashboard();
-      window.showToast('Quiz set reset.');
+    if (!STUDIO_DATA.quizSets || STUDIO_DATA.quizSets.length === 0) {
+      window.showToast('No quiz sets to delete.');
       return;
     }
     STUDIO_DATA.quizSets.splice(currentQuizSetIndex, 1);
     if (currentQuizSetIndex >= STUDIO_DATA.quizSets.length) {
-      setCurrentQuizSetIndex(STUDIO_DATA.quizSets.length - 1);
+      setCurrentQuizSetIndex(Math.max(0, STUDIO_DATA.quizSets.length - 1));
     }
     renderQuizSetsList();
     loadQuizSetToEditor();
+    updateBreadcrumbs('quizzes');
     renderHubDashboard();
-    window.showToast('Quiz set deleted.');
+    window.showToast('Quiz bank removed.');
   });
 
   // Calendar Listeners

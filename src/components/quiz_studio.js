@@ -14,12 +14,26 @@ export function renderQuizSetsList() {
   const badgeCount = document.getElementById('badge-count-quiz');
   const countLabel = document.getElementById('quiz-list-count');
 
-  if (badgeCount) badgeCount.innerText = STUDIO_DATA.quizSets.length;
-  if (countLabel) countLabel.innerText = `(${STUDIO_DATA.quizSets.length} sets)`;
+  const sets = STUDIO_DATA.quizSets || [];
+  if (badgeCount) badgeCount.innerText = sets.length;
+  if (countLabel) countLabel.innerText = `(${sets.length} sets)`;
 
   if (!container) return;
   container.innerHTML = '';
-  STUDIO_DATA.quizSets.forEach((set, idx) => {
+
+  if (sets.length === 0) {
+    container.innerHTML = `
+      <div class="p-6 text-center text-slate-400 text-xs">
+        <i data-lucide="brain-circuit" class="w-7 h-7 mx-auto mb-1.5 opacity-40"></i>
+        <p class="font-medium text-slate-500 dark:text-slate-400">No quiz banks drafted yet.</p>
+        <p class="text-[10px] text-slate-400 mt-1">Click "+ New Quiz Set" above or in the Hub to create one.</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  sets.forEach((set, idx) => {
     const isActive = idx === currentQuizSetIndex;
     const card = document.createElement('div');
     card.className = `p-3 rounded-xl border cursor-pointer transition-all ${
@@ -27,10 +41,11 @@ export function renderQuizSetsList() {
         ? 'bg-g11pink-50/80 dark:bg-g11pink-950/70 border-g11pink-500 shadow-sm'
         : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 hover:border-slate-300'
     }`;
+    const qCount = set.questions ? set.questions.length : 0;
     card.innerHTML = `
       <div class="flex items-center justify-between mb-1">
-        <span class="text-[10px] font-black uppercase tracking-wider text-g11pink-600 dark:text-g11pink-400">${set.subject}</span>
-        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${set.questions.length} Qs</span>
+        <span class="text-[10px] font-black uppercase tracking-wider text-g11pink-600 dark:text-g11pink-400">${set.subject || 'General Math'}</span>
+        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${qCount} Qs</span>
       </div>
       <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">${set.title || 'Untitled Quiz'}</h4>
       <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${set.desc || 'No description...'}</p>
@@ -42,15 +57,24 @@ export function renderQuizSetsList() {
     };
     container.appendChild(card);
   });
+  if (window.lucide) window.lucide.createIcons();
 }
 
 export function loadQuizSetToEditor() {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
-  if (!set) return;
+  const sets = STUDIO_DATA.quizSets || [];
+  const set = sets[currentQuizSetIndex];
 
   const subjEl = document.getElementById('quiz-input-subject');
   const titleEl = document.getElementById('quiz-input-title');
   const timeEl = document.getElementById('quiz-input-timelimit');
+
+  if (!set) {
+    if (titleEl) titleEl.value = '';
+    if (timeEl) timeEl.value = 15;
+    renderQuestionsBuilder();
+    renderLiveQuizTester();
+    return;
+  }
 
   if (subjEl) subjEl.value = set.subject || 'Effective Communications';
   if (titleEl) titleEl.value = set.title || '';
@@ -61,10 +85,27 @@ export function loadQuizSetToEditor() {
 }
 
 export function renderQuestionsBuilder() {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
+  const sets = STUDIO_DATA.quizSets || [];
+  const set = sets[currentQuizSetIndex];
   const container = document.getElementById('questions-builder-container');
   const badge = document.getElementById('question-count-badge');
-  if (!set || !container) return;
+  if (!container) return;
+
+  if (!set || !set.questions || set.questions.length === 0) {
+    if (badge) badge.innerText = '0 Questions';
+    container.innerHTML = `
+      <div class="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2.5">
+        <i data-lucide="help-circle" class="w-8 h-8 mx-auto text-slate-400 opacity-60"></i>
+        <p class="font-bold text-slate-700 dark:text-slate-200">No Questions in this Bank</p>
+        <p class="text-[11px] text-slate-400 max-w-xs mx-auto">Click any question type button above to add Multiple Choice, True/False, Identification, Numerical, Multi-Select, or Flashcards.</p>
+        <button onclick="window.addQuestionBlock('mcq')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Multiple Choice
+        </button>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
 
   if (badge) badge.innerText = `${set.questions.length} Questions`;
 
@@ -409,7 +450,9 @@ export function addMcqOption(qIdx) {
 }
 
 export function deleteQuestion(qIdx) {
-  STUDIO_DATA.quizSets[currentQuizSetIndex].questions.splice(qIdx, 1);
+  const set = (STUDIO_DATA.quizSets || [])[currentQuizSetIndex];
+  if (!set || !set.questions) return;
+  set.questions.splice(qIdx, 1);
   renderQuestionsBuilder();
   renderLiveQuizTester();
   renderQuizSetsList();
