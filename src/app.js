@@ -203,6 +203,23 @@ window.removeMcqOption = removeMcqOption;
 window.addMcqOption = addMcqOption;
 window.deleteQuestion = deleteQuestion;
 
+window.toggleQuizAddBlockDropdown = function(event) {
+  if (event) event.stopPropagation();
+  const menu = document.getElementById('quiz-add-block-menu');
+  if (menu) {
+    menu.classList.toggle('hidden');
+    if (!menu.classList.contains('hidden') && window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+};
+
+window.handleQuizAddBlockSelect = function(type) {
+  addQuestionBlock(type);
+  const menu = document.getElementById('quiz-add-block-menu');
+  if (menu) menu.classList.add('hidden');
+};
+
 window.checkTesterAnswer = checkTesterAnswer;
 window.checkTesterTrueFalse = checkTesterTrueFalse;
 window.checkTesterIdentification = checkTesterIdentification;
@@ -458,13 +475,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Dropdown close on outside click
+  // Dropdowns close on outside click
   document.addEventListener('click', (e) => {
-    const menu = document.getElementById('add-block-menu');
-    const btn = document.getElementById('btn-add-block-dropdown');
-    if (menu && !menu.classList.contains('hidden')) {
-      if (!menu.contains(e.target) && !btn?.contains(e.target)) {
-        menu.classList.add('hidden');
+    // Reviewers dropdown
+    const menuRev = document.getElementById('add-block-menu');
+    const btnRev = document.getElementById('btn-add-block-dropdown');
+    if (menuRev && !menuRev.classList.contains('hidden')) {
+      if (!menuRev.contains(e.target) && !btnRev?.contains(e.target)) {
+        menuRev.classList.add('hidden');
+      }
+    }
+
+    // Study Materials dropdown
+    const menuMat = document.getElementById('mat-add-block-menu');
+    const btnMat = document.getElementById('btn-mat-add-block-dropdown');
+    if (menuMat && !menuMat.classList.contains('hidden')) {
+      if (!menuMat.contains(e.target) && !btnMat?.contains(e.target)) {
+        menuMat.classList.add('hidden');
+      }
+    }
+
+    // Quiz dropdown
+    const menuQuiz = document.getElementById('quiz-add-block-menu');
+    const btnQuiz = document.getElementById('btn-quiz-add-block-dropdown');
+    if (menuQuiz && !menuQuiz.classList.contains('hidden')) {
+      if (!menuQuiz.contains(e.target) && !btnQuiz?.contains(e.target)) {
+        menuQuiz.classList.add('hidden');
       }
     }
   });
