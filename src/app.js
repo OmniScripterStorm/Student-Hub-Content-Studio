@@ -637,6 +637,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       syncMaterialBlocksToPreview();
     });
+  }
+
   // Reviewers inputs and actions
   document.getElementById('rev-input-body')?.addEventListener('input', () => {
     const raw = document.getElementById('rev-input-body').value;
