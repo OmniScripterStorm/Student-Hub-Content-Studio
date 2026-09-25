@@ -24,6 +24,7 @@ def build_content_studio():
     math_engine_js = clean_module(os.path.join(src_dir, 'components', 'math_engine.js'))
     equation_modal_js = clean_module(os.path.join(src_dir, 'components', 'equation_modal.js'))
     reviewer_studio_js = clean_module(os.path.join(src_dir, 'components', 'reviewer_studio.js'))
+    material_studio_js = clean_module(os.path.join(src_dir, 'components', 'material_studio.js'))
     quiz_studio_js = clean_module(os.path.join(src_dir, 'components', 'quiz_studio.js'))
     calendar_studio_js = clean_module(os.path.join(src_dir, 'components', 'calendar_studio.js'))
     hub_dashboard_js = clean_module(os.path.join(src_dir, 'components', 'hub_dashboard.js'))
@@ -41,6 +42,8 @@ def build_content_studio():
     {equation_modal_js}
 
     {reviewer_studio_js}
+
+    {material_studio_js}
 
     {quiz_studio_js}
 
