@@ -6170,7 +6170,72 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       syncMaterialBlocksToPreview();
     });
-  }
+  // Reviewers inputs and actions
+  document.getElementById('rev-input-body')?.addEventListener('input', () => {
+    const raw = document.getElementById('rev-input-body').value;
+    const revs = STUDIO_DATA.stemReviewers || [];
+    if (revs[currentRevIndex]) {
+      revs[currentRevIndex].rawMarkdown = raw;
+    }
+    syncBlocksToPreview();
+  });
+
+  document.getElementById('rev-input-title')?.addEventListener('input', () => {
+    syncBlocksToPreview();
+    renderReviewersList();
+    updateBreadcrumbs('reviewers');
+    renderHubDashboard();
+  });
+
+  document.getElementById('rev-input-summary')?.addEventListener('input', () => {
+    syncBlocksToPreview();
+    renderReviewersList();
+    renderHubDashboard();
+  });
+
+  document.getElementById('rev-input-subject')?.addEventListener('change', () => {
+    const subj = document.getElementById('rev-input-subject').value;
+    const meta = getSubjectClassification(subj);
+    const tagEl = document.getElementById('rev-input-tag');
+    if (tagEl && !tagEl.value) tagEl.value = meta.type || 'Main';
+    const revs = STUDIO_DATA.stemReviewers || [];
+    if (revs[currentRevIndex]) {
+      revs[currentRevIndex].color = meta.color || 'border-l-4 border-tagsci-600';
+    }
+    syncBlocksToPreview();
+    renderReviewersList();
+    updateBreadcrumbs('reviewers');
+    renderHubDashboard();
+  });
+
+  document.getElementById('rev-input-tag')?.addEventListener('change', () => {
+    syncBlocksToPreview();
+    renderReviewersList();
+  });
+
+  document.getElementById('rev-search')?.addEventListener('input', renderReviewersList);
+
+  document.getElementById('btn-add-reviewer')?.addEventListener('click', () => {
+    window.createQuickReviewer();
+  });
+
+  document.getElementById('btn-delete-rev')?.addEventListener('click', () => {
+    if (!STUDIO_DATA.stemReviewers || STUDIO_DATA.stemReviewers.length === 0) {
+      window.showToast('No reviewers to delete.');
+      return;
+    }
+    if (confirm('Are you sure you want to delete this reviewer note?')) {
+      STUDIO_DATA.stemReviewers.splice(currentRevIndex, 1);
+      if (currentRevIndex >= STUDIO_DATA.stemReviewers.length) {
+        setCurrentRevIndex(Math.max(0, STUDIO_DATA.stemReviewers.length - 1));
+      }
+      renderReviewersList();
+      loadReviewerToEditor();
+      updateBreadcrumbs('reviewers');
+      renderHubDashboard();
+      window.showToast('Reviewer draft removed.');
+    }
+  });
 
   // Study Materials inputs
   document.getElementById('mat-input-body')?.addEventListener('input', () => {
