@@ -557,23 +557,33 @@ export function syncBlocksToPreview() {
     return;
   }
 
-  const compiledMd = compileBlocksToMarkdown(rev.blocks);
-  rev.rawMarkdown = compiledMd;
-
-  const bodyInput = document.getElementById('rev-input-body');
-  const charCount = document.getElementById('editor-char-count');
-  if (bodyInput) bodyInput.value = compiledMd;
-  if (charCount) charCount.innerText = `${compiledMd.length} chars`;
-
   const subjEl = document.getElementById('rev-input-subject');
   const tagEl = document.getElementById('rev-input-tag');
   const titleEl = document.getElementById('rev-input-title');
   const sumEl = document.getElementById('rev-input-summary');
+  const bodyInput = document.getElementById('rev-input-body');
+  const charCount = document.getElementById('editor-char-count');
 
   if (subjEl) rev.subject = subjEl.value;
   if (tagEl) rev.tag = tagEl.value;
   if (titleEl) rev.title = titleEl.value;
   if (sumEl) rev.summary = sumEl.value;
+
+  const isSourceMode = currentEditorMode === 'source';
+
+  if (isSourceMode) {
+    // When editing source directly, rawMarkdown is the source of truth
+    const rawMd = bodyInput ? bodyInput.value : (rev.rawMarkdown || '');
+    rev.rawMarkdown = rawMd;
+    rev.blocks = parseMarkdownIntoBlocks(rawMd);
+    if (charCount) charCount.innerText = `${rawMd.length} chars`;
+  } else {
+    // When editing visual blocks, blocks array is the source of truth
+    const compiledMd = compileBlocksToMarkdown(rev.blocks);
+    rev.rawMarkdown = compiledMd;
+    if (bodyInput) bodyInput.value = compiledMd;
+    if (charCount) charCount.innerText = `${compiledMd.length} chars`;
+  }
 
   rev.content = renderBlocksToHtml(rev.blocks);
 

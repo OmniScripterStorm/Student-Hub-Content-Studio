@@ -499,14 +499,25 @@ document.addEventListener('DOMContentLoaded', () => {
     btnVisual.addEventListener('click', () => {
       setCurrentEditorMode('visual');
       btnVisual.classList.add('bg-white', 'dark:bg-slate-900', 'text-tagsci-800', 'dark:text-tagsci-300', 'shadow-sm');
-      if (btnSource) btnSource.classList.remove('bg-white', 'dark:bg-slate-900', 'text-tagsci-800', 'dark:text-tagsci-300', 'shadow-sm');
+      btnVisual.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      btnVisual.classList.add('font-bold');
+
+      if (btnSource) {
+        btnSource.classList.remove('bg-white', 'dark:bg-slate-900', 'text-tagsci-800', 'dark:text-tagsci-300', 'shadow-sm', 'font-bold');
+        btnSource.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      }
+
       document.getElementById('pane-visual-blocks')?.classList.remove('hidden');
       document.getElementById('pane-markdown-source')?.classList.add('hidden');
       document.getElementById('visual-builder-toolbar')?.classList.remove('hidden');
 
       const rawMd = document.getElementById('rev-input-body')?.value || '';
-      STUDIO_DATA.stemReviewers[currentRevIndex].blocks = parseMarkdownIntoBlocks(rawMd);
+      if (STUDIO_DATA.stemReviewers[currentRevIndex]) {
+        STUDIO_DATA.stemReviewers[currentRevIndex].rawMarkdown = rawMd;
+        STUDIO_DATA.stemReviewers[currentRevIndex].blocks = parseMarkdownIntoBlocks(rawMd);
+      }
       renderBlockCanvas();
+      syncBlocksToPreview();
     });
   }
 
@@ -514,67 +525,27 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSource.addEventListener('click', () => {
       setCurrentEditorMode('source');
       btnSource.classList.add('bg-white', 'dark:bg-slate-900', 'text-tagsci-800', 'dark:text-tagsci-300', 'shadow-sm');
-      if (btnVisual) btnVisual.classList.remove('bg-white', 'dark:bg-slate-900', 'text-tagsci-800', 'dark:text-tagsci-300', 'shadow-sm');
+      btnSource.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      btnSource.classList.add('font-bold');
+
+      if (btnVisual) {
+        btnVisual.classList.remove('bg-white', 'dark:bg-slate-900', 'text-tagsci-800', 'dark:text-tagsci-300', 'shadow-sm', 'font-bold');
+        btnVisual.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      }
+
       document.getElementById('pane-markdown-source')?.classList.remove('hidden');
       document.getElementById('pane-visual-blocks')?.classList.add('hidden');
       document.getElementById('visual-builder-toolbar')?.classList.add('hidden');
+
+      if (STUDIO_DATA.stemReviewers[currentRevIndex]) {
+        const compiled = compileBlocksToMarkdown(STUDIO_DATA.stemReviewers[currentRevIndex].blocks);
+        STUDIO_DATA.stemReviewers[currentRevIndex].rawMarkdown = compiled;
+        const bodyInput = document.getElementById('rev-input-body');
+        if (bodyInput) bodyInput.value = compiled;
+      }
+      syncBlocksToPreview();
     });
   }
-
-  // Reviewer inputs
-  document.getElementById('rev-input-body')?.addEventListener('input', () => {
-    const raw = document.getElementById('rev-input-body').value;
-    STUDIO_DATA.stemReviewers[currentRevIndex].rawMarkdown = raw;
-    syncBlocksToPreview();
-  });
-
-  document.getElementById('rev-input-title')?.addEventListener('input', () => {
-    syncBlocksToPreview();
-    updateBreadcrumbs('reviewers');
-    renderHubDashboard();
-  });
-
-  document.getElementById('rev-input-summary')?.addEventListener('input', () => {
-    syncBlocksToPreview();
-    renderHubDashboard();
-  });
-
-  document.getElementById('rev-input-subject')?.addEventListener('change', () => {
-    const subj = document.getElementById('rev-input-subject').value;
-    const meta = getSubjectClassification(subj);
-    const tagEl = document.getElementById('rev-input-tag');
-    if (tagEl) tagEl.value = meta.type;
-    if (STUDIO_DATA.stemReviewers[currentRevIndex]) {
-      STUDIO_DATA.stemReviewers[currentRevIndex].color = meta.color;
-    }
-    syncBlocksToPreview();
-    renderReviewersList();
-    updateBreadcrumbs('reviewers');
-    renderHubDashboard();
-  });
-
-  document.getElementById('rev-input-tag')?.addEventListener('change', syncBlocksToPreview);
-  document.getElementById('rev-search')?.addEventListener('input', renderReviewersList);
-
-  document.getElementById('btn-add-reviewer')?.addEventListener('click', () => {
-    createQuickReviewer();
-  });
-
-  document.getElementById('btn-delete-rev')?.addEventListener('click', () => {
-    if (!STUDIO_DATA.stemReviewers || STUDIO_DATA.stemReviewers.length === 0) {
-      window.showToast('No reviewers to delete.');
-      return;
-    }
-    STUDIO_DATA.stemReviewers.splice(currentRevIndex, 1);
-    if (currentRevIndex >= STUDIO_DATA.stemReviewers.length) {
-      setCurrentRevIndex(Math.max(0, STUDIO_DATA.stemReviewers.length - 1));
-    }
-    renderReviewersList();
-    loadReviewerToEditor();
-    updateBreadcrumbs('reviewers');
-    renderHubDashboard();
-    window.showToast('Reviewer draft removed.');
-  });
 
   // Study Materials Editor Mode Switches (Visual vs Source)
   const btnMatVisual = document.getElementById('btn-mat-mode-visual');
@@ -583,7 +554,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnMatVisual) {
     btnMatVisual.addEventListener('click', () => {
       btnMatVisual.classList.add('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
-      if (btnMatSource) btnMatSource.classList.remove('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
+      btnMatVisual.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      btnMatVisual.classList.add('font-bold');
+
+      if (btnMatSource) {
+        btnMatSource.classList.remove('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm', 'font-bold');
+        btnMatSource.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      }
+
       document.getElementById('mat-pane-visual-blocks')?.classList.remove('hidden');
       document.getElementById('mat-pane-markdown-source')?.classList.add('hidden');
       document.getElementById('mat-visual-builder-toolbar')?.classList.remove('hidden');
@@ -591,19 +569,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const rawMd = document.getElementById('mat-input-body')?.value || '';
       const mats = STUDIO_DATA.studyMaterials || [];
       if (mats[currentMatIndex]) {
+        mats[currentMatIndex].rawMarkdown = rawMd;
         mats[currentMatIndex].blocks = parseMarkdownIntoBlocks(rawMd);
       }
       renderMaterialBlockCanvas();
+      syncMaterialBlocksToPreview();
     });
   }
 
   if (btnMatSource) {
     btnMatSource.addEventListener('click', () => {
       btnMatSource.classList.add('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
-      if (btnMatVisual) btnMatVisual.classList.remove('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
+      btnMatSource.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      btnMatSource.classList.add('font-bold');
+
+      if (btnMatVisual) {
+        btnMatVisual.classList.remove('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm', 'font-bold');
+        btnMatVisual.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      }
+
       document.getElementById('mat-pane-markdown-source')?.classList.remove('hidden');
       document.getElementById('mat-pane-visual-blocks')?.classList.add('hidden');
       document.getElementById('mat-visual-builder-toolbar')?.classList.add('hidden');
+
+      const mats = STUDIO_DATA.studyMaterials || [];
+      if (mats[currentMatIndex]) {
+        const compiled = compileBlocksToMarkdown(mats[currentMatIndex].blocks);
+        mats[currentMatIndex].rawMarkdown = compiled;
+        const bodyInput = document.getElementById('mat-input-body');
+        if (bodyInput) bodyInput.value = compiled;
+      }
+      syncMaterialBlocksToPreview();
     });
   }
 

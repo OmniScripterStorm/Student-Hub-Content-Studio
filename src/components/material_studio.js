@@ -381,23 +381,34 @@ export function syncMaterialBlocksToPreview() {
     return;
   }
 
-  const compiledMd = compileBlocksToMarkdown(mat.blocks);
-  mat.rawMarkdown = compiledMd;
-
-  const bodyInput = document.getElementById('mat-input-body');
-  const charCount = document.getElementById('editor-char-count-mat');
-  if (bodyInput) bodyInput.value = compiledMd;
-  if (charCount) charCount.innerText = `${compiledMd.length} chars`;
-
   const subjEl = document.getElementById('mat-input-subject');
   const tagEl = document.getElementById('mat-input-tag');
   const titleEl = document.getElementById('mat-input-title');
   const sumEl = document.getElementById('mat-input-summary');
+  const bodyInput = document.getElementById('mat-input-body');
+  const charCount = document.getElementById('editor-char-count-mat');
 
   if (subjEl) mat.subject = subjEl.value;
   if (tagEl) mat.tag = tagEl.value;
   if (titleEl) mat.title = titleEl.value;
   if (sumEl) mat.summary = sumEl.value;
+
+  const sourcePane = document.getElementById('mat-pane-markdown-source');
+  const isSourceMode = sourcePane && !sourcePane.classList.contains('hidden');
+
+  if (isSourceMode) {
+    // When editing source directly, rawMarkdown is the source of truth
+    const rawMd = bodyInput ? bodyInput.value : (mat.rawMarkdown || '');
+    mat.rawMarkdown = rawMd;
+    mat.blocks = parseMarkdownIntoBlocks(rawMd);
+    if (charCount) charCount.innerText = `${rawMd.length} chars`;
+  } else {
+    // When editing visual blocks, blocks array is the source of truth
+    const compiledMd = compileBlocksToMarkdown(mat.blocks);
+    mat.rawMarkdown = compiledMd;
+    if (bodyInput) bodyInput.value = compiledMd;
+    if (charCount) charCount.innerText = `${compiledMd.length} chars`;
+  }
 
   mat.content = renderBlocksToHtml(mat.blocks);
 
