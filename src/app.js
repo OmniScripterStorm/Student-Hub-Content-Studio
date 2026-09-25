@@ -2,9 +2,35 @@
    TagSci Content Studio - Main Application Bootstrap (Concept 1: Document Hub)
    ========================================================= */
 
-import { STUDIO_DATA, currentRevIndex, currentQuizSetIndex, currentEditorMode, setCurrentRevIndex, setCurrentQuizSetIndex, setCurrentEditorMode, getSubjectClassification } from './data/studio_data.js';
+import { STUDIO_DATA, currentRevIndex, currentMatIndex, currentQuizSetIndex, currentEditorMode, setCurrentRevIndex, setCurrentMatIndex, setCurrentQuizSetIndex, setCurrentEditorMode, getSubjectClassification } from './data/studio_data.js';
 import { parseMathSyntax, renderMathInHtml, formatRichText, parseMarkdownToHtml } from './components/math_engine.js';
 import { openMathBuilderModal, openMathBuilderForBlock, closeMathBuilderModal, switchMathSubTab, insertFormulaSnippet, setFullEquation, updateMathStudioPreview, confirmMathInsert, setLastFocusedInput } from './components/equation_modal.js';
+import { 
+  renderMaterialsList,
+  loadMaterialToEditor,
+  renderMaterialBlockCanvas,
+  syncMaterialBlocksToPreview,
+  updateMaterialBlockField,
+  moveMaterialBlock,
+  duplicateMaterialBlock,
+  deleteMaterialBlock,
+  addMaterialBulletItem,
+  updateMaterialBulletItem,
+  removeMaterialBulletItem,
+  addMaterialTableCol,
+  removeMaterialTableCol,
+  addMaterialTableRow,
+  removeMaterialTableRow,
+  updateMaterialTableHeader,
+  updateMaterialTableCell,
+  addMaterialPiecewiseSegment,
+  removeMaterialPiecewiseSegment,
+  updateMaterialPiecewiseSegment,
+  toggleMaterialPiecewiseEndpoint,
+  addMaterialContentBlock,
+  createQuickMaterial,
+  exportMaterialMarkdown
+} from './components/material_studio.js';
 import { 
   compileBlocksToMarkdown, 
   parseMarkdownIntoBlocks, 
@@ -121,6 +147,49 @@ window.handleAddBlockSelect = function(type) {
   if (menu) menu.classList.add('hidden');
 };
 
+// Study Materials Bindings
+window.renderMaterialsList = renderMaterialsList;
+window.loadMaterialToEditor = loadMaterialToEditor;
+window.renderMaterialBlockCanvas = renderMaterialBlockCanvas;
+window.syncMaterialBlocksToPreview = syncMaterialBlocksToPreview;
+window.updateMaterialBlockField = updateMaterialBlockField;
+window.moveMaterialBlock = moveMaterialBlock;
+window.duplicateMaterialBlock = duplicateMaterialBlock;
+window.deleteMaterialBlock = deleteMaterialBlock;
+window.addMaterialBulletItem = addMaterialBulletItem;
+window.updateMaterialBulletItem = updateMaterialBulletItem;
+window.removeMaterialBulletItem = removeMaterialBulletItem;
+window.addMaterialTableCol = addMaterialTableCol;
+window.removeMaterialTableCol = removeMaterialTableCol;
+window.addMaterialTableRow = addMaterialTableRow;
+window.removeMaterialTableRow = removeMaterialTableRow;
+window.updateMaterialTableHeader = updateMaterialTableHeader;
+window.updateMaterialTableCell = updateMaterialTableCell;
+window.addMaterialPiecewiseSegment = addMaterialPiecewiseSegment;
+window.removeMaterialPiecewiseSegment = removeMaterialPiecewiseSegment;
+window.updateMaterialPiecewiseSegment = updateMaterialPiecewiseSegment;
+window.toggleMaterialPiecewiseEndpoint = toggleMaterialPiecewiseEndpoint;
+window.addMaterialContentBlock = addMaterialContentBlock;
+window.createQuickMaterial = createQuickMaterial;
+window.exportMaterialMarkdown = exportMaterialMarkdown;
+
+window.toggleMatAddBlockDropdown = function(event) {
+  if (event) event.stopPropagation();
+  const menu = document.getElementById('mat-add-block-menu');
+  if (menu) {
+    menu.classList.toggle('hidden');
+    if (!menu.classList.contains('hidden') && window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+};
+
+window.handleMatAddBlockSelect = function(type) {
+  addMaterialContentBlock(type);
+  const menu = document.getElementById('mat-add-block-menu');
+  if (menu) menu.classList.add('hidden');
+};
+
 window.updateQuestionField = updateQuestionField;
 window.changeQuestionType = changeQuestionType;
 window.updateTrueFalse = updateTrueFalse;
@@ -176,6 +245,11 @@ window.openVaultItem = function(type, index) {
     loadReviewerToEditor();
     renderReviewersList();
     switchTab('reviewers');
+  } else if (type === 'material') {
+    setCurrentMatIndex(index);
+    loadMaterialToEditor();
+    renderMaterialsList();
+    switchTab('materials');
   } else if (type === 'quiz') {
     setCurrentQuizSetIndex(index);
     loadQuizSetToEditor();
@@ -297,6 +371,12 @@ export function updateBreadcrumbs(tabId) {
   } else if (tabId === 'reviewers') {
     const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
     curr.innerText = rev ? `${rev.subject || 'Reviewer'} / ${rev.title || 'Untitled Draft'}` : 'Reviewers Studio';
+    if (backBtn) backBtn.classList.remove('hidden');
+    if (sep) sep.classList.remove('hidden');
+  } else if (tabId === 'materials') {
+    const mats = STUDIO_DATA.studyMaterials || [];
+    const mat = mats[currentMatIndex];
+    curr.innerText = mat ? `${mat.subject || 'Study Material'} / ${mat.title || 'Untitled Draft'}` : 'Study Materials';
     if (backBtn) backBtn.classList.remove('hidden');
     if (sep) sep.classList.remove('hidden');
   } else if (tabId === 'quizzes') {
@@ -496,6 +576,96 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showToast('Reviewer draft removed.');
   });
 
+  // Study Materials Editor Mode Switches (Visual vs Source)
+  const btnMatVisual = document.getElementById('btn-mat-mode-visual');
+  const btnMatSource = document.getElementById('btn-mat-mode-source');
+
+  if (btnMatVisual) {
+    btnMatVisual.addEventListener('click', () => {
+      btnMatVisual.classList.add('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
+      if (btnMatSource) btnMatSource.classList.remove('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
+      document.getElementById('mat-pane-visual-blocks')?.classList.remove('hidden');
+      document.getElementById('mat-pane-markdown-source')?.classList.add('hidden');
+      document.getElementById('mat-visual-builder-toolbar')?.classList.remove('hidden');
+
+      const rawMd = document.getElementById('mat-input-body')?.value || '';
+      const mats = STUDIO_DATA.studyMaterials || [];
+      if (mats[currentMatIndex]) {
+        mats[currentMatIndex].blocks = parseMarkdownIntoBlocks(rawMd);
+      }
+      renderMaterialBlockCanvas();
+    });
+  }
+
+  if (btnMatSource) {
+    btnMatSource.addEventListener('click', () => {
+      btnMatSource.classList.add('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
+      if (btnMatVisual) btnMatVisual.classList.remove('bg-white', 'dark:bg-slate-900', 'text-blue-700', 'dark:text-blue-300', 'shadow-sm');
+      document.getElementById('mat-pane-markdown-source')?.classList.remove('hidden');
+      document.getElementById('mat-pane-visual-blocks')?.classList.add('hidden');
+      document.getElementById('mat-visual-builder-toolbar')?.classList.add('hidden');
+    });
+  }
+
+  // Study Materials inputs
+  document.getElementById('mat-input-body')?.addEventListener('input', () => {
+    const raw = document.getElementById('mat-input-body').value;
+    const mats = STUDIO_DATA.studyMaterials || [];
+    if (mats[currentMatIndex]) {
+      mats[currentMatIndex].rawMarkdown = raw;
+    }
+    syncMaterialBlocksToPreview();
+  });
+
+  document.getElementById('mat-input-title')?.addEventListener('input', () => {
+    syncMaterialBlocksToPreview();
+    updateBreadcrumbs('materials');
+    renderHubDashboard();
+  });
+
+  document.getElementById('mat-input-summary')?.addEventListener('input', () => {
+    syncMaterialBlocksToPreview();
+    renderHubDashboard();
+  });
+
+  document.getElementById('mat-input-subject')?.addEventListener('change', () => {
+    const subj = document.getElementById('mat-input-subject').value;
+    const meta = getSubjectClassification(subj);
+    const tagEl = document.getElementById('mat-input-tag');
+    if (tagEl && !tagEl.value) tagEl.value = 'Study Material';
+    const mats = STUDIO_DATA.studyMaterials || [];
+    if (mats[currentMatIndex]) {
+      mats[currentMatIndex].color = meta.color || 'border-l-4 border-blue-500';
+    }
+    syncMaterialBlocksToPreview();
+    renderMaterialsList();
+    updateBreadcrumbs('materials');
+    renderHubDashboard();
+  });
+
+  document.getElementById('mat-input-tag')?.addEventListener('change', syncMaterialBlocksToPreview);
+  document.getElementById('mat-search')?.addEventListener('input', renderMaterialsList);
+
+  document.getElementById('btn-add-material')?.addEventListener('click', () => {
+    createQuickMaterial();
+  });
+
+  document.getElementById('btn-delete-mat')?.addEventListener('click', () => {
+    if (!STUDIO_DATA.studyMaterials || STUDIO_DATA.studyMaterials.length === 0) {
+      window.showToast('No study materials to delete.');
+      return;
+    }
+    STUDIO_DATA.studyMaterials.splice(currentMatIndex, 1);
+    if (currentMatIndex >= STUDIO_DATA.studyMaterials.length) {
+      setCurrentMatIndex(Math.max(0, STUDIO_DATA.studyMaterials.length - 1));
+    }
+    renderMaterialsList();
+    loadMaterialToEditor();
+    updateBreadcrumbs('materials');
+    renderHubDashboard();
+    window.showToast('Study material draft removed.');
+  });
+
   // Quiz Sets Listeners
   document.getElementById('btn-add-question')?.addEventListener('click', () => {
     addQuestionBlock('mcq');
@@ -616,6 +786,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Rendering
   renderReviewersList();
   loadReviewerToEditor();
+  renderMaterialsList();
+  loadMaterialToEditor();
   renderQuizSetsList();
   loadQuizSetToEditor();
   renderCalendarEvents();

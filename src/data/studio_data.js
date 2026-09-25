@@ -32,9 +32,11 @@ export const STUDIO_DATA = {
 };
 
 export let currentRevIndex = 0;
+export let currentMatIndex = 0;
 export let currentQuizSetIndex = 0;
 export let currentEditorMode = 'visual';
 
 export function setCurrentRevIndex(idx) { currentRevIndex = idx; }
+export function setCurrentMatIndex(idx) { currentMatIndex = idx; }
 export function setCurrentQuizSetIndex(idx) { currentQuizSetIndex = idx; }
 export function setCurrentEditorMode(mode) { currentEditorMode = mode; }

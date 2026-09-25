@@ -2,7 +2,7 @@
    TagSci Content Studio - Hub & Workspace Dashboard Component
    ========================================================= */
 
-import { STUDIO_DATA, setCurrentRevIndex, setCurrentQuizSetIndex } from '../data/studio_data.js';
+import { STUDIO_DATA, setCurrentRevIndex, setCurrentMatIndex, setCurrentQuizSetIndex } from '../data/studio_data.js';
 
 let currentVaultFilter = 'all';
 let vaultSearchQuery = '';
@@ -26,6 +26,7 @@ export function renderHubDashboard() {
 
 export function renderHubStats() {
   const revCount = STUDIO_DATA.stemReviewers ? STUDIO_DATA.stemReviewers.length : 0;
+  const matCount = STUDIO_DATA.studyMaterials ? STUDIO_DATA.studyMaterials.length : 0;
   
   let totalQuestions = 0;
   if (STUDIO_DATA.quizSets && Array.isArray(STUDIO_DATA.quizSets)) {
@@ -42,6 +43,9 @@ export function renderHubStats() {
   const statRev = document.getElementById('hub-stat-rev-count');
   if (statRev) statRev.innerText = revCount;
 
+  const statMat = document.getElementById('hub-stat-mat-count');
+  if (statMat) statMat.innerText = matCount;
+
   const statQuiz = document.getElementById('hub-stat-quiz-count');
   if (statQuiz) statQuiz.innerText = totalQuestions;
 
@@ -51,6 +55,9 @@ export function renderHubStats() {
   // Update sidebar counter badges
   const badgeRev = document.getElementById('badge-count-rev');
   if (badgeRev) badgeRev.innerText = revCount;
+
+  const badgeMat = document.getElementById('badge-count-mat');
+  if (badgeMat) badgeMat.innerText = matCount;
 
   const badgeQuiz = document.getElementById('badge-count-quiz');
   if (badgeQuiz) badgeQuiz.innerText = `${totalQuestions} Qs`;
@@ -70,9 +77,19 @@ export function renderSubjectPortals() {
     STUDIO_DATA.stemReviewers.forEach(rev => {
       const subj = rev.subject || 'General Math';
       if (!subjectMap[subj]) {
-        subjectMap[subj] = { reviewers: 0, quizzes: 0, questions: 0 };
+        subjectMap[subj] = { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
       }
       subjectMap[subj].reviewers++;
+    });
+  }
+
+  if (STUDIO_DATA.studyMaterials) {
+    STUDIO_DATA.studyMaterials.forEach(mat => {
+      const subj = mat.subject || 'General Science';
+      if (!subjectMap[subj]) {
+        subjectMap[subj] = { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
+      }
+      subjectMap[subj].materials++;
     });
   }
 
@@ -80,7 +97,7 @@ export function renderSubjectPortals() {
     STUDIO_DATA.quizSets.forEach(qSet => {
       const subj = qSet.subject || 'General Math';
       if (!subjectMap[subj]) {
-        subjectMap[subj] = { reviewers: 0, quizzes: 0, questions: 0 };
+        subjectMap[subj] = { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
       }
       subjectMap[subj].quizzes++;
       subjectMap[subj].questions += (qSet.questions ? qSet.questions.length : 0);
@@ -97,8 +114,8 @@ export function renderSubjectPortals() {
 
   let html = '';
   coreSubjects.forEach(s => {
-    const stats = subjectMap[s.name] || { reviewers: 0, quizzes: 0, questions: 0 };
-    const isLive = stats.reviewers > 0 || stats.quizzes > 0;
+    const stats = subjectMap[s.name] || { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
+    const isLive = stats.reviewers > 0 || stats.materials > 0 || stats.quizzes > 0;
     
     html += `
       <div onclick="openSubjectEditor('${s.name}')" class="group cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-tagsci-500 dark:hover:border-tagsci-500 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
@@ -113,7 +130,7 @@ export function renderSubjectPortals() {
         <h4 class="font-bold text-sm text-slate-900 dark:text-white group-hover:text-tagsci-600 dark:group-hover:text-tagsci-400 transition-colors">${s.name}</h4>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">${s.desc}</p>
         <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-          <span>${stats.reviewers} Notes • ${stats.questions} Qs</span>
+          <span>${stats.reviewers + stats.materials} Docs • ${stats.questions} Qs</span>
           <i data-lucide="arrow-right" class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-tagsci-600"></i>
         </div>
       </div>
@@ -147,7 +164,23 @@ export function renderHubVault() {
     });
   }
 
-  // 2. Add Quiz Sets
+  // 2. Add Study Materials
+  if (STUDIO_DATA.studyMaterials) {
+    STUDIO_DATA.studyMaterials.forEach((mat, idx) => {
+      items.push({
+        type: 'material',
+        index: idx,
+        id: mat.id,
+        title: mat.title || 'Untitled Study Material',
+        subject: mat.subject || 'General Science',
+        tag: mat.tag || 'Study Material',
+        summary: mat.summary || (mat.blocks ? `${mat.blocks.length} Sections / Blocks` : 'No summary'),
+        meta: `${mat.blocks ? mat.blocks.length : 0} Content Blocks`
+      });
+    });
+  }
+
+  // 3. Add Quiz Sets
   if (STUDIO_DATA.quizSets) {
     STUDIO_DATA.quizSets.forEach((qSet, idx) => {
       const qCount = qSet.questions ? qSet.questions.length : 0;
@@ -164,7 +197,7 @@ export function renderHubVault() {
     });
   }
 
-  // 3. Add Calendar Deadlines
+  // 4. Add Calendar Deadlines
   if (STUDIO_DATA.calendarEvents) {
     STUDIO_DATA.calendarEvents.forEach((cal, idx) => {
       items.push({
@@ -184,6 +217,8 @@ export function renderHubVault() {
   let filtered = items;
   if (currentVaultFilter === 'reviewers') {
     filtered = filtered.filter(i => i.type === 'reviewer');
+  } else if (currentVaultFilter === 'materials') {
+    filtered = filtered.filter(i => i.type === 'material');
   } else if (currentVaultFilter === 'quizzes') {
     filtered = filtered.filter(i => i.type === 'quiz');
   } else if (currentVaultFilter === 'calendar') {
@@ -209,9 +244,12 @@ export function renderHubVault() {
           <p class="font-bold text-slate-700 dark:text-slate-200">No Materials in Session</p>
           <p class="text-[11px] text-slate-400 mt-0.5">Start authoring materials from scratch or upload an existing updates.json dataset.</p>
         </div>
-        <div class="flex items-center justify-center gap-2 pt-1">
+        <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
           <button onclick="window.createQuickReviewer()" class="px-3 py-1.5 rounded-lg bg-tagsci-700 hover:bg-tagsci-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Reviewer
+          </button>
+          <button onclick="window.createQuickMaterial()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> New Study Material
           </button>
           <button onclick="window.createQuickQuizSet()" class="px-3 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
             <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i> New Quiz Bank
@@ -226,12 +264,17 @@ export function renderHubVault() {
   let html = '';
   filtered.forEach(item => {
     let icon = 'file-text';
-    let iconBg = 'bg-blue-100 dark:bg-blue-950/80 text-blue-600';
+    let iconBg = 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600';
     let badgeType = 'Reviewer';
-    let badgeColor = 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300';
+    let badgeColor = 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300';
     let clickHandler = `openVaultItem('${item.type}', ${item.index})`;
 
-    if (item.type === 'quiz') {
+    if (item.type === 'material') {
+      icon = 'folder-kanban';
+      iconBg = 'bg-blue-100 dark:bg-blue-950/80 text-blue-600';
+      badgeType = 'Study Material';
+      badgeColor = 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300';
+    } else if (item.type === 'quiz') {
       icon = 'brain-circuit';
       iconBg = 'bg-pink-100 dark:bg-pink-950/80 text-g11pink-600';
       badgeType = 'Quiz Bank';

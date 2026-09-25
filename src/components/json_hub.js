@@ -18,7 +18,7 @@ export function generateProductionJson() {
   return {
     version: STUDIO_DATA.version || "1.4.0",
     updatedAt: new Date().toISOString(),
-    announcement: `Refreshed ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.calendarEvents.length} Deadlines, and ${STUDIO_DATA.quizSets.length} Quiz Banks.`,
+    announcement: `Refreshed ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.calendarEvents.length} Deadlines, and ${STUDIO_DATA.quizSets.length} Quiz Banks.`,
     calendarEvents: STUDIO_DATA.calendarEvents,
     stemReviewers: STUDIO_DATA.stemReviewers.map(r => ({
       id: r.id,
@@ -29,7 +29,15 @@ export function generateProductionJson() {
       summary: r.summary,
       blocks: r.blocks || []
     })),
-    studyMaterials: STUDIO_DATA.studyMaterials || [],
+    studyMaterials: (STUDIO_DATA.studyMaterials || []).map(m => ({
+      id: m.id,
+      subject: m.subject,
+      tag: m.tag,
+      color: m.color,
+      title: m.title,
+      summary: m.summary,
+      blocks: m.blocks || []
+    })),
     problemSets: STUDIO_DATA.problemSets || [],
     quizSets: STUDIO_DATA.quizSets
   };
