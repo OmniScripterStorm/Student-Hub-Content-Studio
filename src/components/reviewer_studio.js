@@ -35,6 +35,11 @@ export function compileBlocksToMarkdown(blocks) {
       md += '\n';
     } else if (b.type === 'cartesian' || b.type === 'plot') {
       md += `\`\`\`plot\n${JSON.stringify(b, null, 2)}\n\`\`\`\n\n`;
+    } else if (b.type === 'image') {
+      const alt = b.alt || 'Figure diagram';
+      md += `![${alt}](${b.url || ''})\n`;
+      if (b.caption) md += `*${b.caption}*\n`;
+      md += '\n';
     }
   });
   return md.trim();
@@ -125,6 +130,25 @@ export function parseMarkdownIntoBlocks(md) {
     } else if (line.startsWith('$$') && line.endsWith('$$')) {
       if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
       blocks.push({ type: 'formula', title: 'Formula Card', formula: line.replace(/\$\$/g, '').trim(), note: '' });
+    } else if (/^!\[(.*?)\]\((.*?)\)$/.test(line)) {
+      if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
+      const imgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
+      let caption = '';
+      if (i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        const capMatch = nextLine.match(/^\*([^*]+)\*$|^_([^_]+)_$/);
+        if (capMatch) {
+          caption = capMatch[1] || capMatch[2] || '';
+          i++;
+        }
+      }
+      blocks.push({
+        type: 'image',
+        url: imgMatch[2] || '',
+        alt: imgMatch[1] || 'Figure diagram',
+        caption: caption,
+        size: 'medium'
+      });
     } else if (line.startsWith('- ') || line.startsWith('* ')) {
       if (!currentBulletBlock) {
         currentBulletBlock = { type: 'bullets', items: [] };
@@ -505,6 +529,71 @@ export function renderBlockCanvas() {
                 </div>
               </div>
             `).join('')}
+          </div>
+        </div>
+      `;
+    } else if (b.type === 'image') {
+      headerLeft = `
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+            <i data-lucide="image" class="w-3 h-3"></i> Image & Diagram
+          </span>
+          <select onchange="window.updateBlockField(${bIdx}, 'size', this.value)" class="text-[11px] font-bold bg-slate-100 dark:bg-slate-800 rounded-md px-2 py-0.5 border border-slate-200 dark:border-slate-700">
+            <option value="medium" ${b.size === 'medium' || !b.size ? 'selected' : ''}>Medium (500px)</option>
+            <option value="full" ${b.size === 'full' ? 'selected' : ''}>Full Width (100%)</option>
+            <option value="small" ${b.size === 'small' ? 'selected' : ''}>Compact (300px)</option>
+          </select>
+        </div>
+      `;
+
+      const hasImage = !!b.url;
+
+      bodyHtml = `
+        <div class="space-y-3">
+          ${!hasImage ? `
+            <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-tagsci-500 dark:hover:border-tagsci-500 rounded-2xl p-5 text-center bg-slate-50/50 dark:bg-slate-800/30 transition-all cursor-pointer group" onclick="document.getElementById('rev-file-input-${bIdx}').click()">
+              <input type="file" id="rev-file-input-${bIdx}" accept="image/*" class="hidden" onchange="if(this.files && this.files[0]) window.uploadBlockImage(${bIdx}, this.files[0])">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-tagsci-50 dark:bg-tagsci-950/80 text-tagsci-600 dark:text-tagsci-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+              </div>
+              <p class="text-xs font-bold text-slate-700 dark:text-slate-200">Click to upload or drag & drop image file</p>
+              <p class="text-[10.5px] text-slate-400 mt-0.5">PNG, JPG, SVG, WebP, GIF (Max 5MB)</p>
+              
+              <div class="my-2.5 flex items-center justify-center gap-2">
+                <div class="h-px bg-slate-200 dark:bg-slate-700 w-16"></div>
+                <span class="text-[10px] uppercase font-bold text-slate-400">or paste URL</span>
+                <div class="h-px bg-slate-200 dark:bg-slate-700 w-16"></div>
+              </div>
+              
+              <div class="max-w-sm mx-auto flex items-center gap-1.5" onclick="event.stopPropagation()">
+                <input type="text" placeholder="https://example.com/diagram.png" onchange="window.updateBlockField(${bIdx}, 'url', this.value)" class="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
+                <button onclick="const inp = this.previousElementSibling; if(inp.value) window.updateBlockField(${bIdx}, 'url', inp.value);" class="px-2.5 py-1 text-xs font-bold bg-tagsci-700 text-white rounded-lg hover:bg-tagsci-800">Set</button>
+              </div>
+            </div>
+          ` : `
+            <div class="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950 p-2 text-center group">
+              <img src="${b.url}" alt="${b.alt || 'Block preview'}" class="max-h-56 mx-auto rounded-lg object-contain shadow-sm" onerror="this.src=''; this.alt='Failed to load image';" />
+              <div class="mt-2 flex items-center justify-center gap-2">
+                <button onclick="document.getElementById('rev-file-input-${bIdx}').click()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm">
+                  <i data-lucide="refresh-cw" class="w-3 h-3"></i> Replace Image
+                </button>
+                <button onclick="window.updateBlockField(${bIdx}, 'url', '')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 shadow-sm">
+                  <i data-lucide="trash" class="w-3 h-3"></i> Remove
+                </button>
+              </div>
+              <input type="file" id="rev-file-input-${bIdx}" accept="image/*" class="hidden" onchange="if(this.files && this.files[0]) window.uploadBlockImage(${bIdx}, this.files[0])">
+            </div>
+          `}
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[9.5px] font-bold text-slate-400 uppercase mb-0.5">Caption (Supports $LaTeX$ & Markdown)</label>
+              <input type="text" value="${b.caption || ''}" oninput="window.updateBlockField(${bIdx}, 'caption', this.value)" placeholder="e.g. Figure 1: Wave Propagation Diagram" class="w-full px-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+            </div>
+            <div>
+              <label class="block text-[9.5px] font-bold text-slate-400 uppercase mb-0.5">Alt Text / Description</label>
+              <input type="text" value="${b.alt || ''}" oninput="window.updateBlockField(${bIdx}, 'alt', this.value)" placeholder="e.g. Free body diagram showing forces" class="w-full px-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+            </div>
           </div>
         </div>
       `;
@@ -1011,12 +1100,42 @@ export function addContentBlock(type) {
         }
       ]
     });
+  } else if (type === 'image') {
+    rev.blocks.push({
+      type: 'image',
+      url: '',
+      caption: '',
+      alt: 'Illustration diagram',
+      size: 'medium'
+    });
   }
 
   renderBlockCanvas();
   syncBlocksToPreview();
   if (window.renderHubDashboard) window.renderHubDashboard();
   if (window.showToast) window.showToast('Block added to canvas!');
+}
+
+export function uploadBlockImage(bIdx, file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    if (window.showToast) window.showToast('Please select a valid image file (PNG, JPG, SVG, WebP, GIF)');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const rev = (STUDIO_DATA.stemReviewers || [])[currentRevIndex];
+    if (rev && rev.blocks && rev.blocks[bIdx]) {
+      rev.blocks[bIdx].url = e.target.result;
+      if (!rev.blocks[bIdx].alt) {
+        rev.blocks[bIdx].alt = file.name.replace(/\.[^/.]+$/, "");
+      }
+      renderBlockCanvas();
+      syncBlocksToPreview();
+      if (window.showToast) window.showToast('Image uploaded successfully!');
+    }
+  };
+  reader.readAsDataURL(file);
 }
 
 export function loadLessonTemplate(templateType) {

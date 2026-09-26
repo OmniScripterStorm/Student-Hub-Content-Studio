@@ -126,7 +126,7 @@ export function renderMaterialBlockCanvas() {
   mat.blocks.forEach((b, bIdx) => {
     const card = document.createElement('div');
     card.className = `p-3.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 transition-all block-card cursor-default`;
-    card.setAttribute('draggable', 'true');
+    card.setAttribute('draggable', 'false');
     card.dataset.blockIndex = bIdx;
 
     let headerLeft = '';
@@ -329,6 +329,71 @@ export function renderMaterialBlockCanvas() {
                 </div>
               </div>
             `).join('')}
+          </div>
+        </div>
+      `;
+    } else if (b.type === 'image') {
+      headerLeft = `
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+            <i data-lucide="image" class="w-3 h-3"></i> Image & Diagram
+          </span>
+          <select onchange="window.updateMaterialBlockField(${bIdx}, 'size', this.value)" class="text-[11px] font-bold bg-slate-100 dark:bg-slate-800 rounded-md px-2 py-0.5 border border-slate-200 dark:border-slate-700">
+            <option value="medium" ${b.size === 'medium' || !b.size ? 'selected' : ''}>Medium (500px)</option>
+            <option value="full" ${b.size === 'full' ? 'selected' : ''}>Full Width (100%)</option>
+            <option value="small" ${b.size === 'small' ? 'selected' : ''}>Compact (300px)</option>
+          </select>
+        </div>
+      `;
+
+      const hasImage = !!b.url;
+
+      bodyHtml = `
+        <div class="space-y-3">
+          ${!hasImage ? `
+            <div class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-2xl p-5 text-center bg-slate-50/50 dark:bg-slate-800/30 transition-all cursor-pointer group" onclick="document.getElementById('mat-file-input-${bIdx}').click()">
+              <input type="file" id="mat-file-input-${bIdx}" accept="image/*" class="hidden" onchange="if(this.files && this.files[0]) window.uploadMaterialBlockImage(${bIdx}, this.files[0])">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+              </div>
+              <p class="text-xs font-bold text-slate-700 dark:text-slate-200">Click to upload or drag & drop image file</p>
+              <p class="text-[10.5px] text-slate-400 mt-0.5">PNG, JPG, SVG, WebP, GIF (Max 5MB)</p>
+              
+              <div class="my-2.5 flex items-center justify-center gap-2">
+                <div class="h-px bg-slate-200 dark:bg-slate-700 w-16"></div>
+                <span class="text-[10px] uppercase font-bold text-slate-400">or paste URL</span>
+                <div class="h-px bg-slate-200 dark:bg-slate-700 w-16"></div>
+              </div>
+              
+              <div class="max-w-sm mx-auto flex items-center gap-1.5" onclick="event.stopPropagation()">
+                <input type="text" placeholder="https://example.com/diagram.png" onchange="window.updateMaterialBlockField(${bIdx}, 'url', this.value)" class="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
+                <button onclick="const inp = this.previousElementSibling; if(inp.value) window.updateMaterialBlockField(${bIdx}, 'url', inp.value);" class="px-2.5 py-1 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700">Set</button>
+              </div>
+            </div>
+          ` : `
+            <div class="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-950 p-2 text-center group">
+              <img src="${b.url}" alt="${b.alt || 'Block preview'}" class="max-h-56 mx-auto rounded-lg object-contain shadow-sm" onerror="this.src=''; this.alt='Failed to load image';" />
+              <div class="mt-2 flex items-center justify-center gap-2">
+                <button onclick="document.getElementById('mat-file-input-${bIdx}').click()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm">
+                  <i data-lucide="refresh-cw" class="w-3 h-3"></i> Replace Image
+                </button>
+                <button onclick="window.updateMaterialBlockField(${bIdx}, 'url', '')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 text-red-600 hover:bg-red-100 dark:hover:bg-red-900 shadow-sm">
+                  <i data-lucide="trash" class="w-3 h-3"></i> Remove
+                </button>
+              </div>
+              <input type="file" id="mat-file-input-${bIdx}" accept="image/*" class="hidden" onchange="if(this.files && this.files[0]) window.uploadMaterialBlockImage(${bIdx}, this.files[0])">
+            </div>
+          `}
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[9.5px] font-bold text-slate-400 uppercase mb-0.5">Caption (Supports $LaTeX$ & Markdown)</label>
+              <input type="text" value="${b.caption || ''}" oninput="window.updateMaterialBlockField(${bIdx}, 'caption', this.value)" placeholder="e.g. Figure 1: Wave Propagation Diagram" class="w-full px-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+            </div>
+            <div>
+              <label class="block text-[9.5px] font-bold text-slate-400 uppercase mb-0.5">Alt Text / Description</label>
+              <input type="text" value="${b.alt || ''}" oninput="window.updateMaterialBlockField(${bIdx}, 'alt', this.value)" placeholder="e.g. Free body diagram showing forces" class="w-full px-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+            </div>
           </div>
         </div>
       `;
@@ -756,12 +821,42 @@ export function addMaterialContentBlock(type) {
         { expr: 'x^2', domainMin: 1, domainMax: 3, minInclusive: false, maxInclusive: false, color: '#10b981', style: 'solid' }
       ]
     });
+  } else if (type === 'image') {
+    mat.blocks.push({
+      type: 'image',
+      url: '',
+      caption: '',
+      alt: 'Illustration diagram',
+      size: 'medium'
+    });
   }
 
   renderMaterialBlockCanvas();
   syncMaterialBlocksToPreview();
   if (window.renderHubDashboard) window.renderHubDashboard();
   if (window.showToast) window.showToast('Block added to study material!');
+}
+
+export function uploadMaterialBlockImage(bIdx, file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    if (window.showToast) window.showToast('Please select a valid image file (PNG, JPG, SVG, WebP, GIF)');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const mat = (STUDIO_DATA.studyMaterials || [])[currentMatIndex];
+    if (mat && mat.blocks && mat.blocks[bIdx]) {
+      mat.blocks[bIdx].url = e.target.result;
+      if (!mat.blocks[bIdx].alt) {
+        mat.blocks[bIdx].alt = file.name.replace(/\.[^/.]+$/, "");
+      }
+      renderMaterialBlockCanvas();
+      syncMaterialBlocksToPreview();
+      if (window.showToast) window.showToast('Image uploaded successfully!');
+    }
+  };
+  reader.readAsDataURL(file);
 }
 
 export function createQuickMaterial() {

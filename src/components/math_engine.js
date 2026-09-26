@@ -433,6 +433,22 @@ export function renderBlocksToHtml(blocks) {
       html += renderTableToHtml(b);
     } else if (b.type === 'cartesian' || b.type === 'plot') {
       html += renderCartesianPlaneSvg(b);
+    } else if (b.type === 'image') {
+      const url = b.url || '';
+      const alt = b.alt || 'Figure diagram';
+      const caption = b.caption || '';
+      const size = b.size || 'medium';
+      const sizeClass = size === 'small' ? 'max-w-xs' : (size === 'medium' ? 'max-w-lg' : 'max-w-2xl');
+      if (url) {
+        html += `
+          <figure class="my-4 flex flex-col items-center justify-center">
+            <div class="relative group rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 shadow-sm ${sizeClass} w-full">
+              <img src="${url}" alt="${alt}" loading="lazy" class="w-full h-auto object-contain max-h-[500px] mx-auto transition-transform duration-200 hover:scale-[1.01]" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'p-6 text-center text-slate-400 text-xs font-semibold\\'>Failed to load image</div>';" />
+            </div>
+            ${caption ? `<figcaption class="mt-2 text-center text-xs text-slate-500 dark:text-slate-400 italic">${renderMathInHtml(caption)}</figcaption>` : ''}
+          </figure>
+        `;
+      }
     } else if (b.type === 'callout') {
       const isWarn = b.style === 'warning';
       const calloutClass = isWarn 
@@ -470,6 +486,17 @@ export function parseMarkdownToHtml(md) {
     } else if (stripped.startsWith('# ')) {
       if (inList) { htmlLines.push('</ul>'); inList = false; }
       htmlLines.push(`<h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-4 mb-2">${formatRichText(stripped.substring(2))}</h2>`);
+    } else if (/^!\[(.*?)\]\((.*?)\)$/.test(stripped)) {
+      if (inList) { htmlLines.push('</ul>'); inList = false; }
+      const m = stripped.match(/^!\[(.*?)\]\((.*?)\)$/);
+      htmlLines.push(`
+        <figure class="my-4 flex flex-col items-center justify-center">
+          <div class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 shadow-sm max-w-lg w-full">
+            <img src="${m[2]}" alt="${m[1]}" loading="lazy" class="w-full h-auto object-contain max-h-[500px] mx-auto" />
+          </div>
+          ${m[1] ? `<figcaption class="mt-1.5 text-center text-xs text-slate-400 italic">${m[1]}</figcaption>` : ''}
+        </figure>
+      `);
     } else if (stripped.startsWith('- ') || stripped.startsWith('* ')) {
       if (!inList) {
         htmlLines.push('<ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">');

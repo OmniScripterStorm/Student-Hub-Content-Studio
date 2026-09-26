@@ -28,6 +28,7 @@ import {
   updateMaterialPiecewiseSegment,
   toggleMaterialPiecewiseEndpoint,
   addMaterialContentBlock,
+  uploadMaterialBlockImage,
   createQuickMaterial,
   exportMaterialMarkdown
 } from './components/material_studio.js';
@@ -46,6 +47,7 @@ import {
   updateBulletItem, 
   removeBulletItem, 
   addContentBlock, 
+  uploadBlockImage,
   loadLessonTemplate, 
   applyTextFormatting,
   updateTableHeader,
@@ -112,6 +114,7 @@ window.addBulletItem = addBulletItem;
 window.updateBulletItem = updateBulletItem;
 window.removeBulletItem = removeBulletItem;
 window.addContentBlock = addContentBlock;
+window.uploadBlockImage = uploadBlockImage;
 window.loadLessonTemplate = loadLessonTemplate;
 window.applyTextFormatting = applyTextFormatting;
 
@@ -170,6 +173,7 @@ window.removeMaterialPiecewiseSegment = removeMaterialPiecewiseSegment;
 window.updateMaterialPiecewiseSegment = updateMaterialPiecewiseSegment;
 window.toggleMaterialPiecewiseEndpoint = toggleMaterialPiecewiseEndpoint;
 window.addMaterialContentBlock = addMaterialContentBlock;
+window.uploadMaterialBlockImage = uploadMaterialBlockImage;
 window.createQuickMaterial = createQuickMaterial;
 window.exportMaterialMarkdown = exportMaterialMarkdown;
 
