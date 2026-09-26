@@ -74,7 +74,7 @@ import {
   pingOtaEndpoint,
   testGitHubAccess,
   pushDirectUpdatesJsonToGitHub,
-  appendAndPushToGitHub,
+  fetchLatestUpdatesJson,
   saveGitHubConfig,
   clearGitHubConfig,
   toggleTokenVisibility
@@ -235,7 +235,7 @@ window.deleteCalendarEvent = deleteCalendarEvent;
 // GitHub Direct Publisher Bindings
 window.testGitHubAccess = testGitHubAccess;
 window.pushDirectUpdatesJsonToGitHub = pushDirectUpdatesJsonToGitHub;
-window.appendAndPushToGitHub = appendAndPushToGitHub;
+window.fetchLatestUpdatesJson = fetchLatestUpdatesJson;
 window.saveGitHubConfig = saveGitHubConfig;
 window.clearGitHubConfig = clearGitHubConfig;
 window.toggleTokenVisibility = toggleTokenVisibility;
@@ -828,23 +828,43 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-hub-copy-json')?.addEventListener('click', copyUpdatesJson);
   document.getElementById('btn-test-ota-hub')?.addEventListener('click', pingOtaEndpoint);
 
+  // Studio View Refresh Helper
+  function refreshAllStudioViews() {
+    renderReviewersList();
+    loadReviewerToEditor();
+    renderMaterialsList();
+    loadMaterialToEditor();
+    renderQuizSetsList();
+    loadQuizSetToEditor();
+    renderCalendarEvents();
+    renderHubDashboard();
+    renderJsonHub();
+    if (window.lucide) window.lucide.createIcons();
+  }
+  window.refreshAllStudioViews = refreshAllStudioViews;
+
   // GitHub Direct Publisher Event Listeners
   document.getElementById('btn-gh-test-auth')?.addEventListener('click', testGitHubAccess);
   document.getElementById('btn-gh-push-direct')?.addEventListener('click', pushDirectUpdatesJsonToGitHub);
-  document.getElementById('btn-gh-append-push')?.addEventListener('click', appendAndPushToGitHub);
+  document.getElementById('btn-gh-fetch-updates')?.addEventListener('click', () => {
+    fetchLatestUpdatesJson(false, () => {
+      refreshAllStudioViews();
+    });
+  });
+  document.getElementById('btn-top-fetch-updates')?.addEventListener('click', () => {
+    fetchLatestUpdatesJson(false, () => {
+      refreshAllStudioViews();
+    });
+  });
   document.getElementById('btn-gh-clear-token')?.addEventListener('click', clearGitHubConfig);
   document.getElementById('btn-gh-toggle-token')?.addEventListener('click', toggleTokenVisibility);
 
   document.getElementById('file-import-input')?.addEventListener('change', (e) => {
     handleImportJsonFile(e, () => {
       setCurrentRevIndex(0);
+      setCurrentMatIndex(0);
       setCurrentQuizSetIndex(0);
-      renderReviewersList();
-      loadReviewerToEditor();
-      renderQuizSetsList();
-      loadQuizSetToEditor();
-      renderCalendarEvents();
-      renderHubDashboard();
+      refreshAllStudioViews();
       window.showToast('Successfully imported curriculum dataset!');
     });
   });
@@ -883,14 +903,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initial Rendering
-  renderReviewersList();
-  loadReviewerToEditor();
-  renderMaterialsList();
-  loadMaterialToEditor();
-  renderQuizSetsList();
-  loadQuizSetToEditor();
-  renderCalendarEvents();
-  renderHubDashboard();
+  refreshAllStudioViews();
   switchTab('hub'); // Start in Hub Dashboard by default
-  if (window.lucide) window.lucide.createIcons();
+
+  // Auto-fetch latest updates.json on load to ensure freshest dataset
+  fetchLatestUpdatesJson(true, () => {
+    refreshAllStudioViews();
+  });
 });

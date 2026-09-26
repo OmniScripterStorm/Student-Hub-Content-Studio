@@ -303,7 +303,114 @@ export async function testGitHubAccess() {
   }
 }
 
-// Direct Overwrite / Upload of updates.json
+// Fetch latest updates.json from GitHub or local source and load into studio
+export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
+  saveGitHubConfig();
+  const { token, repo, branch, path } = getGitHubConfig();
+
+  const fetchBtn = document.getElementById('btn-gh-fetch-updates');
+  if (fetchBtn) {
+    fetchBtn.disabled = true;
+    fetchBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> Fetching...`;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  setPublishStatus('🔄 Fetching latest updates.json from GitHub...', 'info');
+
+  try {
+    let json = null;
+
+    // Strategy 1: Try GitHub Contents API if repo & branch are configured
+    if (repo && branch && path) {
+      try {
+        const headers = { 'Accept': 'application/vnd.github.v3+json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const apiRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}&_t=${Date.now()}`, {
+          headers,
+          cache: 'no-store'
+        });
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData.content) {
+            const decoded = base64ToUtf8(apiData.content.replace(/\s/g, ''));
+            json = JSON.parse(decoded);
+          }
+        }
+      } catch (apiErr) {
+        console.warn('GitHub API fetch failed, trying raw URL:', apiErr);
+      }
+    }
+
+    // Strategy 2: Try GitHub raw URL if not already fetched
+    if (!json && repo && branch && path) {
+      try {
+        const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${path}?_t=${Date.now()}`;
+        const rawRes = await fetch(rawUrl, { cache: 'no-store' });
+        if (rawRes.ok) {
+          json = await rawRes.json();
+        }
+      } catch (rawErr) {
+        console.warn('Raw GitHub fetch failed, trying relative URL:', rawErr);
+      }
+    }
+
+    // Strategy 3: Try relative / local updates.json
+    if (!json) {
+      try {
+        const localRes = await fetch(`../../updates.json?_t=${Date.now()}`, { cache: 'no-store' })
+          .catch(() => fetch(`updates.json?_t=${Date.now()}`, { cache: 'no-store' }));
+        if (localRes && localRes.ok) {
+          json = await localRes.json();
+        }
+      } catch (localErr) {
+        console.warn('Local fetch failed:', localErr);
+      }
+    }
+
+    if (!json) {
+      throw new Error('Could not fetch updates.json from GitHub or local source.');
+    }
+
+    // Populate STUDIO_DATA
+    if (json.version) STUDIO_DATA.version = json.version;
+    if (json.updatedAt) STUDIO_DATA.updatedAt = json.updatedAt;
+    if (json.announcement) STUDIO_DATA.announcement = json.announcement;
+    if (Array.isArray(json.stemReviewers)) STUDIO_DATA.stemReviewers = json.stemReviewers;
+    if (Array.isArray(json.studyMaterials)) STUDIO_DATA.studyMaterials = json.studyMaterials;
+    if (Array.isArray(json.quizSets)) STUDIO_DATA.quizSets = json.quizSets;
+    if (Array.isArray(json.calendarEvents)) STUDIO_DATA.calendarEvents = json.calendarEvents;
+    if (Array.isArray(json.problemSets)) STUDIO_DATA.problemSets = json.problemSets;
+
+    // Refresh UI
+    renderJsonHub();
+    if (typeof onComplete === 'function') {
+      onComplete(json);
+    }
+
+    setPublishStatus(
+      `✓ <b>Successfully fetched latest updates.json!</b> (v${STUDIO_DATA.version})<br>
+       Loaded ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.quizSets.length} Quizzes, ${STUDIO_DATA.calendarEvents.length} Deadlines.`,
+      'success'
+    );
+
+    if (window.showToast) {
+      window.showToast(`Fetched latest updates.json (v${STUDIO_DATA.version})!`);
+    }
+  } catch (err) {
+    setPublishStatus(`✕ Fetch Failed: ${err.message}`, 'error');
+    if (!isSilent) {
+      console.warn('Fetch updates.json failed:', err);
+    }
+  } finally {
+    if (fetchBtn) {
+      fetchBtn.disabled = false;
+      fetchBtn.innerHTML = `<i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-blue-400"></i> Fetch Latest updates.json`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+}
+
+// Direct Overwrite / Upload of updates.json (Overwrites entire json)
 export async function pushDirectUpdatesJsonToGitHub() {
   saveGitHubConfig();
   const { token, repo, branch, path } = getGitHubConfig();
@@ -323,11 +430,12 @@ export async function pushDirectUpdatesJsonToGitHub() {
   try {
     // 1. Get current file SHA if exists
     let existingSha = null;
-    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}&_t=${Date.now()}`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': `Bearer ${token}`
-      }
+      },
+      cache: 'no-store'
     });
 
     if (getRes.ok) {
@@ -335,8 +443,8 @@ export async function pushDirectUpdatesJsonToGitHub() {
       existingSha = getData.sha;
     }
 
-    // 2. Commit and upload to GitHub
-    setPublishStatus('🚀 Uploading and committing to GitHub...', 'info');
+    // 2. Commit and overwrite on GitHub
+    setPublishStatus('🚀 Overwriting updates.json on GitHub...', 'info');
     const putBody = {
       message: commitMessage,
       content: utf8ToBase64(jsonString),
@@ -364,132 +472,20 @@ export async function pushDirectUpdatesJsonToGitHub() {
     const result = await putRes.json();
     const commitUrl = result.commit ? result.commit.html_url : `https://github.com/${repo}/commits/${branch}`;
 
+    // Update local updatedAt
+    STUDIO_DATA.updatedAt = payload.updatedAt;
+    renderJsonHub();
+
     setPublishStatus(
-      `🎉 <b>Successfully published updates.json directly to GitHub!</b><br>
+      `🎉 <b>Successfully overwritten updates.json directly on GitHub!</b><br>
        <b>File:</b> <code>${path}</code> on <code>${branch}</code><br>
        <b>Commit:</b> <a href="${commitUrl}" target="_blank" class="underline text-tagsci-600 dark:text-tagsci-400 font-bold">${result.commit ? result.commit.sha.substring(0, 7) : 'View on GitHub'}</a><br>
-       <span class="text-[10.5px] opacity-80 mt-1 block">GitHub Pages is building the OTA update. Students will receive it on their next sync!</span>`,
+       <span class="text-[10.5px] opacity-80 mt-1 block">OTA update has been published. Student Hub will automatically live sync it!</span>`,
       'success'
     );
 
-    if (window.showToast) window.showToast('Published updates.json to GitHub!');
+    if (window.showToast) window.showToast('Overwritten & Published updates.json to GitHub!');
   } catch (err) {
-    setPublishStatus(`✕ Direct Push Failed: ${err.message}`, 'error');
-  }
-}
-
-// Smart Append: Reads remote updates.json from GitHub, merges studio data, and commits back
-export async function appendAndPushToGitHub() {
-  saveGitHubConfig();
-  const { token, repo, branch, path } = getGitHubConfig();
-
-  if (!token) {
-    setPublishStatus('⚠️ Please input your GitHub Personal Access Token first.', 'error');
-    return;
-  }
-
-  setPublishStatus('🔄 Fetching remote updates.json from GitHub...', 'info');
-
-  try {
-    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    let remoteJson = {
-      version: "1.4.0",
-      calendarEvents: [],
-      stemReviewers: [],
-      studyMaterials: [],
-      problemSets: [],
-      quizSets: []
-    };
-    let fileSha = null;
-
-    if (getRes.ok) {
-      const getData = await getRes.json();
-      fileSha = getData.sha;
-      const decodedContent = base64ToUtf8(getData.content.replace(/\s/g, ''));
-      remoteJson = JSON.parse(decodedContent);
-    }
-
-    // Initialize collections if missing in remote JSON
-    if (!remoteJson.stemReviewers) remoteJson.stemReviewers = [];
-    if (!remoteJson.studyMaterials) remoteJson.studyMaterials = [];
-    if (!remoteJson.quizSets) remoteJson.quizSets = [];
-    if (!remoteJson.calendarEvents) remoteJson.calendarEvents = [];
-    if (!remoteJson.problemSets) remoteJson.problemSets = [];
-
-    // Helper to merge items by unique ID or append new drafts
-    function smartMergeCollection(localArray, remoteArray, prefix = 'item') {
-      if (!Array.isArray(localArray)) return;
-      localArray.forEach(localItem => {
-        if (!localItem) return;
-        // Ensure item has a unique ID
-        if (!localItem.id) {
-          localItem.id = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-        }
-        const existingIdx = remoteArray.findIndex(r => r.id === localItem.id);
-        if (existingIdx >= 0) {
-          remoteArray[existingIdx] = localItem;
-        } else {
-          remoteArray.push(localItem);
-        }
-      });
-    }
-
-    smartMergeCollection(STUDIO_DATA.stemReviewers, remoteJson.stemReviewers, 'reviewer');
-    smartMergeCollection(STUDIO_DATA.studyMaterials, remoteJson.studyMaterials, 'material');
-    smartMergeCollection(STUDIO_DATA.quizSets, remoteJson.quizSets, 'quiz');
-    smartMergeCollection(STUDIO_DATA.calendarEvents, remoteJson.calendarEvents, 'event');
-    smartMergeCollection(STUDIO_DATA.problemSets, remoteJson.problemSets, 'problem_set');
-
-    // Update metadata
-    remoteJson.updatedAt = new Date().toISOString();
-    remoteJson.announcement = `Merged updates: ${remoteJson.stemReviewers.length} Reviewers, ${remoteJson.studyMaterials.length} Study Materials, ${remoteJson.calendarEvents.length} Deadlines, ${remoteJson.quizSets.length} Quizzes.`;
-
-    // Commit back
-    const jsonString = JSON.stringify(remoteJson, null, 2);
-    const commitMessage = `OTA Append: Merged materials into ${path} via TagSci Content Studio`;
-
-    setPublishStatus('🚀 Merging and committing to GitHub...', 'info');
-
-    const putBody = {
-      message: commitMessage,
-      content: utf8ToBase64(jsonString),
-      branch: branch
-    };
-    if (fileSha) putBody.sha = fileSha;
-
-    const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
-      method: 'PUT',
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(putBody)
-    });
-
-    if (!putRes.ok) {
-      const errData = await putRes.json().catch(() => ({}));
-      throw new Error(errData.message || `HTTP ${putRes.status}`);
-    }
-
-    const result = await putRes.json();
-    const commitUrl = result.commit ? result.commit.html_url : `https://github.com/${repo}/commits/${branch}`;
-
-    setPublishStatus(
-      `🎉 <b>Appended and merged successfully!</b><br>
-       Reviewers: ${remoteJson.stemReviewers.length} | Study Materials: ${remoteJson.studyMaterials.length} | Quiz Banks: ${remoteJson.quizSets.length} | Deadlines: ${remoteJson.calendarEvents.length}<br>
-       <b>Commit:</b> <a href="${commitUrl}" target="_blank" class="underline text-tagsci-600 dark:text-tagsci-400 font-bold">${result.commit ? result.commit.sha.substring(0, 7) : 'View on GitHub'}</a>`,
-      'success'
-    );
-
-    if (window.showToast) window.showToast('Appended and synced to GitHub!');
-  } catch (err) {
-    setPublishStatus(`✕ Append Failed: ${err.message}`, 'error');
+    setPublishStatus(`✕ Overwrite Push Failed: ${err.message}`, 'error');
   }
 }
