@@ -208,8 +208,8 @@ export function renderQuestionsBuilder() {
     qCard.innerHTML = `
       <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-700">
         <div class="flex items-center gap-1.5 min-w-0">
-          <div class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="Drag up or down to reorder placement">
-            <i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i>
+          <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 -ml-1 text-slate-400 hover:text-g11pink-600 dark:hover:text-g11pink-400 select-none transition-colors rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Click and drag to reorder question placement">
+            <i data-lucide="grip-vertical" class="w-4 h-4"></i>
           </div>
           <span class="text-xs font-black text-slate-700 dark:text-slate-300">Q${qIdx + 1}</span>
           <select onchange="window.changeQuestionType(${qIdx}, this.value)" class="text-xs font-bold px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-g11pink-600 dark:text-g11pink-400">
@@ -262,8 +262,25 @@ export function renderQuestionsBuilder() {
       </div>
     `;
 
-    // Drag and Drop Event Listeners
+    // Only allow dragging via the drag-handle
+    const handle = qCard.querySelector('.drag-handle');
+    if (handle) {
+      handle.addEventListener('mousedown', () => {
+        qCard.setAttribute('draggable', 'true');
+      });
+      handle.addEventListener('mouseup', () => {
+        qCard.setAttribute('draggable', 'false');
+      });
+      handle.addEventListener('touchstart', () => {
+        qCard.setAttribute('draggable', 'true');
+      }, { passive: true });
+    }
+
     qCard.addEventListener('dragstart', (e) => {
+      if (qCard.getAttribute('draggable') !== 'true') {
+        e.preventDefault();
+        return;
+      }
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', String(qIdx));
       qCard.classList.add('opacity-40', 'scale-[0.99]', 'border-g11pink-500', 'ring-2', 'ring-g11pink-500/30');
@@ -275,34 +292,46 @@ export function renderQuestionsBuilder() {
       const rect = qCard.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
       if (e.clientY < midY) {
-        qCard.classList.add('border-t-2', 'border-t-g11pink-600', 'dark:border-t-g11pink-400');
-        qCard.classList.remove('border-b-2', 'border-b-g11pink-600', 'dark:border-b-g11pink-400');
+        qCard.classList.add('border-t-4', 'border-t-g11pink-500');
+        qCard.classList.remove('border-b-4', 'border-b-g11pink-500');
       } else {
-        qCard.classList.add('border-b-2', 'border-b-g11pink-600', 'dark:border-b-g11pink-400');
-        qCard.classList.remove('border-t-2', 'border-t-g11pink-600', 'dark:border-t-g11pink-400');
+        qCard.classList.add('border-b-4', 'border-b-g11pink-500');
+        qCard.classList.remove('border-t-4', 'border-t-g11pink-500');
       }
     });
 
     qCard.addEventListener('dragleave', () => {
-      qCard.classList.remove('border-t-2', 'border-b-2', 'border-t-g11pink-600', 'border-b-g11pink-600', 'dark:border-t-g11pink-400', 'dark:border-b-g11pink-400');
+      qCard.classList.remove('border-t-4', 'border-b-4', 'border-t-g11pink-500', 'border-b-g11pink-500');
     });
 
     qCard.addEventListener('drop', (e) => {
       e.preventDefault();
-      qCard.classList.remove('border-t-2', 'border-b-2', 'border-t-g11pink-600', 'border-b-g11pink-600', 'dark:border-t-g11pink-400', 'dark:border-b-g11pink-400');
+      qCard.classList.remove('border-t-4', 'border-b-4', 'border-t-g11pink-500', 'border-b-g11pink-500');
       const fromIdxStr = e.dataTransfer.getData('text/plain');
       const fromIdx = parseInt(fromIdxStr, 10);
       if (isNaN(fromIdx) || fromIdx === qIdx) return;
 
+      const rect = qCard.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const insertBefore = e.clientY < midY;
+
       const [moved] = set.questions.splice(fromIdx, 1);
-      set.questions.splice(qIdx, 0, moved);
+      let targetIdx = qIdx;
+      if (fromIdx < qIdx) {
+        targetIdx = insertBefore ? qIdx - 1 : qIdx;
+      } else {
+        targetIdx = insertBefore ? qIdx : qIdx + 1;
+      }
+      set.questions.splice(targetIdx, 0, moved);
+
       renderQuestionsBuilder();
       renderLiveQuizTester();
       if (window.showToast) window.showToast('Question placement updated!');
     });
 
     qCard.addEventListener('dragend', () => {
-      qCard.classList.remove('opacity-40', 'scale-[0.99]', 'border-g11pink-500', 'ring-2', 'ring-g11pink-500/30', 'border-t-2', 'border-b-2', 'border-t-g11pink-600', 'border-b-g11pink-600', 'dark:border-t-g11pink-400', 'dark:border-b-g11pink-400');
+      qCard.setAttribute('draggable', 'false');
+      qCard.classList.remove('opacity-40', 'scale-[0.99]', 'border-g11pink-500', 'ring-2', 'ring-g11pink-500/30', 'border-t-4', 'border-b-4', 'border-t-g11pink-500', 'border-b-g11pink-500');
     });
 
     container.appendChild(qCard);

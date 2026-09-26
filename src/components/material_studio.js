@@ -354,8 +354,8 @@ export function renderMaterialBlockCanvas() {
     card.innerHTML = `
       <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
         <div class="flex items-center gap-1.5 min-w-0">
-          <div class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="Drag up or down to reorder placement">
-            <i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i>
+          <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 -ml-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 select-none transition-colors rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Click and drag to reorder block placement">
+            <i data-lucide="grip-vertical" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">${headerLeft}</div>
         </div>
@@ -364,8 +364,25 @@ export function renderMaterialBlockCanvas() {
       ${bodyHtml}
     `;
 
-    // Drag and Drop Event Listeners
+    // Only allow dragging via the drag-handle
+    const handle = card.querySelector('.drag-handle');
+    if (handle) {
+      handle.addEventListener('mousedown', () => {
+        card.setAttribute('draggable', 'true');
+      });
+      handle.addEventListener('mouseup', () => {
+        card.setAttribute('draggable', 'false');
+      });
+      handle.addEventListener('touchstart', () => {
+        card.setAttribute('draggable', 'true');
+      }, { passive: true });
+    }
+
     card.addEventListener('dragstart', (e) => {
+      if (card.getAttribute('draggable') !== 'true') {
+        e.preventDefault();
+        return;
+      }
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', String(bIdx));
       card.classList.add('opacity-40', 'scale-[0.99]', 'border-blue-500', 'ring-2', 'ring-blue-500/30');
@@ -377,34 +394,46 @@ export function renderMaterialBlockCanvas() {
       const rect = card.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
       if (e.clientY < midY) {
-        card.classList.add('border-t-2', 'border-t-blue-600', 'dark:border-t-blue-400');
-        card.classList.remove('border-b-2', 'border-b-blue-600', 'dark:border-b-blue-400');
+        card.classList.add('border-t-4', 'border-t-blue-500');
+        card.classList.remove('border-b-4', 'border-b-blue-500');
       } else {
-        card.classList.add('border-b-2', 'border-b-blue-600', 'dark:border-b-blue-400');
-        card.classList.remove('border-t-2', 'border-t-blue-600', 'dark:border-t-blue-400');
+        card.classList.add('border-b-4', 'border-b-blue-500');
+        card.classList.remove('border-t-4', 'border-t-blue-500');
       }
     });
 
     card.addEventListener('dragleave', () => {
-      card.classList.remove('border-t-2', 'border-b-2', 'border-t-blue-600', 'border-b-blue-600', 'dark:border-t-blue-400', 'dark:border-b-blue-400');
+      card.classList.remove('border-t-4', 'border-b-4', 'border-t-blue-500', 'border-b-blue-500');
     });
 
     card.addEventListener('drop', (e) => {
       e.preventDefault();
-      card.classList.remove('border-t-2', 'border-b-2', 'border-t-blue-600', 'border-b-blue-600', 'dark:border-t-blue-400', 'dark:border-b-blue-400');
+      card.classList.remove('border-t-4', 'border-b-4', 'border-t-blue-500', 'border-b-blue-500');
       const fromIdxStr = e.dataTransfer.getData('text/plain');
       const fromIdx = parseInt(fromIdxStr, 10);
       if (isNaN(fromIdx) || fromIdx === bIdx) return;
 
+      const rect = card.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const insertBefore = e.clientY < midY;
+
       const [moved] = mat.blocks.splice(fromIdx, 1);
-      mat.blocks.splice(bIdx, 0, moved);
+      let targetIdx = bIdx;
+      if (fromIdx < bIdx) {
+        targetIdx = insertBefore ? bIdx - 1 : bIdx;
+      } else {
+        targetIdx = insertBefore ? bIdx : bIdx + 1;
+      }
+      mat.blocks.splice(targetIdx, 0, moved);
+
       renderMaterialBlockCanvas();
       syncMaterialBlocksToPreview();
       if (window.showToast) window.showToast('Material block position updated!');
     });
 
     card.addEventListener('dragend', () => {
-      card.classList.remove('opacity-40', 'scale-[0.99]', 'border-blue-500', 'ring-2', 'ring-blue-500/30', 'border-t-2', 'border-b-2', 'border-t-blue-600', 'border-b-blue-600', 'dark:border-t-blue-400', 'dark:border-b-blue-400');
+      card.setAttribute('draggable', 'false');
+      card.classList.remove('opacity-40', 'scale-[0.99]', 'border-blue-500', 'ring-2', 'ring-blue-500/30', 'border-t-4', 'border-b-4', 'border-t-blue-500', 'border-b-blue-500');
     });
 
     container.appendChild(card);
