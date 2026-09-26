@@ -20,7 +20,6 @@ export function setVaultSearchQuery(query) {
 
 export function renderHubDashboard() {
   renderHubStats();
-  renderSubjectPortals();
   renderHubVault();
 }
 
@@ -64,81 +63,6 @@ export function renderHubStats() {
 
   const badgeCal = document.getElementById('badge-count-cal');
   if (badgeCal) badgeCal.innerText = calCount;
-}
-
-export function renderSubjectPortals() {
-  const container = document.getElementById('hub-subjects-grid');
-  if (!container) return;
-
-  // Aggregate counts per subject
-  const subjectMap = {};
-
-  if (STUDIO_DATA.stemReviewers) {
-    STUDIO_DATA.stemReviewers.forEach(rev => {
-      const subj = rev.subject || 'General Math';
-      if (!subjectMap[subj]) {
-        subjectMap[subj] = { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
-      }
-      subjectMap[subj].reviewers++;
-    });
-  }
-
-  if (STUDIO_DATA.studyMaterials) {
-    STUDIO_DATA.studyMaterials.forEach(mat => {
-      const subj = mat.subject || 'General Science';
-      if (!subjectMap[subj]) {
-        subjectMap[subj] = { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
-      }
-      subjectMap[subj].materials++;
-    });
-  }
-
-  if (STUDIO_DATA.quizSets) {
-    STUDIO_DATA.quizSets.forEach(qSet => {
-      const subj = qSet.subject || 'General Math';
-      if (!subjectMap[subj]) {
-        subjectMap[subj] = { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
-      }
-      subjectMap[subj].quizzes++;
-      subjectMap[subj].questions += (qSet.questions ? qSet.questions.length : 0);
-    });
-  }
-
-  // Ensure primary STEM subjects exist
-  const coreSubjects = [
-    { name: 'General Math', desc: 'Rational Functions, Inverse Functions & Summative Exams', icon: 'f(x)', color: 'blue' },
-    { name: 'Effective Communications', desc: 'Communication Models & Speech Context Drills', icon: 'message-square', color: 'emerald' },
-    { name: 'Physics', desc: '1D/2D Kinematics, Projectile Motion & Dynamics', icon: 'zap', color: 'amber' },
-    { name: 'Finite Math', desc: 'Matrix operations & Mathematical Modeling', icon: 'grid', color: 'purple' }
-  ];
-
-  let html = '';
-  coreSubjects.forEach(s => {
-    const stats = subjectMap[s.name] || { reviewers: 0, materials: 0, quizzes: 0, questions: 0 };
-    const isLive = stats.reviewers > 0 || stats.materials > 0 || stats.quizzes > 0;
-    
-    html += `
-      <div onclick="openSubjectEditor('${s.name}')" class="group cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-tagsci-500 dark:hover:border-tagsci-500 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
-        <div class="flex items-center justify-between mb-3">
-          <div class="w-9 h-9 rounded-xl bg-${s.color}-50 dark:bg-${s.color}-950/80 text-${s.color}-600 dark:text-${s.color}-400 flex items-center justify-center font-bold text-xs shadow-sm">
-            ${s.icon.length <= 4 ? s.icon : `<i data-lucide="${s.icon}" class="w-4 h-4"></i>`}
-          </div>
-          <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${isLive ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}">
-            ${isLive ? 'Active' : 'Draft'}
-          </span>
-        </div>
-        <h4 class="font-bold text-sm text-slate-900 dark:text-white group-hover:text-tagsci-600 dark:group-hover:text-tagsci-400 transition-colors">${s.name}</h4>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">${s.desc}</p>
-        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-          <span>${stats.reviewers + stats.materials} Docs • ${stats.questions} Qs</span>
-          <i data-lucide="arrow-right" class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-tagsci-600"></i>
-        </div>
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-  if (window.lucide) window.lucide.createIcons();
 }
 
 export function renderHubVault() {

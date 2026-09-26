@@ -212,34 +212,6 @@
             </div>
           </button>
         </div>
-
-        <!-- Subject Folders Shortcuts -->
-        <div class="px-3 pt-3">
-          <div class="px-3 pb-2 text-[10px] uppercase font-extrabold tracking-wider text-slate-400 dark:text-slate-500 flex items-center justify-between">
-            <span>Subject Portals</span>
-            <button onclick="createQuickReviewer()" title="Add Subject Reviewer" class="hover:text-slate-700 dark:hover:text-slate-300">
-              <i data-lucide="plus" class="w-3 h-3"></i>
-            </button>
-          </div>
-          <div class="space-y-0.5 text-xs">
-            <button onclick="openSubjectEditor('General Math')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-left">
-              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span class="truncate">General Mathematics</span>
-            </button>
-            <button onclick="openSubjectEditor('Effective Communications')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-left">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span class="truncate">Effective Communications</span>
-            </button>
-            <button onclick="openSubjectEditor('Physics')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-left">
-              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-              <span class="truncate">Physics (Elective)</span>
-            </button>
-            <button onclick="openSubjectEditor('Finite Math')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-left">
-              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-              <span class="truncate">Finite Mathematics</span>
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- User & Sync Footer -->
@@ -362,21 +334,6 @@
             <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 flex items-center justify-center">
               <i data-lucide="check-circle-2" class="w-5 h-5"></i>
             </div>
-          </div>
-        </div>
-
-        <!-- Subject Overview Cards Gallery -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <i data-lucide="folder-kanban" class="w-4 h-4 text-tagsci-600"></i>
-              Curriculum Subject Portals
-            </h3>
-            <span class="text-xs text-slate-400">Core STEM Subjects</span>
-          </div>
-
-          <div id="hub-subjects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Dynamically populated via hub_dashboard.js -->
           </div>
         </div>
 
