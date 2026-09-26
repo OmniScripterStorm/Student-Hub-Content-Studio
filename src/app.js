@@ -218,6 +218,53 @@ window.toggleQuizAddBlockDropdown = function(event) {
   }
 };
 
+// ================= User Profile & Author Name Management =================
+const USER_PROFILE_KEY = 'tagsci_cs_author_name';
+
+export function getInitials(name) {
+  if (!name || typeof name !== 'string') return 'EC';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.trim().substring(0, 2).toUpperCase();
+}
+
+export function updateUserProfileUI(name) {
+  const currentName = (name || localStorage.getItem(USER_PROFILE_KEY) || 'Editorial Council').trim();
+  const initials = getInitials(currentName);
+
+  const nameEl = document.getElementById('user-profile-name');
+  const avatarEl = document.getElementById('user-avatar-badge');
+  const welcomeTitle = document.getElementById('hub-welcome-title');
+
+  if (nameEl) nameEl.innerText = currentName;
+  if (avatarEl) avatarEl.innerText = initials;
+  if (welcomeTitle) welcomeTitle.innerText = `Welcome back, ${currentName}`;
+}
+
+export function promptUserProfileName(isForced = false) {
+  const currentName = localStorage.getItem(USER_PROFILE_KEY) || '';
+  const promptMsg = currentName
+    ? `Enter your name or editor username:`
+    : `Welcome to TagSci Content Studio!\nPlease enter your name or editor username:`;
+
+  const entered = prompt(promptMsg, currentName || '');
+  if (entered !== null) {
+    const trimmed = entered.trim();
+    if (trimmed) {
+      localStorage.setItem(USER_PROFILE_KEY, trimmed);
+      updateUserProfileUI(trimmed);
+      if (window.showToast) window.showToast(`Editor profile updated: ${trimmed}`);
+    } else if (isForced) {
+      localStorage.setItem(USER_PROFILE_KEY, 'Editorial Council');
+      updateUserProfileUI('Editorial Council');
+    }
+  }
+}
+window.promptUserProfileName = promptUserProfileName;
+window.updateUserProfileUI = updateUserProfileUI;
+
 window.handleQuizAddBlockSelect = function(type) {
   addQuestionBlock(type);
   const menu = document.getElementById('quiz-add-block-menu');
@@ -909,6 +956,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Rendering
   refreshAllStudioViews();
   switchTab('hub'); // Start in Hub Dashboard by default
+
+  // Load and apply author name / prompt if first visit
+  const savedAuthorName = localStorage.getItem(USER_PROFILE_KEY);
+  if (savedAuthorName) {
+    updateUserProfileUI(savedAuthorName);
+  } else {
+    updateUserProfileUI('Editorial Council');
+    setTimeout(() => {
+      promptUserProfileName(false);
+    }, 500);
+  }
 
   // Auto-fetch latest updates.json on load to ensure freshest dataset
   fetchLatestUpdatesJson(true, () => {

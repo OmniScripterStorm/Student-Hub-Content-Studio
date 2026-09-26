@@ -224,11 +224,15 @@
           <span class="text-[10px] font-mono text-slate-400">updates.json</span>
         </div>
         <div class="flex items-center justify-between px-1">
-          <div class="flex items-center gap-2">
-            <div class="w-6 h-6 rounded-full bg-tagsci-800 text-white flex items-center justify-center text-[10px] font-bold">EC</div>
-            <span class="text-[11px] font-medium text-slate-600 dark:text-slate-400">Editorial Council</span>
-          </div>
-          <button id="theme-btn-sidebar" class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-white">
+          <button id="btn-user-profile" onclick="promptUserProfileName()" title="Click to edit your author / editor name" class="flex items-center gap-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800/80 p-1 -ml-1 rounded-lg transition-colors group flex-1 mr-1 min-w-0">
+            <div id="user-avatar-badge" class="w-6 h-6 rounded-full bg-tagsci-800 text-white flex items-center justify-center text-[10px] font-bold group-hover:bg-tagsci-700 transition-colors uppercase shrink-0">EC</div>
+            <div class="min-w-0 flex-1">
+              <span id="user-profile-name" class="text-[11px] font-bold text-slate-700 dark:text-slate-300 block truncate group-hover:text-tagsci-600 dark:group-hover:text-tagsci-400">Editorial Council</span>
+              <span class="text-[9px] text-slate-400 block -mt-0.5 truncate">Author / Editor</span>
+            </div>
+            <i data-lucide="pencil" class="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"></i>
+          </button>
+          <button id="theme-btn-sidebar" class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0" title="Toggle dark/light theme">
             <i data-lucide="moon" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -252,7 +256,7 @@
             <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
               <i data-lucide="sparkles" class="w-3 h-3"></i> Content Studio Workspace Hub
             </div>
-            <h2 class="text-xl sm:text-2xl font-black tracking-tight">Welcome back, TagSci Editorial Council</h2>
+            <h2 id="hub-welcome-title" class="text-xl sm:text-2xl font-black tracking-tight">Welcome back, TagSci Editorial Council</h2>
             <p class="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
               Create, curate, and distribute Grade 11 STEM study materials. All updates authored here compile to <code class="font-mono text-emerald-300 font-bold">updates.json</code> and push directly to students' devices over-the-air.
             </p>
@@ -6186,6 +6190,50 @@ window.toggleQuizAddBlockDropdown = function(event) {
   }
 };
 
+// ================= User Profile & Author Name Management =================
+const USER_PROFILE_KEY = 'tagsci_cs_author_name';
+function getInitials(name) {
+  if (!name || typeof name !== 'string') return 'EC';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.trim().substring(0, 2).toUpperCase();
+}
+function updateUserProfileUI(name) {
+  const currentName = (name || localStorage.getItem(USER_PROFILE_KEY) || 'Editorial Council').trim();
+  const initials = getInitials(currentName);
+
+  const nameEl = document.getElementById('user-profile-name');
+  const avatarEl = document.getElementById('user-avatar-badge');
+  const welcomeTitle = document.getElementById('hub-welcome-title');
+
+  if (nameEl) nameEl.innerText = currentName;
+  if (avatarEl) avatarEl.innerText = initials;
+  if (welcomeTitle) welcomeTitle.innerText = `Welcome back, ${currentName}`;
+}
+function promptUserProfileName(isForced = false) {
+  const currentName = localStorage.getItem(USER_PROFILE_KEY) || '';
+  const promptMsg = currentName
+    ? `Enter your name or editor username:`
+    : `Welcome to TagSci Content Studio!\nPlease enter your name or editor username:`;
+
+  const entered = prompt(promptMsg, currentName || '');
+  if (entered !== null) {
+    const trimmed = entered.trim();
+    if (trimmed) {
+      localStorage.setItem(USER_PROFILE_KEY, trimmed);
+      updateUserProfileUI(trimmed);
+      if (window.showToast) window.showToast(`Editor profile updated: ${trimmed}`);
+    } else if (isForced) {
+      localStorage.setItem(USER_PROFILE_KEY, 'Editorial Council');
+      updateUserProfileUI('Editorial Council');
+    }
+  }
+}
+window.promptUserProfileName = promptUserProfileName;
+window.updateUserProfileUI = updateUserProfileUI;
+
 window.handleQuizAddBlockSelect = function(type) {
   addQuestionBlock(type);
   const menu = document.getElementById('quiz-add-block-menu');
@@ -6877,6 +6925,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Rendering
   refreshAllStudioViews();
   switchTab('hub'); // Start in Hub Dashboard by default
+
+  // Load and apply author name / prompt if first visit
+  const savedAuthorName = localStorage.getItem(USER_PROFILE_KEY);
+  if (savedAuthorName) {
+    updateUserProfileUI(savedAuthorName);
+  } else {
+    updateUserProfileUI('Editorial Council');
+    setTimeout(() => {
+      promptUserProfileName(false);
+    }, 500);
+  }
 
   // Auto-fetch latest updates.json on load to ensure freshest dataset
   fetchLatestUpdatesJson(true, () => {
