@@ -112,7 +112,9 @@ export function renderQuestionsBuilder() {
   container.innerHTML = '';
   set.questions.forEach((q, qIdx) => {
     const qCard = document.createElement('div');
-    qCard.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 shadow-sm hover:border-g11pink-300 dark:hover:border-g11pink-800 transition-all';
+    qCard.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 shadow-sm hover:border-g11pink-300 dark:hover:border-g11pink-800 transition-all cursor-default';
+    qCard.setAttribute('draggable', 'true');
+    qCard.dataset.questionIndex = qIdx;
     
     let typeSpecificHtml = '';
     if (q.type === 'mcq') {
@@ -205,7 +207,10 @@ export function renderQuestionsBuilder() {
 
     qCard.innerHTML = `
       <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-700">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <div class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="Drag up or down to reorder placement">
+            <i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i>
+          </div>
           <span class="text-xs font-black text-slate-700 dark:text-slate-300">Q${qIdx + 1}</span>
           <select onchange="window.changeQuestionType(${qIdx}, this.value)" class="text-xs font-bold px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-g11pink-600 dark:text-g11pink-400">
             <option value="mcq" ${q.type === 'mcq' ? 'selected' : ''}>Multiple Choice</option>
@@ -218,7 +223,7 @@ export function renderQuestionsBuilder() {
           <input type="text" value="${q.topic || ''}" oninput="window.updateQuestionField(${qIdx}, 'topic', this.value)" placeholder="Topic label..." class="px-2 py-0.5 text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md w-36">
         </div>
 
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1 shrink-0">
           <button onclick="window.moveQuestion(${qIdx}, -1)" ${qIdx === 0 ? 'disabled' : ''} title="Move Up" class="p-1 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 transition-colors">
             <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
           </button>
@@ -256,6 +261,50 @@ export function renderQuestionsBuilder() {
         <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'explanation', this.value)" placeholder="Explanation shown to student after answering..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">${q.explanation || ''}</textarea>
       </div>
     `;
+
+    // Drag and Drop Event Listeners
+    qCard.addEventListener('dragstart', (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(qIdx));
+      qCard.classList.add('opacity-40', 'scale-[0.99]', 'border-g11pink-500', 'ring-2', 'ring-g11pink-500/30');
+    });
+
+    qCard.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const rect = qCard.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      if (e.clientY < midY) {
+        qCard.classList.add('border-t-2', 'border-t-g11pink-600', 'dark:border-t-g11pink-400');
+        qCard.classList.remove('border-b-2', 'border-b-g11pink-600', 'dark:border-b-g11pink-400');
+      } else {
+        qCard.classList.add('border-b-2', 'border-b-g11pink-600', 'dark:border-b-g11pink-400');
+        qCard.classList.remove('border-t-2', 'border-t-g11pink-600', 'dark:border-t-g11pink-400');
+      }
+    });
+
+    qCard.addEventListener('dragleave', () => {
+      qCard.classList.remove('border-t-2', 'border-b-2', 'border-t-g11pink-600', 'border-b-g11pink-600', 'dark:border-t-g11pink-400', 'dark:border-b-g11pink-400');
+    });
+
+    qCard.addEventListener('drop', (e) => {
+      e.preventDefault();
+      qCard.classList.remove('border-t-2', 'border-b-2', 'border-t-g11pink-600', 'border-b-g11pink-600', 'dark:border-t-g11pink-400', 'dark:border-b-g11pink-400');
+      const fromIdxStr = e.dataTransfer.getData('text/plain');
+      const fromIdx = parseInt(fromIdxStr, 10);
+      if (isNaN(fromIdx) || fromIdx === qIdx) return;
+
+      const [moved] = set.questions.splice(fromIdx, 1);
+      set.questions.splice(qIdx, 0, moved);
+      renderQuestionsBuilder();
+      renderLiveQuizTester();
+      if (window.showToast) window.showToast('Question placement updated!');
+    });
+
+    qCard.addEventListener('dragend', () => {
+      qCard.classList.remove('opacity-40', 'scale-[0.99]', 'border-g11pink-500', 'ring-2', 'ring-g11pink-500/30', 'border-t-2', 'border-b-2', 'border-t-g11pink-600', 'border-b-g11pink-600', 'dark:border-t-g11pink-400', 'dark:border-b-g11pink-400');
+    });
+
     container.appendChild(qCard);
   });
   if (window.lucide) window.lucide.createIcons();

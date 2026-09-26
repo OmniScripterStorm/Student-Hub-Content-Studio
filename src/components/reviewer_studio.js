@@ -262,7 +262,9 @@ export function renderBlockCanvas() {
 
   rev.blocks.forEach((b, bIdx) => {
     const card = document.createElement('div');
-    card.className = `p-3.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 transition-all`;
+    card.className = `p-3.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 transition-all block-card cursor-default`;
+    card.setAttribute('draggable', 'true');
+    card.dataset.blockIndex = bIdx;
 
     let headerLeft = '';
     let bodyHtml = '';
@@ -527,11 +529,60 @@ export function renderBlockCanvas() {
 
     card.innerHTML = `
       <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-        <div class="min-w-0">${headerLeft}</div>
+        <div class="flex items-center gap-1.5 min-w-0">
+          <div class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="Drag up or down to reorder placement">
+            <i data-lucide="grip-vertical" class="w-3.5 h-3.5"></i>
+          </div>
+          <div class="min-w-0">${headerLeft}</div>
+        </div>
         ${headerActions}
       </div>
       ${bodyHtml}
     `;
+
+    // Drag and Drop Event Listeners
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(bIdx));
+      card.classList.add('opacity-40', 'scale-[0.99]', 'border-tagsci-500', 'ring-2', 'ring-tagsci-500/30');
+    });
+
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const rect = card.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      if (e.clientY < midY) {
+        card.classList.add('border-t-2', 'border-t-tagsci-600', 'dark:border-t-tagsci-400');
+        card.classList.remove('border-b-2', 'border-b-tagsci-600', 'dark:border-b-tagsci-400');
+      } else {
+        card.classList.add('border-b-2', 'border-b-tagsci-600', 'dark:border-b-tagsci-400');
+        card.classList.remove('border-t-2', 'border-t-tagsci-600', 'dark:border-t-tagsci-400');
+      }
+    });
+
+    card.addEventListener('dragleave', () => {
+      card.classList.remove('border-t-2', 'border-b-2', 'border-t-tagsci-600', 'border-b-tagsci-600', 'dark:border-t-tagsci-400', 'dark:border-b-tagsci-400');
+    });
+
+    card.addEventListener('drop', (e) => {
+      e.preventDefault();
+      card.classList.remove('border-t-2', 'border-b-2', 'border-t-tagsci-600', 'border-b-tagsci-600', 'dark:border-t-tagsci-400', 'dark:border-b-tagsci-400');
+      const fromIdxStr = e.dataTransfer.getData('text/plain');
+      const fromIdx = parseInt(fromIdxStr, 10);
+      if (isNaN(fromIdx) || fromIdx === bIdx) return;
+
+      const [moved] = rev.blocks.splice(fromIdx, 1);
+      rev.blocks.splice(bIdx, 0, moved);
+      renderBlockCanvas();
+      syncBlocksToPreview();
+      if (window.showToast) window.showToast('Block position updated!');
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('opacity-40', 'scale-[0.99]', 'border-tagsci-500', 'ring-2', 'ring-tagsci-500/30', 'border-t-2', 'border-b-2', 'border-t-tagsci-600', 'border-b-tagsci-600', 'dark:border-t-tagsci-400', 'dark:border-b-tagsci-400');
+    });
+
     container.appendChild(card);
   });
 
