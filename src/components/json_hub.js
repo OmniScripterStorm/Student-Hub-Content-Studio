@@ -181,6 +181,58 @@ export async function pingOtaEndpoint() {
    DIRECT GITHUB API INTEGRATION FOR EDITORIAL COUNCIL
    ========================================================= */
 
+const SEED_MASK = [0x5A, 0x9C, 0x3F, 0xE2, 0x71, 0xB8, 0x4D, 0x16, 0x85, 0x6E, 0xA3, 0xF0];
+const TSKEY_PREFIX = "TSKEY_";
+
+/**
+ * Decodes an obfuscated TSKEY (XOR + circular bit rotation + positional shift) into raw GitHub PAT in memory
+ */
+export function decodeStudioKey(obfuscatedKey) {
+  if (!obfuscatedKey || typeof obfuscatedKey !== 'string') return '';
+  obfuscatedKey = obfuscatedKey.trim();
+
+  // If already raw PAT (ghp_ or github_pat_), use directly
+  if (!obfuscatedKey.startsWith(TSKEY_PREFIX)) return obfuscatedKey;
+
+  try {
+    let b64 = obfuscatedKey.substring(TSKEY_PREFIX.length)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+
+    const binStr = window.atob(b64);
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) {
+      bytes[i] = binStr.charCodeAt(i);
+    }
+
+    const out = new Uint8Array(bytes.length);
+
+    for (let i = 0; i < bytes.length; i++) {
+      let b = bytes[i];
+
+      // 1. Reverse Positional shift
+      b = (b - ((i * 7) % 256) + 256) & 0xFF;
+
+      // 2. Reverse Nibble Swap
+      b = ((b & 0x0F) << 4) | ((b & 0xF0) >>> 4);
+
+      // 3. Reverse XOR with cyclic seed mask
+      b = b ^ SEED_MASK[i % SEED_MASK.length];
+
+      // 4. Reverse Bitwise Circular Rotation (ROR 3 bits)
+      b = ((b >>> 3) | (b << 5)) & 0xFF;
+
+      out[i] = b;
+    }
+
+    return new TextDecoder().decode(out);
+  } catch (err) {
+    console.warn("Could not decode TSKEY, falling back to raw token:", err);
+    return obfuscatedKey;
+  }
+}
+
 const STORAGE_KEYS = {
   TOKEN: 'tagsci_cs_gh_token',
   REPO: 'tagsci_cs_gh_repo',
@@ -194,8 +246,11 @@ export function getGitHubConfig() {
   const branchEl = document.getElementById('gh-branch-name');
   const pathEl = document.getElementById('gh-file-path');
 
+  const storedOrEnteredToken = (tokenEl ? tokenEl.value.trim() : '') || (localStorage.getItem(STORAGE_KEYS.TOKEN) || '').trim();
+
   return {
-    token: (tokenEl ? tokenEl.value : '') || localStorage.getItem(STORAGE_KEYS.TOKEN) || '',
+    token: decodeStudioKey(storedOrEnteredToken),
+    rawInput: storedOrEnteredToken,
     repo: (repoEl ? repoEl.value : '') || localStorage.getItem(STORAGE_KEYS.REPO) || 'OmniScripterStorm/Student-Hub',
     branch: (branchEl ? branchEl.value : '') || localStorage.getItem(STORAGE_KEYS.BRANCH) || 'main',
     path: (pathEl ? pathEl.value : '') || localStorage.getItem(STORAGE_KEYS.PATH) || 'updates.json'
@@ -203,11 +258,20 @@ export function getGitHubConfig() {
 }
 
 export function saveGitHubConfig() {
-  const config = getGitHubConfig();
-  if (config.token) localStorage.setItem(STORAGE_KEYS.TOKEN, config.token.trim());
-  if (config.repo) localStorage.setItem(STORAGE_KEYS.REPO, config.repo.trim());
-  if (config.branch) localStorage.setItem(STORAGE_KEYS.BRANCH, config.branch.trim());
-  if (config.path) localStorage.setItem(STORAGE_KEYS.PATH, config.path.trim());
+  const tokenEl = document.getElementById('gh-pat-token');
+  const repoEl = document.getElementById('gh-repo-name');
+  const branchEl = document.getElementById('gh-branch-name');
+  const pathEl = document.getElementById('gh-file-path');
+
+  const tokenVal = tokenEl ? tokenEl.value.trim() : '';
+  const repoVal = repoEl ? repoEl.value.trim() : '';
+  const branchVal = branchEl ? branchEl.value.trim() : '';
+  const pathVal = pathEl ? pathEl.value.trim() : '';
+
+  if (tokenVal) localStorage.setItem(STORAGE_KEYS.TOKEN, tokenVal);
+  if (repoVal) localStorage.setItem(STORAGE_KEYS.REPO, repoVal);
+  if (branchVal) localStorage.setItem(STORAGE_KEYS.BRANCH, branchVal);
+  if (pathVal) localStorage.setItem(STORAGE_KEYS.PATH, pathVal);
 
   if (window.showToast) window.showToast('GitHub credentials saved locally!');
 }
