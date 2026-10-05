@@ -684,13 +684,18 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
     // Strategy 3: Try relative / local updates.json
     if (!json) {
       try {
-        const localRes = await fetch(`../../updates.json?_t=${Date.now()}`, { cache: 'no-store' })
-          .catch(() => fetch(`updates.json?_t=${Date.now()}`, { cache: 'no-store' }));
+        let localRes = await fetch(`./updates.json?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+        if (!localRes || !localRes.ok) {
+          localRes = await fetch(`updates.json?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+        }
+        if (!localRes || !localRes.ok) {
+          localRes = await fetch(`../../updates.json?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+        }
         if (localRes && localRes.ok) {
           json = await localRes.json();
         }
       } catch (localErr) {
-        console.warn('Local fetch failed:', localErr);
+        console.warn('Local fetch fallback failed:', localErr);
       }
     }
 

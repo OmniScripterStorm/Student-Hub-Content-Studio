@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TagSci G11 STEM • Visual Content Studio & Workspace Hub</title>
-  <link rel="icon" href="./tagsci logo.png" type="image/png">
+  <link rel="icon" type="image/png" href="./tagsci%20logo.png">
+  <link rel="icon" type="image/png" href="./tagsci logo.png">
+  <link rel="apple-touch-icon" href="./tagsci%20logo.png">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -6567,13 +6569,18 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
     // Strategy 3: Try relative / local updates.json
     if (!json) {
       try {
-        const localRes = await fetch(`../../updates.json?_t=${Date.now()}`, { cache: 'no-store' })
-          .catch(() => fetch(`updates.json?_t=${Date.now()}`, { cache: 'no-store' }));
+        let localRes = await fetch(`./updates.json?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+        if (!localRes || !localRes.ok) {
+          localRes = await fetch(`updates.json?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+        }
+        if (!localRes || !localRes.ok) {
+          localRes = await fetch(`../../updates.json?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+        }
         if (localRes && localRes.ok) {
           json = await localRes.json();
         }
       } catch (localErr) {
-        console.warn('Local fetch failed:', localErr);
+        console.warn('Local fetch fallback failed:', localErr);
       }
     }
 
