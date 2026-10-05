@@ -136,6 +136,9 @@ window.removeBulletItem = removeBulletItem;
 window.addContentBlock = addContentBlock;
 window.uploadBlockImage = uploadBlockImage;
 window.loadLessonTemplate = loadLessonTemplate;
+window.formatRichText = formatRichText;
+window.renderMathInHtml = renderMathInHtml;
+window.parseMarkdownToHtml = parseMarkdownToHtml;
 window.applyTextFormatting = applyTextFormatting;
 
 // Table Block Bindings

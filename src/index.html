@@ -537,7 +537,7 @@
               </div>
             </div>
 
-            <!-- Word Formatting Tools (Bold, Italic, Underline, Math) -->
+            <!-- Word Formatting Tools (Bold, Italic, Underline, Strikethrough, Code, Math) -->
             <div class="flex items-center gap-1 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 min-w-max shadow-sm">
               <span class="text-[9.5px] uppercase font-bold text-slate-400 px-1.5 hidden sm:inline">Format:</span>
               <button onclick="applyTextFormatting('bold')" title="Bold (Ctrl+B)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center w-7 h-7">
@@ -548,6 +548,12 @@
               </button>
               <button onclick="applyTextFormatting('underline')" title="Underline (Ctrl+U)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 underline text-xs flex items-center justify-center w-7 h-7">
                 <span class="underline font-bold text-xs">U</span>
+              </button>
+              <button onclick="applyTextFormatting('strike')" title="Strikethrough (~~text~~)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 line-through text-xs flex items-center justify-center w-7 h-7">
+                <span class="line-through font-bold text-xs">S</span>
+              </button>
+              <button onclick="applyTextFormatting('code')" title="Inline Code (`code`)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono text-xs flex items-center justify-center w-7 h-7">
+                <span class="font-mono font-bold text-[11px]">&lt;&gt;</span>
               </button>
               <button onclick="applyTextFormatting('math')" title="Inline Math $...$ (Ctrl+M)" class="px-2 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-tagsci-700 dark:text-tagsci-300 font-mono font-bold text-xs h-7 flex items-center">
                 $x$
@@ -802,6 +808,12 @@
                 </button>
                 <button onclick="applyTextFormatting('underline')" title="Underline (Ctrl+U)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 underline text-xs flex items-center justify-center w-7 h-7">
                   <span class="underline font-bold text-xs">U</span>
+                </button>
+                <button onclick="applyTextFormatting('strike')" title="Strikethrough (~~text~~)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 line-through text-xs flex items-center justify-center w-7 h-7">
+                  <span class="line-through font-bold text-xs">S</span>
+                </button>
+                <button onclick="applyTextFormatting('code')" title="Inline Code (`code`)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono text-xs flex items-center justify-center w-7 h-7">
+                  <span class="font-mono font-bold text-[11px]">&lt;&gt;</span>
                 </button>
                 <button onclick="applyTextFormatting('math')" title="Inline Math $...$ (Ctrl+M)" class="px-2 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 font-mono font-bold text-xs h-7 flex items-center">
                   $x$

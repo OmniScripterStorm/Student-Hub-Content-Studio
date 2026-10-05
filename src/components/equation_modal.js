@@ -280,3 +280,124 @@ export function confirmMathInsert(mode, onComplete) {
   if (typeof onComplete === 'function') onComplete();
   if (window.showToast) window.showToast('Formula card added to reviewer!');
 }
+
+/**
+ * Applies Markdown/HTML formatting (Bold, Italic, Underline, Strikethrough, Code, Inline Math)
+ * to the currently focused input/textarea or selection.
+ */
+export function applyRichTextFormatting(formatType) {
+  let target = lastFocusedInput;
+  if (!target || !document.body.contains(target) || target.closest('#modal-math-builder')) {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+      target = active;
+    } else {
+      target = document.querySelector('#rev-input-body:not(.hidden), #mat-input-body:not(.hidden), #pane-visual-blocks textarea:focus, #pane-visual-blocks input[type="text"]:focus, #pane-visual-blocks textarea, #pane-visual-blocks input[type="text"]');
+    }
+  }
+
+  if (!target) return;
+
+  const start = target.selectionStart ?? target.value.length;
+  const end = target.selectionEnd ?? target.value.length;
+  const selectedText = target.value.substring(start, end);
+
+  let before = '';
+  let after = '';
+  let defaultPlaceholder = '';
+
+  switch (formatType) {
+    case 'bold':
+      before = '**';
+      after = '**';
+      defaultPlaceholder = 'bold text';
+      break;
+    case 'italic':
+      before = '*';
+      after = '*';
+      defaultPlaceholder = 'italic text';
+      break;
+    case 'underline':
+      before = '<u>';
+      after = '</u>';
+      defaultPlaceholder = 'underlined text';
+      break;
+    case 'strike':
+      before = '~~';
+      after = '~~';
+      defaultPlaceholder = 'strikethrough text';
+      break;
+    case 'code':
+      before = '`';
+      after = '`';
+      defaultPlaceholder = 'code';
+      break;
+    case 'math':
+      before = '$';
+      after = '$';
+      defaultPlaceholder = 'x';
+      break;
+    default:
+      return;
+  }
+
+  // Toggle unwrapping if already wrapped with before/after
+  if (selectedText.startsWith(before) && selectedText.endsWith(after) && selectedText.length >= (before.length + after.length)) {
+    const unwrapped = selectedText.substring(before.length, selectedText.length - after.length);
+    target.value = target.value.substring(0, start) + unwrapped + target.value.substring(end);
+    target.focus();
+    target.setSelectionRange(start, start + unwrapped.length);
+  } else {
+    const innerText = selectedText || defaultPlaceholder;
+    const insertion = before + innerText + after;
+    
+    target.value = target.value.substring(0, start) + insertion + target.value.substring(end);
+    target.focus();
+
+    if (selectedText) {
+      target.setSelectionRange(start, start + insertion.length);
+    } else {
+      target.setSelectionRange(start + before.length, start + before.length + defaultPlaceholder.length);
+    }
+  }
+
+  target.dispatchEvent(new Event('input', { bubbles: true }));
+  target.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+// Global hotkeys for formatting (Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+M)
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', (e) => {
+    const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+    if (modKey && !e.altKey) {
+      const key = e.key.toLowerCase();
+      if (key === 'b') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+          e.preventDefault();
+          applyRichTextFormatting('bold');
+        }
+      } else if (key === 'i') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+          e.preventDefault();
+          applyRichTextFormatting('italic');
+        }
+      } else if (key === 'u') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+          e.preventDefault();
+          applyRichTextFormatting('underline');
+        }
+      } else if (key === 'm') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+          e.preventDefault();
+          openMathBuilderModal();
+        }
+      }
+    }
+  });
+}

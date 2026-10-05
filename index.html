@@ -537,7 +537,7 @@
               </div>
             </div>
 
-            <!-- Word Formatting Tools (Bold, Italic, Underline, Math) -->
+            <!-- Word Formatting Tools (Bold, Italic, Underline, Strikethrough, Code, Math) -->
             <div class="flex items-center gap-1 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 min-w-max shadow-sm">
               <span class="text-[9.5px] uppercase font-bold text-slate-400 px-1.5 hidden sm:inline">Format:</span>
               <button onclick="applyTextFormatting('bold')" title="Bold (Ctrl+B)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center w-7 h-7">
@@ -548,6 +548,12 @@
               </button>
               <button onclick="applyTextFormatting('underline')" title="Underline (Ctrl+U)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 underline text-xs flex items-center justify-center w-7 h-7">
                 <span class="underline font-bold text-xs">U</span>
+              </button>
+              <button onclick="applyTextFormatting('strike')" title="Strikethrough (~~text~~)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 line-through text-xs flex items-center justify-center w-7 h-7">
+                <span class="line-through font-bold text-xs">S</span>
+              </button>
+              <button onclick="applyTextFormatting('code')" title="Inline Code (`code`)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono text-xs flex items-center justify-center w-7 h-7">
+                <span class="font-mono font-bold text-[11px]">&lt;&gt;</span>
               </button>
               <button onclick="applyTextFormatting('math')" title="Inline Math $...$ (Ctrl+M)" class="px-2 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-tagsci-700 dark:text-tagsci-300 font-mono font-bold text-xs h-7 flex items-center">
                 $x$
@@ -802,6 +808,12 @@
                 </button>
                 <button onclick="applyTextFormatting('underline')" title="Underline (Ctrl+U)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 underline text-xs flex items-center justify-center w-7 h-7">
                   <span class="underline font-bold text-xs">U</span>
+                </button>
+                <button onclick="applyTextFormatting('strike')" title="Strikethrough (~~text~~)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 line-through text-xs flex items-center justify-center w-7 h-7">
+                  <span class="line-through font-bold text-xs">S</span>
+                </button>
+                <button onclick="applyTextFormatting('code')" title="Inline Code (`code`)" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono text-xs flex items-center justify-center w-7 h-7">
+                  <span class="font-mono font-bold text-[11px]">&lt;&gt;</span>
                 </button>
                 <button onclick="applyTextFormatting('math')" title="Inline Math $...$ (Ctrl+M)" class="px-2 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 font-mono font-bold text-xs h-7 flex items-center">
                   $x$
@@ -1930,27 +1942,96 @@ function parseMathSyntax(tex) {
   s = s.replace(/\\text\{([^{}]+)\}/g, '<span class="font-sans font-normal">$1</span>');
   return s;
 }
-function renderMathInHtml(htmlString) {
-  if (!htmlString) return '';
-  let res = htmlString.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
-    return `<div class="my-3 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center font-mono-math text-sm text-tagsci-900 dark:text-emerald-300 shadow-sm overflow-x-auto">${parseMathSyntax(tex)}</div>`;
-  });
-  res = res.replace(/\$([^\$\n]+?)\$/g, (match, tex) => {
-    return `<span class="inline-block font-mono-math text-tagsci-800 dark:text-emerald-300 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-xs font-semibold">${parseMathSyntax(tex)}</span>`;
-  });
-  return res;
-}
+
+/**
+ * Formats Markdown and HTML inline rich text (Bold, Italic, Underline, Strikethrough, Code)
+ */
 function formatRichText(str) {
   if (!str) return '';
-  let res = str;
-  // 1. Bold: **text**
-  res = res.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  // 2. Underline: <u>text</u> or __text__
-  res = res.replace(/<u>(.*?)<\/u>/gi, '<u class="underline underline-offset-2">$1</u>');
-  res = res.replace(/__(.*?)__/g, '<u class="underline underline-offset-2">$1</u>');
-  // 3. Italic: *text* (when not part of **)
-  res = res.replace(/(?<!\*)\*(?!\*)([^\*]+?)(?<!\*)\*(?!\*)/g, '<em class="italic">$1</em>');
-  return res;
+  let text = String(str);
+
+  // 1. Stash code blocks & inline code so formatting isn't applied inside code
+  const codeTokens = [];
+  text = text.replace(/`([^`\n]+?)`/g, (match, code) => {
+    const idx = codeTokens.length;
+    codeTokens.push(code);
+    return `\x00CODE_${idx}\x00`;
+  });
+
+  // 2. Underline: <u>text</u>, <ins>text</ins>, __text__
+  text = text.replace(/<u\b[^>]*>([\s\S]*?)<\/u>/gi, '<u class="underline underline-offset-2">$1</u>');
+  text = text.replace(/<ins\b[^>]*>([\s\S]*?)<\/ins>/gi, '<u class="underline underline-offset-2">$1</u>');
+  text = text.replace(/__(.+?)__/g, '<u class="underline underline-offset-2">$1</u>');
+
+  // 3. Bold + Italic combinations: ***text***, **_text_**, _**text**_
+  text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong class="font-extrabold text-slate-900 dark:text-white"><em class="italic">$1</em></strong>');
+  text = text.replace(/\*\*_(.+?)_\*\*/g, '<strong class="font-extrabold text-slate-900 dark:text-white"><em class="italic">$1</em></strong>');
+  text = text.replace(/_\*\*(.+?)\*\*_/g, '<strong class="font-extrabold text-slate-900 dark:text-white"><em class="italic">$1</em></strong>');
+
+  // 4. Bold: **text**, <b>text</b>, <strong>text</strong>
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-slate-900 dark:text-white">$1</strong>');
+  text = text.replace(/<b\b[^>]*>([\s\S]*?)<\/b>/gi, '<strong class="font-bold text-slate-900 dark:text-white">$1</strong>');
+  text = text.replace(/<strong\b[^>]*>([\s\S]*?)<\/strong>/gi, '<strong class="font-bold text-slate-900 dark:text-white">$1</strong>');
+
+  // 5. Italic: *text*, _text_ (surrounded by spaces/boundary), <i>text</i>, <em>text</em>
+  text = text.replace(/(?<!\*)\*(?!\*)([^\*\n]+?)(?<!\*)\*(?!\*)/g, '<em class="italic">$1</em>');
+  text = text.replace(/(^|[\s(>])_([^_]+?)_([\s)<.,!?:;]|$)/g, '$1<em class="italic">$2</em>$3');
+  text = text.replace(/<i\b[^>]*>([\s\S]*?)<\/i>/gi, '<em class="italic">$1</em>');
+  text = text.replace(/<em\b[^>]*>([\s\S]*?)<\/em>/gi, '<em class="italic">$1</em>');
+
+  // 6. Strikethrough: ~~text~~, <s>text</s>, <del>text</del>
+  text = text.replace(/~~(.+?)~~/g, '<del class="line-through text-slate-400 dark:text-slate-500">$1</del>');
+  text = text.replace(/<s\b[^>]*>([\s\S]*?)<\/s>/gi, '<del class="line-through text-slate-400 dark:text-slate-500">$1</del>');
+  text = text.replace(/<del\b[^>]*>([\s\S]*?)<\/del>/gi, '<del class="line-through text-slate-400 dark:text-slate-500">$1</del>');
+
+  // 7. Restore code tokens
+  text = text.replace(/\x00CODE_(\d+)\x00/g, (match, idx) => {
+    const c = codeTokens[Number(idx)] || '';
+    return `<code class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-xs font-mono text-tagsci-700 dark:text-emerald-400 border border-slate-200 dark:border-slate-700">${c}</code>`;
+  });
+
+  return text;
+}
+
+/**
+ * Parses LaTeX math formulas ($...$ and $$...$$) and inline rich text formatting safely.
+ */
+function renderMathInHtml(htmlString) {
+  if (!htmlString) return '';
+  let text = String(htmlString);
+
+  // Step 1: Protect math formulas into placeholders before rich text processing
+  const mathBlocks = [];
+  text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
+    const idx = mathBlocks.length;
+    mathBlocks.push(tex);
+    return `\x00MATH_BLOCK_${idx}\x00`;
+  });
+
+  const mathInlines = [];
+  text = text.replace(/\$([^\$\n]+?)\$/g, (match, tex) => {
+    const idx = mathInlines.length;
+    mathInlines.push(tex);
+    return `\x00MATH_INLINE_${idx}\x00`;
+  });
+
+  // Step 2: Parse rich text (Bold, Italic, Underline, Strikethrough, Code)
+  text = formatRichText(text);
+
+  // Step 3: Restore and render math formulas
+  text = text.replace(/\x00MATH_BLOCK_(\d+)\x00/g, (match, idx) => {
+    const tex = mathBlocks[Number(idx)];
+    if (tex === undefined) return '';
+    return `<div class="my-3 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center font-mono-math text-sm sm:text-base text-tagsci-900 dark:text-emerald-300 shadow-sm overflow-x-auto">${parseMathSyntax(tex)}</div>`;
+  });
+
+  text = text.replace(/\x00MATH_INLINE_(\d+)\x00/g, (match, idx) => {
+    const tex = mathInlines[Number(idx)];
+    if (tex === undefined) return '';
+    return `<span class="inline-block font-mono-math text-tagsci-800 dark:text-emerald-300 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-xs font-semibold">${parseMathSyntax(tex)}</span>`;
+  });
+
+  return text;
 }
 
 /* =========================================================
@@ -2670,6 +2751,127 @@ function confirmMathInsert(mode, onComplete) {
   closeMathBuilderModal();
   if (typeof onComplete === 'function') onComplete();
   if (window.showToast) window.showToast('Formula card added to reviewer!');
+}
+
+/**
+ * Applies Markdown/HTML formatting (Bold, Italic, Underline, Strikethrough, Code, Inline Math)
+ * to the currently focused input/textarea or selection.
+ */
+function applyRichTextFormatting(formatType) {
+  let target = lastFocusedInput;
+  if (!target || !document.body.contains(target) || target.closest('#modal-math-builder')) {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+      target = active;
+    } else {
+      target = document.querySelector('#rev-input-body:not(.hidden), #mat-input-body:not(.hidden), #pane-visual-blocks textarea:focus, #pane-visual-blocks input[type="text"]:focus, #pane-visual-blocks textarea, #pane-visual-blocks input[type="text"]');
+    }
+  }
+
+  if (!target) return;
+
+  const start = target.selectionStart ?? target.value.length;
+  const end = target.selectionEnd ?? target.value.length;
+  const selectedText = target.value.substring(start, end);
+
+  let before = '';
+  let after = '';
+  let defaultPlaceholder = '';
+
+  switch (formatType) {
+    case 'bold':
+      before = '**';
+      after = '**';
+      defaultPlaceholder = 'bold text';
+      break;
+    case 'italic':
+      before = '*';
+      after = '*';
+      defaultPlaceholder = 'italic text';
+      break;
+    case 'underline':
+      before = '<u>';
+      after = '</u>';
+      defaultPlaceholder = 'underlined text';
+      break;
+    case 'strike':
+      before = '~~';
+      after = '~~';
+      defaultPlaceholder = 'strikethrough text';
+      break;
+    case 'code':
+      before = '`';
+      after = '`';
+      defaultPlaceholder = 'code';
+      break;
+    case 'math':
+      before = '$';
+      after = '$';
+      defaultPlaceholder = 'x';
+      break;
+    default:
+      return;
+  }
+
+  // Toggle unwrapping if already wrapped with before/after
+  if (selectedText.startsWith(before) && selectedText.endsWith(after) && selectedText.length >= (before.length + after.length)) {
+    const unwrapped = selectedText.substring(before.length, selectedText.length - after.length);
+    target.value = target.value.substring(0, start) + unwrapped + target.value.substring(end);
+    target.focus();
+    target.setSelectionRange(start, start + unwrapped.length);
+  } else {
+    const innerText = selectedText || defaultPlaceholder;
+    const insertion = before + innerText + after;
+    
+    target.value = target.value.substring(0, start) + insertion + target.value.substring(end);
+    target.focus();
+
+    if (selectedText) {
+      target.setSelectionRange(start, start + insertion.length);
+    } else {
+      target.setSelectionRange(start + before.length, start + before.length + defaultPlaceholder.length);
+    }
+  }
+
+  target.dispatchEvent(new Event('input', { bubbles: true }));
+  target.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+// Global hotkeys for formatting (Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+M)
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', (e) => {
+    const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+    if (modKey && !e.altKey) {
+      const key = e.key.toLowerCase();
+      if (key === 'b') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+          e.preventDefault();
+          applyRichTextFormatting('bold');
+        }
+      } else if (key === 'i') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+          e.preventDefault();
+          applyRichTextFormatting('italic');
+        }
+      } else if (key === 'u') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') && !active.closest('#modal-math-builder')) {
+          e.preventDefault();
+          applyRichTextFormatting('underline');
+        }
+      } else if (key === 'm') {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+          e.preventDefault();
+          openMathBuilderModal();
+        }
+      }
+    }
+  });
 }
 
 
@@ -3873,6 +4075,14 @@ function applyTextFormatting(type) {
     prefix = '<u>';
     suffix = '</u>';
     defaultText = 'underlined text';
+  } else if (type === 'strike') {
+    prefix = '~~';
+    suffix = '~~';
+    defaultText = 'strikethrough text';
+  } else if (type === 'code') {
+    prefix = '`';
+    suffix = '`';
+    defaultText = 'code';
   } else if (type === 'math') {
     prefix = '$';
     suffix = '$';
@@ -3904,6 +4114,7 @@ function applyTextFormatting(type) {
   activeElem.focus();
   activeElem.setSelectionRange(newSelectionStart, newSelectionEnd);
   activeElem.dispatchEvent(new Event('input', { bubbles: true }));
+  activeElem.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 
@@ -6878,6 +7089,9 @@ window.removeBulletItem = removeBulletItem;
 window.addContentBlock = addContentBlock;
 window.uploadBlockImage = uploadBlockImage;
 window.loadLessonTemplate = loadLessonTemplate;
+window.formatRichText = formatRichText;
+window.renderMathInHtml = renderMathInHtml;
+window.parseMarkdownToHtml = parseMarkdownToHtml;
 window.applyTextFormatting = applyTextFormatting;
 
 // Table Block Bindings

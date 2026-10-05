@@ -1227,6 +1227,14 @@ export function applyTextFormatting(type) {
     prefix = '<u>';
     suffix = '</u>';
     defaultText = 'underlined text';
+  } else if (type === 'strike') {
+    prefix = '~~';
+    suffix = '~~';
+    defaultText = 'strikethrough text';
+  } else if (type === 'code') {
+    prefix = '`';
+    suffix = '`';
+    defaultText = 'code';
   } else if (type === 'math') {
     prefix = '$';
     suffix = '$';
@@ -1258,4 +1266,5 @@ export function applyTextFormatting(type) {
   activeElem.focus();
   activeElem.setSelectionRange(newSelectionStart, newSelectionEnd);
   activeElem.dispatchEvent(new Event('input', { bubbles: true }));
+  activeElem.dispatchEvent(new Event('change', { bubbles: true }));
 }
