@@ -520,7 +520,7 @@ export function getGitHubConfig() {
   };
 }
 
-export function saveGitHubConfig() {
+export function saveGitHubConfig(showToastNotification = false) {
   const tokenEl = document.getElementById('gh-pat-token');
   const repoEl = document.getElementById('gh-repo-name');
   const branchEl = document.getElementById('gh-branch-name');
@@ -536,7 +536,7 @@ export function saveGitHubConfig() {
   if (branchVal) localStorage.setItem(STORAGE_KEYS.BRANCH, branchVal);
   if (pathVal) localStorage.setItem(STORAGE_KEYS.PATH, pathVal);
 
-  if (window.showToast) window.showToast('GitHub credentials saved locally!');
+  if (showToastNotification && window.showToast) window.showToast('GitHub credentials saved locally!');
 }
 
 export function loadGitHubConfig() {
@@ -708,16 +708,16 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
     const hasLocalDraft = STUDIO_DATA.stemReviewers.length > 0 || STUDIO_DATA.studyMaterials.length > 0 || STUDIO_DATA.quizSets.length > 0;
 
     if (baseline && hasLocalDraft) {
-      const { mergedData, report } = reconcileWithRemote(json);
-      if (report.hasRemoteChanges || report.totalLocalUpdated > 0 || report.totalLocalAdded > 0) {
+      const { mergedData, report } = mergeStudioDatasets(STUDIO_DATA, json, baseline);
+      if (report && (report.hasRemoteChanges || report.totalLocalUpdated > 0 || report.totalLocalAdded > 0)) {
         STUDIO_DATA.version = mergedData.version || json.version;
         STUDIO_DATA.updatedAt = json.updatedAt;
         STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
-        STUDIO_DATA.stemReviewers = mergedData.stemReviewers;
-        STUDIO_DATA.studyMaterials = mergedData.studyMaterials;
-        STUDIO_DATA.quizSets = mergedData.quizSets;
-        STUDIO_DATA.calendarEvents = mergedData.calendarEvents;
-        STUDIO_DATA.problemSets = mergedData.problemSets;
+        STUDIO_DATA.stemReviewers = mergedData.stemReviewers || [];
+        STUDIO_DATA.studyMaterials = mergedData.studyMaterials || [];
+        STUDIO_DATA.quizSets = mergedData.quizSets || [];
+        STUDIO_DATA.calendarEvents = mergedData.calendarEvents || [];
+        STUDIO_DATA.problemSets = mergedData.problemSets || [];
       } else {
         STUDIO_DATA.version = json.version;
         STUDIO_DATA.updatedAt = json.updatedAt;
