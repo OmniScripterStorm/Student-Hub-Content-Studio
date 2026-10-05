@@ -4457,6 +4457,7 @@ ${mdBody}
    ========================================================= */
 let testerQuestionIdx = 0;
 let testerRevealed = false;
+let testerHintRevealed = false;
 let testerSelectedMulti = [];
 function renderQuizSetsList() {
   const container = document.getElementById('quiz-sets-container');
@@ -4643,11 +4644,31 @@ function renderQuestionsBuilder() {
       `;
     } else if (q.type === 'flashcard') {
       typeSpecificHtml = `
-        <div class="space-y-2">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Flashcard Prompt / Front Text:</label>
-          <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'front', this.value); window.updateQuestionField(${qIdx}, 'prompt', this.value)" placeholder="Front side question or term..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">${q.front || q.prompt || ''}</textarea>
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Flashcard Back / Definition / Formula:</label>
-          <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'back', this.value)" placeholder="Back side answer, formula or definition..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">${q.back || ''}</textarea>
+        <div class="space-y-2.5">
+          <div>
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flashcard Prompt / Front Text (Supports $LaTeX$):</label>
+            <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'front', this.value); window.updateQuestionField(${qIdx}, 'prompt', this.value)" placeholder="Front side question, term, or formula prompt..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">${q.front || q.prompt || ''}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flashcard Back / Definition / Solution (Supports $LaTeX$):</label>
+            <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'back', this.value)" placeholder="Back side answer, formula derivation or definition..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono-math">${q.back || ''}</textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">💡 Hint / Mnemonic (Optional):</label>
+              <input type="text" value="${q.hint || ''}" oninput="window.updateQuestionField(${qIdx}, 'hint', this.value)" placeholder="Collapsible clue on front..." class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
+            </div>
+            <div>
+              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Front Image / Diagram URL:</label>
+              <input type="text" value="${q.frontImage || ''}" oninput="window.updateQuestionField(${qIdx}, 'frontImage', this.value)" placeholder="https://... or ./image.png" class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono">
+            </div>
+            <div>
+              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Back Solution Image URL:</label>
+              <input type="text" value="${q.backImage || ''}" oninput="window.updateQuestionField(${qIdx}, 'backImage', this.value)" placeholder="https://... or ./diagram.png" class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono">
+            </div>
+          </div>
         </div>
       `;
     }
@@ -4903,12 +4924,11 @@ function addQuestionBlock(type) {
       type: 'flashcard',
       topic: 'Flashcard',
       prompt: '',
-      options: [],
-      answerIndex: 0,
-      correctValue: '',
-      tolerance: '0.05',
       front: '',
       back: '',
+      hint: '',
+      frontImage: '',
+      backImage: '',
       explanation: ''
     };
   }
@@ -5085,19 +5105,41 @@ function renderLiveQuizTester() {
     `;
   } else if (q.type === 'flashcard') {
     testerBodyHtml = `
-      <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 mb-3 space-y-2">
-        <div class="text-xs font-bold text-slate-900 dark:text-white">
-          ${renderMathInHtml(q.front || q.prompt || 'Untitled Card Front')}
+      <div class="p-4 rounded-xl border ${testerRevealed ? 'border-emerald-500/60 bg-emerald-50/50 dark:bg-emerald-950/40' : 'border-tagsci-500/50 bg-slate-50 dark:bg-slate-800/60'} mb-3 space-y-2 cursor-pointer transition-all select-none" onclick="window.revealTesterFlashcard()">
+        <div class="flex items-center justify-between text-[10px] font-bold">
+          <span class="${testerRevealed ? 'text-emerald-700 dark:text-emerald-300' : 'text-g11pink-600 dark:text-g11pink-400'} uppercase">
+            ${testerRevealed ? '💡 Solution & Formula (Back)' : '❓ Prompt (Front)'}
+          </span>
+          <span class="text-slate-400 text-[9.5px]">Tap to Flip Card 🔄</span>
         </div>
-        ${testerRevealed ? `
-          <div class="pt-3 border-t border-slate-200 dark:border-slate-700 text-xs text-emerald-700 dark:text-emerald-400 font-mono-math">
-            ${renderMathInHtml(q.back || 'No definition back provided')}
+        ${!testerRevealed ? `
+          ${q.frontImage ? `<img src="${q.frontImage}" alt="Front Diagram" class="max-h-28 max-w-full rounded-lg mx-auto mb-2 object-contain shadow-sm" />` : ''}
+          <div class="text-xs font-bold text-slate-900 dark:text-white font-mono-math">
+            ${renderMathInHtml(q.front || q.prompt || 'Untitled Card Front')}
           </div>
+          ${q.hint ? `
+            <div class="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-left" onclick="event.stopPropagation()">
+              <button onclick="window.toggleTesterHint()" class="text-[10.5px] font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1">
+                <span>💡</span> ${testerHintRevealed ? 'Hide Hint' : 'Need a Hint?'}
+              </button>
+              ${testerHintRevealed ? `
+                <div class="mt-1 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900/60 text-[11px] text-amber-900 dark:text-amber-200 font-mono-math">
+                  ${renderMathInHtml(q.hint)}
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
         ` : `
-          <button onclick="window.revealTesterFlashcard()" class="w-full py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-xs font-bold text-slate-800 dark:text-slate-200">
-            Reveal Answer
-          </button>
+          ${q.backImage ? `<img src="${q.backImage}" alt="Back Solution Diagram" class="max-h-28 max-w-full rounded-lg mx-auto mb-2 object-contain shadow-sm" />` : ''}
+          <div class="pt-2 text-xs text-emerald-700 dark:text-emerald-400 font-mono-math">
+            ${renderMathInHtml(q.back || 'No definition or answer back provided')}
+          </div>
         `}
+      </div>
+      <div class="grid grid-cols-3 gap-1.5 pt-1 mb-2">
+        <button class="py-1 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-[10px] border border-rose-200">🔴 Again</button>
+        <button class="py-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold text-[10px] border border-amber-200">🟡 Hard</button>
+        <button class="py-1 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] border border-emerald-200">🟢 Mastered</button>
       </div>
     `;
   }
@@ -5156,11 +5198,16 @@ function checkTesterMultiSelect() {
   renderLiveQuizTester();
 }
 function revealTesterFlashcard() {
-  testerRevealed = true;
+  testerRevealed = !testerRevealed;
+  renderLiveQuizTester();
+}
+function toggleTesterHint() {
+  testerHintRevealed = !testerHintRevealed;
   renderLiveQuizTester();
 }
 function nextTesterQ() {
   testerRevealed = false;
+  testerHintRevealed = false;
   testerSelectedMulti = [];
   const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
   if (!set || set.questions.length === 0) return;
@@ -5169,6 +5216,7 @@ function nextTesterQ() {
 }
 function prevTesterQ() {
   testerRevealed = false;
+  testerHintRevealed = false;
   testerSelectedMulti = [];
   if (testerQuestionIdx > 0) testerQuestionIdx--;
   renderLiveQuizTester();
@@ -5176,6 +5224,7 @@ function prevTesterQ() {
 function resetLiveTester() {
   testerQuestionIdx = 0;
   testerRevealed = false;
+  testerHintRevealed = false;
   testerSelectedMulti = [];
   renderLiveQuizTester();
 }
@@ -6601,6 +6650,7 @@ window.checkTesterNumerical = checkTesterNumerical;
 window.toggleTesterMultiSelectOption = toggleTesterMultiSelectOption;
 window.checkTesterMultiSelect = checkTesterMultiSelect;
 window.revealTesterFlashcard = revealTesterFlashcard;
+window.toggleTesterHint = toggleTesterHint;
 window.nextTesterQ = nextTesterQ;
 window.prevTesterQ = prevTesterQ;
 

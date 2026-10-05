@@ -62,7 +62,7 @@ import {
   togglePiecewiseEndpoint,
   loadPlotPreset
 } from './components/reviewer_studio.js';
-import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, nextTesterQ, prevTesterQ, resetLiveTester } from './components/quiz_studio.js';
+import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, toggleTesterHint, nextTesterQ, prevTesterQ, resetLiveTester } from './components/quiz_studio.js';
 import { renderCalendarEvents, deleteCalendarEvent, handleAddCalendarEvent } from './components/calendar_studio.js';
 import { renderHubDashboard, renderHubStats, renderHubVault, applyVaultFilter, setVaultSearchQuery } from './components/hub_dashboard.js';
 import { 
@@ -278,6 +278,7 @@ window.checkTesterNumerical = checkTesterNumerical;
 window.toggleTesterMultiSelectOption = toggleTesterMultiSelectOption;
 window.checkTesterMultiSelect = checkTesterMultiSelect;
 window.revealTesterFlashcard = revealTesterFlashcard;
+window.toggleTesterHint = toggleTesterHint;
 window.nextTesterQ = nextTesterQ;
 window.prevTesterQ = prevTesterQ;
 
