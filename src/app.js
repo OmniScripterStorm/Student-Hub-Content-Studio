@@ -81,6 +81,16 @@ import {
   clearGitHubConfig,
   toggleTokenVisibility
 } from './components/json_hub.js';
+import { 
+  initAutosaveEngine, 
+  scheduleAutosave, 
+  forceImmediateAutosave, 
+  restoreAutosavedData, 
+  clearAutosavedData, 
+  getAutosaveMetadata, 
+  updateAutosaveIndicator, 
+  openAutosaveModal 
+} from './components/autosave_engine.js';
 
 // Global Toast Utility
 window.showToast = function(message) {
@@ -95,6 +105,16 @@ window.showToast = function(message) {
     toast.classList.add('translate-y-20', 'opacity-0');
   }, 2500);
 };
+
+// Autosave Engine Bindings
+window.initAutosaveEngine = initAutosaveEngine;
+window.scheduleAutosave = scheduleAutosave;
+window.forceImmediateAutosave = forceImmediateAutosave;
+window.restoreAutosavedData = restoreAutosavedData;
+window.clearAutosavedData = clearAutosavedData;
+window.getAutosaveMetadata = getAutosaveMetadata;
+window.updateAutosaveIndicator = updateAutosaveIndicator;
+window.openAutosaveModal = openAutosaveModal;
 
 // Global exports for HTML event bindings
 window.openMathBuilderModal = openMathBuilderModal;
@@ -954,7 +974,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.classList.remove('dark');
   }
 
-  // Initial Rendering
+  // 1. Initialize Local Autosave Engine (restores any previous unpushed draft)
+  initAutosaveEngine();
+
+  // 2. Initial Rendering
   refreshAllStudioViews();
   switchTab('hub'); // Start in Hub Dashboard by default
 

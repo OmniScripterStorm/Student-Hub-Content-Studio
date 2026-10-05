@@ -94,6 +94,12 @@
 
     <!-- Right Controls -->
     <div class="flex items-center gap-2">
+      <!-- Autosave Status Indicator -->
+      <div id="autosave-indicator" onclick="window.openAutosaveModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800/80 transition-all select-none cursor-pointer shadow-sm" title="Local autosave active. Click to view status & manage draft.">
+        <i data-lucide="check-circle-2" id="autosave-icon" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
+        <span id="autosave-text" class="hidden sm:inline">Saved locally</span>
+      </div>
+
       <!-- Fetch Remote updates.json trigger -->
       <button id="btn-top-fetch-updates" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold border border-blue-200 dark:border-blue-800 transition-all" title="Fetch latest updates.json from GitHub">
         <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-blue-500"></i>
@@ -5706,6 +5712,7 @@ function handleImportJsonFile(e, onComplete) {
       if (json.problemSets) STUDIO_DATA.problemSets = json.problemSets;
       
       setBaselineData(json);
+      if (window.forceImmediateAutosave) window.forceImmediateAutosave();
       if (typeof onComplete === 'function') onComplete();
       if (window.showToast) window.showToast('Successfully imported updates.json!');
     } catch (err) {
@@ -6245,18 +6252,49 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
       throw new Error('Could not fetch updates.json from GitHub or local source.');
     }
 
-    // Populate STUDIO_DATA
-    if (json.version) STUDIO_DATA.version = json.version;
-    if (json.updatedAt) STUDIO_DATA.updatedAt = json.updatedAt;
-    if (json.announcement) STUDIO_DATA.announcement = json.announcement;
-    if (Array.isArray(json.stemReviewers)) STUDIO_DATA.stemReviewers = json.stemReviewers;
-    if (Array.isArray(json.studyMaterials)) STUDIO_DATA.studyMaterials = json.studyMaterials;
-    if (Array.isArray(json.quizSets)) STUDIO_DATA.quizSets = json.quizSets;
-    if (Array.isArray(json.calendarEvents)) STUDIO_DATA.calendarEvents = json.calendarEvents;
-    if (Array.isArray(json.problemSets)) STUDIO_DATA.problemSets = json.problemSets;
+    // Check if we should reconcile with local draft or load directly
+    const baseline = getBaselineData();
+    const hasLocalDraft = STUDIO_DATA.stemReviewers.length > 0 || STUDIO_DATA.studyMaterials.length > 0 || STUDIO_DATA.quizSets.length > 0;
 
-    // Save as pristine baseline for subsequent 3-way reconciliation
+    if (baseline && hasLocalDraft) {
+      const { mergedData, report } = reconcileWithRemote(json);
+      if (report.hasRemoteChanges || report.totalLocalUpdated > 0 || report.totalLocalAdded > 0) {
+        STUDIO_DATA.version = mergedData.version || json.version;
+        STUDIO_DATA.updatedAt = json.updatedAt;
+        STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
+        STUDIO_DATA.stemReviewers = mergedData.stemReviewers;
+        STUDIO_DATA.studyMaterials = mergedData.studyMaterials;
+        STUDIO_DATA.quizSets = mergedData.quizSets;
+        STUDIO_DATA.calendarEvents = mergedData.calendarEvents;
+        STUDIO_DATA.problemSets = mergedData.problemSets;
+      } else {
+        STUDIO_DATA.version = json.version;
+        STUDIO_DATA.updatedAt = json.updatedAt;
+        STUDIO_DATA.announcement = json.announcement;
+        STUDIO_DATA.stemReviewers = json.stemReviewers || [];
+        STUDIO_DATA.studyMaterials = json.studyMaterials || [];
+        STUDIO_DATA.quizSets = json.quizSets || [];
+        STUDIO_DATA.calendarEvents = json.calendarEvents || [];
+        STUDIO_DATA.problemSets = json.problemSets || [];
+      }
+    } else {
+      STUDIO_DATA.version = json.version;
+      STUDIO_DATA.updatedAt = json.updatedAt;
+      STUDIO_DATA.announcement = json.announcement;
+      STUDIO_DATA.stemReviewers = json.stemReviewers || [];
+      STUDIO_DATA.studyMaterials = json.studyMaterials || [];
+      STUDIO_DATA.quizSets = json.quizSets || [];
+      STUDIO_DATA.calendarEvents = json.calendarEvents || [];
+      STUDIO_DATA.problemSets = json.problemSets || [];
+    }
+
+    // Save pristine remote baseline
     setBaselineData(json);
+
+    // Keep local autosave storage synchronized
+    if (window.forceImmediateAutosave) {
+      window.forceImmediateAutosave();
+    }
 
     // Refresh UI
     renderJsonHub();
@@ -6267,7 +6305,7 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
     setPublishStatus(
       `✓ <b>Successfully fetched latest updates.json!</b> (v${STUDIO_DATA.version})<br>
        Loaded ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.quizSets.length} Quizzes, ${STUDIO_DATA.calendarEvents.length} Deadlines.<br>
-       <span class="text-[10px] text-emerald-500 font-bold mt-1 block">🛡️ Smart 3-Way Multi-Editor Merge Baseline Synchronized</span>`,
+       <span class="text-[10px] text-emerald-500 font-bold mt-1 block">🛡️ Smart 3-Way Multi-Editor Merge & Local Autosave Synchronized</span>`,
       'success'
     );
 
@@ -6404,6 +6442,9 @@ async function pushDirectUpdatesJsonToGitHub() {
     // Update baseline to new published state
     setBaselineData(finalPayload);
     STUDIO_DATA.updatedAt = finalPayload.updatedAt;
+    if (window.forceImmediateAutosave) {
+      window.forceImmediateAutosave();
+    }
 
     // Refresh all studio views so remote additions appear immediately
     renderJsonHub();
@@ -6470,6 +6511,16 @@ window.showToast = function(message) {
     toast.classList.add('translate-y-20', 'opacity-0');
   }, 2500);
 };
+
+// Autosave Engine Bindings
+window.initAutosaveEngine = initAutosaveEngine;
+window.scheduleAutosave = scheduleAutosave;
+window.forceImmediateAutosave = forceImmediateAutosave;
+window.restoreAutosavedData = restoreAutosavedData;
+window.clearAutosavedData = clearAutosavedData;
+window.getAutosaveMetadata = getAutosaveMetadata;
+window.updateAutosaveIndicator = updateAutosaveIndicator;
+window.openAutosaveModal = openAutosaveModal;
 
 // Global exports for HTML event bindings
 window.openMathBuilderModal = openMathBuilderModal;
@@ -7326,7 +7377,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.classList.remove('dark');
   }
 
-  // Initial Rendering
+  // 1. Initialize Local Autosave Engine (restores any previous unpushed draft)
+  initAutosaveEngine();
+
+  // 2. Initial Rendering
   refreshAllStudioViews();
   switchTab('hub'); // Start in Hub Dashboard by default
 

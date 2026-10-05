@@ -150,6 +150,7 @@ export function handleImportJsonFile(e, onComplete) {
       if (json.problemSets) STUDIO_DATA.problemSets = json.problemSets;
       
       setBaselineData(json);
+      if (window.forceImmediateAutosave) window.forceImmediateAutosave();
       if (typeof onComplete === 'function') onComplete();
       if (window.showToast) window.showToast('Successfully imported updates.json!');
     } catch (err) {
@@ -697,18 +698,49 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
       throw new Error('Could not fetch updates.json from GitHub or local source.');
     }
 
-    // Populate STUDIO_DATA
-    if (json.version) STUDIO_DATA.version = json.version;
-    if (json.updatedAt) STUDIO_DATA.updatedAt = json.updatedAt;
-    if (json.announcement) STUDIO_DATA.announcement = json.announcement;
-    if (Array.isArray(json.stemReviewers)) STUDIO_DATA.stemReviewers = json.stemReviewers;
-    if (Array.isArray(json.studyMaterials)) STUDIO_DATA.studyMaterials = json.studyMaterials;
-    if (Array.isArray(json.quizSets)) STUDIO_DATA.quizSets = json.quizSets;
-    if (Array.isArray(json.calendarEvents)) STUDIO_DATA.calendarEvents = json.calendarEvents;
-    if (Array.isArray(json.problemSets)) STUDIO_DATA.problemSets = json.problemSets;
+    // Check if we should reconcile with local draft or load directly
+    const baseline = getBaselineData();
+    const hasLocalDraft = STUDIO_DATA.stemReviewers.length > 0 || STUDIO_DATA.studyMaterials.length > 0 || STUDIO_DATA.quizSets.length > 0;
 
-    // Save as pristine baseline for subsequent 3-way reconciliation
+    if (baseline && hasLocalDraft) {
+      const { mergedData, report } = reconcileWithRemote(json);
+      if (report.hasRemoteChanges || report.totalLocalUpdated > 0 || report.totalLocalAdded > 0) {
+        STUDIO_DATA.version = mergedData.version || json.version;
+        STUDIO_DATA.updatedAt = json.updatedAt;
+        STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
+        STUDIO_DATA.stemReviewers = mergedData.stemReviewers;
+        STUDIO_DATA.studyMaterials = mergedData.studyMaterials;
+        STUDIO_DATA.quizSets = mergedData.quizSets;
+        STUDIO_DATA.calendarEvents = mergedData.calendarEvents;
+        STUDIO_DATA.problemSets = mergedData.problemSets;
+      } else {
+        STUDIO_DATA.version = json.version;
+        STUDIO_DATA.updatedAt = json.updatedAt;
+        STUDIO_DATA.announcement = json.announcement;
+        STUDIO_DATA.stemReviewers = json.stemReviewers || [];
+        STUDIO_DATA.studyMaterials = json.studyMaterials || [];
+        STUDIO_DATA.quizSets = json.quizSets || [];
+        STUDIO_DATA.calendarEvents = json.calendarEvents || [];
+        STUDIO_DATA.problemSets = json.problemSets || [];
+      }
+    } else {
+      STUDIO_DATA.version = json.version;
+      STUDIO_DATA.updatedAt = json.updatedAt;
+      STUDIO_DATA.announcement = json.announcement;
+      STUDIO_DATA.stemReviewers = json.stemReviewers || [];
+      STUDIO_DATA.studyMaterials = json.studyMaterials || [];
+      STUDIO_DATA.quizSets = json.quizSets || [];
+      STUDIO_DATA.calendarEvents = json.calendarEvents || [];
+      STUDIO_DATA.problemSets = json.problemSets || [];
+    }
+
+    // Save pristine remote baseline
     setBaselineData(json);
+
+    // Keep local autosave storage synchronized
+    if (window.forceImmediateAutosave) {
+      window.forceImmediateAutosave();
+    }
 
     // Refresh UI
     renderJsonHub();
@@ -719,7 +751,7 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
     setPublishStatus(
       `✓ <b>Successfully fetched latest updates.json!</b> (v${STUDIO_DATA.version})<br>
        Loaded ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.quizSets.length} Quizzes, ${STUDIO_DATA.calendarEvents.length} Deadlines.<br>
-       <span class="text-[10px] text-emerald-500 font-bold mt-1 block">🛡️ Smart 3-Way Multi-Editor Merge Baseline Synchronized</span>`,
+       <span class="text-[10px] text-emerald-500 font-bold mt-1 block">🛡️ Smart 3-Way Multi-Editor Merge & Local Autosave Synchronized</span>`,
       'success'
     );
 
@@ -856,6 +888,9 @@ export async function pushDirectUpdatesJsonToGitHub() {
     // Update baseline to new published state
     setBaselineData(finalPayload);
     STUDIO_DATA.updatedAt = finalPayload.updatedAt;
+    if (window.forceImmediateAutosave) {
+      window.forceImmediateAutosave();
+    }
 
     // Refresh all studio views so remote additions appear immediately
     renderJsonHub();
