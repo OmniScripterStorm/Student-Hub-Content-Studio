@@ -19,6 +19,7 @@ export function compileBlocksToMarkdown(blocks) {
       if (b.title) md += `**${b.title}**\n`;
       md += `$$ ${b.formula || ''} $$\n`;
       if (b.note) md += `> *Note: ${b.note}*\n\n`;
+      else md += '\n';
     } else if (b.type === 'bullets') {
       if (b.items && b.items.length > 0) {
         b.items.forEach(it => { md += `- ${it}\n`; });
@@ -39,6 +40,13 @@ export function compileBlocksToMarkdown(blocks) {
       const alt = b.alt || 'Figure diagram';
       md += `![${alt}](${b.url || ''})\n`;
       if (b.caption) md += `*${b.caption}*\n`;
+      md += '\n';
+    } else if (b.type === 'callout') {
+      if (b.title) md += `> **${b.title}**\n`;
+      const bodyLines = (b.text || '').split('\n');
+      bodyLines.forEach(bl => {
+        md += `> ${bl}\n`;
+      });
       md += '\n';
     }
   });
@@ -127,9 +135,89 @@ export function parseMarkdownIntoBlocks(md) {
       if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
       const level = line.startsWith('## ') ? 'h2' : 'h3';
       blocks.push({ type: 'heading', level, text: line.replace(/^#+\s*/, '') });
-    } else if (line.startsWith('$$') && line.endsWith('$$')) {
+    } else if (line.startsWith('$$')) {
       if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
-      blocks.push({ type: 'formula', title: 'Formula Card', formula: line.replace(/\$\$/g, '').trim(), note: '' });
+      let formulaTitle = 'Formula Card';
+      if (blocks.length > 0 && blocks[blocks.length - 1].type === 'paragraph') {
+        const mTitle = blocks[blocks.length - 1].text.match(/^\*\*([^*]+)\*\*$/);
+        if (mTitle) {
+          formulaTitle = mTitle[1];
+          blocks.pop();
+        }
+      }
+
+      let formulaContent = '';
+      if (line.endsWith('$$') && line.length > 2) {
+        formulaContent = line.replace(/\$\$/g, '').trim();
+      } else {
+        formulaContent = line.substring(2).trim();
+        while (i + 1 < lines.length && !lines[i + 1].trim().endsWith('$$')) {
+          i++;
+          formulaContent += ' ' + lines[i].trim();
+        }
+        if (i + 1 < lines.length) {
+          i++;
+          formulaContent += ' ' + lines[i].trim().replace(/\$\$$/, '').trim();
+        }
+      }
+
+      let note = '';
+      if (i + 1 < lines.length && lines[i + 1].trim().startsWith('>')) {
+        const mNote = lines[i + 1].trim().match(/^>\s*\*Note:\s*(.*?)\*$/);
+        if (mNote) {
+          note = mNote[1];
+          i++;
+        }
+      }
+
+      blocks.push({ type: 'formula', title: formulaTitle, formula: formulaContent, note });
+    } else if (line.startsWith('>')) {
+      if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
+      const bqLines = [];
+      while (i < lines.length && (lines[i].trim().startsWith('>') || (lines[i].trim() === '' && i + 1 < lines.length && lines[i + 1].trim().startsWith('>')))) {
+        const lStr = lines[i].trim();
+        if (!lStr) {
+          bqLines.push('');
+        } else {
+          bqLines.push(lStr.replace(/^>\s?/, ''));
+        }
+        i++;
+      }
+      i--;
+
+      if (blocks.length > 0 && blocks[blocks.length - 1].type === 'formula' && bqLines.length === 1) {
+        const mNote = bqLines[0].trim().match(/^\*Note:\s*(.*?)\*$/);
+        if (mNote) {
+          blocks[blocks.length - 1].note = mNote[1];
+          continue;
+        }
+      }
+
+      let calloutTitle = '';
+      const textLines = [];
+      if (bqLines.length > 0) {
+        const mHead = bqLines[0].trim().match(/^\*\*([^*]+)\*\*(.*)$/);
+        if (mHead) {
+          calloutTitle = mHead[1];
+          const rem = mHead[2].trim();
+          if (rem) textLines.push(rem);
+          textLines.push(...bqLines.slice(1));
+        } else {
+          textLines.push(...bqLines);
+        }
+      }
+
+      while (textLines.length > 0 && textLines[0].trim() === '') textLines.shift();
+      while (textLines.length > 0 && textLines[textLines.length - 1].trim() === '') textLines.pop();
+
+      const calloutText = textLines.join('\n');
+      const isWarn = /warn|danger|caution|important/i.test(calloutTitle);
+      blocks.push({
+        type: 'callout',
+        style: isWarn ? 'warning' : 'info',
+        title: calloutTitle,
+        text: calloutText
+      });
     } else if (/^!\[(.*?)\]\((.*?)\)$/.test(line)) {
       if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
       const imgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
@@ -357,6 +445,24 @@ export function renderBlockCanvas() {
               <button onclick="window.removeBulletItem(${bIdx}, ${itIdx})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
             </div>
           `).join('')}
+        </div>
+      `;
+    } else if (b.type === 'callout') {
+      headerLeft = `
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center gap-1">
+            <i data-lucide="info" class="w-3 h-3"></i> Callout Box
+          </span>
+          <select onchange="window.updateBlockField(${bIdx}, 'style', this.value)" class="text-[11px] font-bold bg-slate-100 dark:bg-slate-800 rounded-md px-2 py-0.5 border border-slate-200 dark:border-slate-700">
+            <option value="info" ${b.style === 'info' || !b.style ? 'selected' : ''}>Info / Tip</option>
+            <option value="warning" ${b.style === 'warning' ? 'selected' : ''}>Warning / Important</option>
+          </select>
+        </div>
+      `;
+      bodyHtml = `
+        <div class="space-y-2">
+          <input type="text" value="${b.title || ''}" oninput="window.updateBlockField(${bIdx}, 'title', this.value)" placeholder="Callout Title..." class="w-full px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+          <textarea rows="3" oninput="window.updateBlockField(${bIdx}, 'text', this.value)" placeholder="Callout message..." class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">${b.text || ''}</textarea>
         </div>
       `;
     } else if (b.type === 'table') {
@@ -1107,6 +1213,13 @@ export function addContentBlock(type) {
       caption: '',
       alt: 'Illustration diagram',
       size: 'medium'
+    });
+  } else if (type === 'callout') {
+    rev.blocks.push({
+      type: 'callout',
+      style: 'info',
+      title: 'Key Concept / Solution',
+      text: 'Add important notes, cautions, or step-by-step solutions here.'
     });
   }
 

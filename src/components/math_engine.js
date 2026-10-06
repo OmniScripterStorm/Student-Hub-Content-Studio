@@ -16,16 +16,52 @@ export const MATH_OPERATORS = {
   '\\partial': '&part;', '\\nabla': '&nabla;', '\\forall': '&forall;', '\\exists': '&exist;',
   '\\in': '&isin;', '\\notin': '&notin;', '\\rightarrow': '&rarr;', '\\leftarrow': '&larr;',
   '\\Rightarrow': '&rArr;', '\\Leftarrow': '&lArr;', '\\leftrightarrow': '&harr;',
+  '\\implies': '&rArr;', '\\iff': '&hArr;', '\\to': '&rarr;',
+  '\\quad': '&emsp;', '\\qquad': '&emsp;&emsp;',
   '\\int': '<span class="text-lg leading-none italic font-serif font-bold">&int;</span>',
   '\\sum': '<span class="text-lg leading-none font-bold">&sum;</span>',
   '\\sqrt': '&radic;'
 };
 
+function extractBalancedBraces(text, startIdx) {
+  if (startIdx >= text.length || text[startIdx] !== '{') return null;
+  let depth = 0;
+  const contentStart = startIdx + 1;
+  for (let i = startIdx; i < text.length; i++) {
+    if (text[i] === '{') depth++;
+    else if (text[i] === '}') {
+      depth--;
+      if (depth === 0) return { content: text.substring(contentStart, i), nextIdx: i + 1 };
+    }
+  }
+  return null;
+}
+
 export function parseMathSyntax(tex) {
   let s = (tex || '').trim();
-  s = s.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, (match, num, den) => {
-    return `<span class="inline-flex flex-col text-center align-middle mx-1 text-xs sm:text-sm font-mono-math"><span class="border-b border-current pb-0.5 px-1">${parseMathSyntax(num)}</span><span class="pt-0.5 px-1">${parseMathSyntax(den)}</span></span>`;
-  });
+
+  // 1. Fractions with support for nested braces
+  let fracPos = 0;
+  while (true) {
+    const idx = s.indexOf('\\frac', fracPos);
+    if (idx === -1) break;
+    let p = idx + 5;
+    while (p < s.length && /\s/.test(s[p])) p++;
+    const numMatch = extractBalancedBraces(s, p);
+    if (numMatch) {
+      let q = numMatch.nextIdx;
+      while (q < s.length && /\s/.test(s[q])) q++;
+      const denMatch = extractBalancedBraces(s, q);
+      if (denMatch) {
+        const replacement = `<span class="inline-flex flex-col text-center align-middle mx-1 text-xs sm:text-sm font-mono-math"><span class="border-b border-current pb-0.5 px-1">${parseMathSyntax(numMatch.content)}</span><span class="pt-0.5 px-1">${parseMathSyntax(denMatch.content)}</span></span>`;
+        s = s.substring(0, idx) + replacement + s.substring(denMatch.nextIdx);
+        fracPos = idx + replacement.length;
+        continue;
+      }
+    }
+    fracPos = idx + 5;
+  }
+
   s = s.replace(/\\sqrt\[([^{}]+)\]\{([^{}]+)\}/g, (match, n, inner) => {
     return `<span class="inline-flex items-center align-middle font-mono-math"><sup class="text-[9px] -mr-1">${parseMathSyntax(n)}</sup><span class="text-base leading-none">&radic;</span><span class="border-t border-current px-0.5 ml-0.5">${parseMathSyntax(inner)}</span></span>`;
   });
@@ -33,13 +69,13 @@ export function parseMathSyntax(tex) {
     return `<span class="inline-flex items-center align-middle font-mono-math"><span class="text-base leading-none">&radic;</span><span class="border-t border-current px-0.5 ml-0.5">${parseMathSyntax(inner)}</span></span>`;
   });
   s = s.replace(/\\vec\{([^{}]+)\}/g, (match, inner) => `<span class="inline-flex flex-col items-center justify-center font-mono-math"><span class="text-[10px] leading-none">&rarr;</span><span>${inner}</span></span>`);
+  s = s.replace(/\\text\{([^{}]+)\}/g, '<span class="font-sans font-normal">$1</span>');
   s = s.replace(/\^\{([^{}]+)\}/g, '<sup>$1</sup>');
-  s = s.replace(/\^([a-zA-Z0-9+\-&;]+)/g, '<sup>$1</sup>');
+  s = s.replace(/\^([0-9]+|[a-zA-Z])/g, '<sup>$1</sup>');
   s = s.replace(/_\{([^{}]+)\}/g, '<sub>$1</sub>');
-  s = s.replace(/_([a-zA-Z0-9+\-&;]+)/g, '<sub>$1</sub>');
+  s = s.replace(/_([0-9]+|[a-zA-Z])/g, '<sub>$1</sub>');
   for (const [key, val] of Object.entries(GREEK_SYMBOLS)) s = s.split(key).join(val);
   for (const [key, val] of Object.entries(MATH_OPERATORS)) s = s.split(key).join(val);
-  s = s.replace(/\\text\{([^{}]+)\}/g, '<span class="font-sans font-normal">$1</span>');
   return s;
 }
 
@@ -521,10 +557,11 @@ export function renderBlocksToHtml(blocks) {
       const calloutClass = isWarn 
         ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200' 
         : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200';
+      const formattedText = (b.text || '').replace(/\r?\n/g, '<br>');
       html += `
         <div class="my-3 p-3.5 rounded-xl border ${calloutClass}">
           ${b.title ? `<div class="font-bold text-xs mb-1">${renderMathInHtml(b.title)}</div>` : ''}
-          <div class="text-xs leading-relaxed">${renderMathInHtml(b.text || '')}</div>
+          <div class="text-xs leading-relaxed">${renderMathInHtml(formattedText)}</div>
         </div>
       `;
     }

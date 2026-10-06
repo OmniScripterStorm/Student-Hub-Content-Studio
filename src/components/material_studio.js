@@ -198,6 +198,24 @@ export function renderMaterialBlockCanvas() {
           `).join('')}
         </div>
       `;
+    } else if (b.type === 'callout') {
+      headerLeft = `
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center gap-1">
+            <i data-lucide="info" class="w-3 h-3"></i> Callout Box
+          </span>
+          <select onchange="window.updateMaterialBlockField(${bIdx}, 'style', this.value)" class="text-[11px] font-bold bg-slate-100 dark:bg-slate-800 rounded-md px-2 py-0.5 border border-slate-200 dark:border-slate-700">
+            <option value="info" ${b.style === 'info' || !b.style ? 'selected' : ''}>Info / Tip</option>
+            <option value="warning" ${b.style === 'warning' ? 'selected' : ''}>Warning / Important</option>
+          </select>
+        </div>
+      `;
+      bodyHtml = `
+        <div class="space-y-2">
+          <input type="text" value="${b.title || ''}" oninput="window.updateMaterialBlockField(${bIdx}, 'title', this.value)" placeholder="Callout Title (e.g. Solution / Key Rule)..." class="w-full px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+          <textarea rows="3" oninput="window.updateMaterialBlockField(${bIdx}, 'text', this.value)" placeholder="Callout message or step-by-step solution..." class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">${b.text || ''}</textarea>
+        </div>
+      `;
     } else if (b.type === 'table') {
       headerLeft = `
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -828,6 +846,13 @@ export function addMaterialContentBlock(type) {
       caption: '',
       alt: 'Illustration diagram',
       size: 'medium'
+    });
+  } else if (type === 'callout') {
+    mat.blocks.push({
+      type: 'callout',
+      style: 'info',
+      title: 'Key Concept / Solution',
+      text: 'Add important notes, cautions, or step-by-step solutions here.'
     });
   }
 
