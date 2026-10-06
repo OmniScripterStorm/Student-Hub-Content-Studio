@@ -11,16 +11,64 @@ export const GREEK_SYMBOLS = {
 };
 
 export const MATH_OPERATORS = {
-  '\\cdot': '&middot;', '\\times': '&times;', '\\pm': '&plusmn;', '\\mp': '&#x2213;',
-  '\\approx': '&asymp;', '\\neq': '&ne;', '\\le': '&le;', '\\ge': '&ge;', '\\infty': '&infin;',
-  '\\partial': '&part;', '\\nabla': '&nabla;', '\\forall': '&forall;', '\\exists': '&exist;',
-  '\\in': '&isin;', '\\notin': '&notin;', '\\rightarrow': '&rarr;', '\\leftarrow': '&larr;',
-  '\\Rightarrow': '&rArr;', '\\Leftarrow': '&lArr;', '\\leftrightarrow': '&harr;',
-  '\\implies': '&rArr;', '\\iff': '&hArr;', '\\to': '&rarr;',
-  '\\quad': '&emsp;', '\\qquad': '&emsp;&emsp;',
+  '\\Longleftrightarrow': '&hArr;',
+  '\\longleftrightarrow': '&harr;',
+  '\\Longrightarrow': '&rArr;',
+  '\\longrightarrow': '&rarr;',
+  '\\longleftarrow': '&larr;',
+  '\\rightleftharpoons': '&#x21CC;',
+  '\\leftrightharpoons': '&#x21CC;',
+  '\\leftrightarrow': '&harr;',
+  '\\Leftarrow': '&lArr;',
+  '\\Rightarrow': '&rArr;',
+  '\\leftarrow': '&larr;',
+  '\\rightarrow': '&rarr;',
+  '\\implies': '&rArr;',
+  '\\iff': '&hArr;',
+  '\\to': '&rarr;',
+  '\\uparrow': '&uarr;',
+  '\\downarrow': '&darr;',
+  '\\qquad': '&emsp;&emsp;',
+  '\\quad': '&emsp;',
+  '\\thickapprox': '&asymp;',
+  '\\approxeq': '&asymp;',
+  '\\approx': '&asymp;',
+  '\\equiv': '&equiv;',
+  '\\propto': '&prop;',
+  '\\times': '&times;',
+  '\\cdot': '&middot;',
+  '\\div': '&divide;',
+  '\\pm': '&plusmn;',
+  '\\mp': '&#x2213;',
+  '\\leq': '&le;',
+  '\\geq': '&ge;',
+  '\\neq': '&ne;',
+  '\\le': '&le;',
+  '\\ge': '&ge;',
+  '\\ne': '&ne;',
+  '\\infty': '&infin;',
+  '\\partial': '&part;',
+  '\\nabla': '&nabla;',
+  '\\forall': '&forall;',
+  '\\exists': '&exist;',
+  '\\notin': '&notin;',
+  '\\in': '&isin;',
+  '\\degree': '&deg;',
+  '\\circ': '&deg;',
+  '\\ldots': '&hellip;',
+  '\\cdots': '&hellip;',
+  '\\dots': '&hellip;',
+  '\\iint': '<span class="text-lg leading-none italic font-serif font-bold">&int;&int;</span>',
   '\\int': '<span class="text-lg leading-none italic font-serif font-bold">&int;</span>',
+  '\\prod': '<span class="text-lg leading-none font-bold">&prod;</span>',
   '\\sum': '<span class="text-lg leading-none font-bold">&sum;</span>',
-  '\\sqrt': '&radic;'
+  '\\sqrt': '&radic;',
+  '\\,': '&thinsp;',
+  '\\;': '&ensp;',
+  '\\:': '&ensp;',
+  '\\!': '',
+  '\\ ': '&nbsp;',
+  '~': '&nbsp;'
 };
 
 function extractBalancedBraces(text, startIdx) {
@@ -39,13 +87,20 @@ function extractBalancedBraces(text, startIdx) {
 
 export function parseMathSyntax(tex) {
   let s = (tex || '').trim();
+  s = s.replace(/<br\s*\/?>/gi, ' ');
 
-  // 1. Fractions with support for nested braces
+  // 1. Strip LaTeX sizing commands for brackets
+  s = s.replace(/\\left\s*([(\[{|.]|\\\{)/g, (m, p) => p === '\\{' ? '{' : (p === '.' ? '' : p));
+  s = s.replace(/\\right\s*([)\]}|.]|\\\})/g, (m, p) => p === '\\}' ? '}' : (p === '.' ? '' : p));
+  s = s.replace(/\\(?:big|Big|bigg|Bigg)[lrm]?\s*([(\[{)|\]}])/g, '$1');
+
+  // 2. Fractions: \frac, \dfrac, \tfrac with balanced braces
   let fracPos = 0;
   while (true) {
-    const idx = s.indexOf('\\frac', fracPos);
-    if (idx === -1) break;
-    let p = idx + 5;
+    const m = s.substr(fracPos).match(/\\(?:d|t)?frac/);
+    if (!m) break;
+    const idx = fracPos + m.index;
+    let p = idx + m[0].length;
     while (p < s.length && /\s/.test(s[p])) p++;
     const numMatch = extractBalancedBraces(s, p);
     if (numMatch) {
@@ -59,21 +114,59 @@ export function parseMathSyntax(tex) {
         continue;
       }
     }
-    fracPos = idx + 5;
+    fracPos = idx + m[0].length;
   }
 
+  // 3. Square roots: \sqrt[n]{x} or \sqrt{x}
   s = s.replace(/\\sqrt\[([^{}]+)\]\{([^{}]+)\}/g, (match, n, inner) => {
     return `<span class="inline-flex items-center align-middle font-mono-math"><sup class="text-[9px] -mr-1">${parseMathSyntax(n)}</sup><span class="text-base leading-none">&radic;</span><span class="border-t border-current px-0.5 ml-0.5">${parseMathSyntax(inner)}</span></span>`;
   });
   s = s.replace(/\\sqrt\{([^{}]+)\}/g, (match, inner) => {
     return `<span class="inline-flex items-center align-middle font-mono-math"><span class="text-base leading-none">&radic;</span><span class="border-t border-current px-0.5 ml-0.5">${parseMathSyntax(inner)}</span></span>`;
   });
+
+  // 4. Vectors and bars
   s = s.replace(/\\vec\{([^{}]+)\}/g, (match, inner) => `<span class="inline-flex flex-col items-center justify-center font-mono-math"><span class="text-[10px] leading-none">&rarr;</span><span>${inner}</span></span>`);
-  s = s.replace(/\\text\{([^{}]+)\}/g, '<span class="font-sans font-normal">$1</span>');
+  s = s.replace(/\\hat\{([^{}]+)\}/g, (match, inner) => `<span class="inline-flex flex-col items-center justify-center font-mono-math"><span class="text-[10px] leading-none">^</span><span>${inner}</span></span>`);
+  s = s.replace(/\\overline\{([^{}]+)\}/g, '<span class="overline">$1</span>');
+
+  // 5. Text & fonts: \text, \mathrm, \operatorname, \mathbf, \mathit
+  let textPos = 0;
+  while (true) {
+    const m = s.substr(textPos).match(/\\(?:text|mathrm|operatorname)\s*\{/);
+    if (!m) break;
+    const idx = textPos + m.index;
+    const p = idx + m[0].length - 1;
+    const bMatch = extractBalancedBraces(s, p);
+    if (bMatch) {
+      let innerParsed = bMatch.content;
+      innerParsed = innerParsed.replace(/_\{([^{}]+)\}/g, '<sub>$1</sub>');
+      innerParsed = innerParsed.replace(/_([0-9]+|[a-zA-Z])/g, '<sub>$1</sub>');
+      innerParsed = innerParsed.replace(/\^\{([^{}]+)\}/g, '<sup>$1</sup>');
+      innerParsed = innerParsed.replace(/\^([0-9]+|[a-zA-Z])/g, '<sup>$1</sup>');
+      const replacement = `<span class="font-sans font-normal">${innerParsed}</span>`;
+      s = s.substring(0, idx) + replacement + s.substring(bMatch.nextIdx);
+      textPos = idx + replacement.length;
+      continue;
+    }
+    textPos = idx + m[0].length;
+  }
+
+  s = s.replace(/\\mathbf\{([^{}]+)\}/g, '<strong class="font-bold font-sans">$1</strong>');
+  s = s.replace(/\\textbf\{([^{}]+)\}/g, '<strong class="font-bold font-sans">$1</strong>');
+  s = s.replace(/\\mathit\{([^{}]+)\}/g, '<em class="italic">$1</em>');
+  s = s.replace(/\\textit\{([^{}]+)\}/g, '<em class="italic">$1</em>');
+
+  // 6. Superscripts & Subscripts: x^{2} / x^2, v_{0} / v_0
   s = s.replace(/\^\{([^{}]+)\}/g, '<sup>$1</sup>');
   s = s.replace(/\^([0-9]+|[a-zA-Z])/g, '<sup>$1</sup>');
   s = s.replace(/_\{([^{}]+)\}/g, '<sub>$1</sub>');
   s = s.replace(/_([0-9]+|[a-zA-Z])/g, '<sub>$1</sub>');
+
+  // Support LaTeX line breaks inside display math / matrices / aligned
+  s = s.replace(/\\\\/g, '<br/>');
+
+  // 7. Greek Letters & Math Symbols
   for (const [key, val] of Object.entries(GREEK_SYMBOLS)) s = s.split(key).join(val);
   for (const [key, val] of Object.entries(MATH_OPERATORS)) s = s.split(key).join(val);
   return s;
@@ -138,16 +231,22 @@ export function renderMathInHtml(htmlString) {
 
   // Step 1: Protect math formulas into placeholders before rich text processing
   const mathBlocks = [];
-  text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
+  // Support both $$...$$ and \[...\]
+  text = text.replace(/(?:\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\])/g, (match, tex1, tex2) => {
+    const rawTex = (tex1 !== undefined ? tex1 : tex2) || '';
+    const cleanTex = rawTex.replace(/<br\s*\/?>/gi, ' ').trim();
     const idx = mathBlocks.length;
-    mathBlocks.push(tex);
+    mathBlocks.push(cleanTex);
     return `\x00MATH_BLOCK_${idx}\x00`;
   });
 
   const mathInlines = [];
-  text = text.replace(/\$([^\$\n]+?)\$/g, (match, tex) => {
+  // Support both $...$ and \(...\)
+  text = text.replace(/(?:(?<!\\)\$([^\$\n]+?)(?<!\\)\$|\\\(([\s\S]*?)\\\))/g, (match, tex1, tex2) => {
+    const rawTex = (tex1 !== undefined ? tex1 : tex2) || '';
+    const cleanTex = rawTex.replace(/<br\s*\/?>/gi, ' ').trim();
     const idx = mathInlines.length;
-    mathInlines.push(tex);
+    mathInlines.push(cleanTex);
     return `\x00MATH_INLINE_${idx}\x00`;
   });
 
@@ -158,13 +257,15 @@ export function renderMathInHtml(htmlString) {
   text = text.replace(/\x00MATH_BLOCK_(\d+)\x00/g, (match, idx) => {
     const tex = mathBlocks[Number(idx)];
     if (tex === undefined) return '';
-    return `<div class="my-3 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center font-mono-math text-sm sm:text-base text-tagsci-900 dark:text-emerald-300 shadow-sm overflow-x-auto">${parseMathSyntax(tex)}</div>`;
+    const rendered = parseMathSyntax(tex);
+    return `<div class="my-3 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center font-mono-math text-sm sm:text-base text-tagsci-900 dark:text-emerald-300 shadow-sm overflow-x-auto">${rendered}</div>`;
   });
 
   text = text.replace(/\x00MATH_INLINE_(\d+)\x00/g, (match, idx) => {
     const tex = mathInlines[Number(idx)];
     if (tex === undefined) return '';
-    return `<span class="inline-block font-mono-math text-tagsci-800 dark:text-emerald-300 px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-xs font-semibold">${parseMathSyntax(tex)}</span>`;
+    const rendered = parseMathSyntax(tex);
+    return `<span class="inline-block font-mono-math text-tagsci-800 dark:text-emerald-300 px-1 py-0.5 rounded bg-slate-100/70 dark:bg-slate-800/60 text-xs sm:text-sm font-semibold">${rendered}</span>`;
   });
 
   return text;

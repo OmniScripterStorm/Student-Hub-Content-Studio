@@ -213,7 +213,11 @@ export function renderMaterialBlockCanvas() {
       bodyHtml = `
         <div class="space-y-2">
           <input type="text" value="${b.title || ''}" oninput="window.updateMaterialBlockField(${bIdx}, 'title', this.value)" placeholder="Callout Title (e.g. Solution / Key Rule)..." class="w-full px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-          <textarea rows="3" oninput="window.updateMaterialBlockField(${bIdx}, 'text', this.value)" placeholder="Callout message or step-by-step solution..." class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">${b.text || ''}</textarea>
+          <textarea rows="3" oninput="window.updateMaterialBlockField(${bIdx}, 'text', this.value); const prev = document.getElementById('mat-callout-prev-${bIdx}'); if(prev) { prev.innerHTML = window.renderMathInHtml ? window.renderMathInHtml(this.value.replace(/\\r?\\n/g, '<br>')) : this.value; prev.parentElement.classList.toggle('hidden', !this.value); }" placeholder="Callout message or step-by-step solution (supports $LaTeX$ and Markdown)..." class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">${b.text || ''}</textarea>
+          <div class="p-2 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-xs ${!b.text ? 'hidden' : ''}">
+            <span class="text-[9.5px] uppercase font-bold text-amber-700 dark:text-amber-400 block mb-1">Rendered Math Preview:</span>
+            <div id="mat-callout-prev-${bIdx}" class="text-slate-800 dark:text-slate-200 leading-relaxed overflow-x-auto">${b.text && window.renderMathInHtml ? window.renderMathInHtml((b.text || '').replace(/\r?\n/g, '<br>')) : (b.text || '')}</div>
+          </div>
         </div>
       `;
     } else if (b.type === 'table') {
