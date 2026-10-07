@@ -3,7 +3,7 @@
    ========================================================= */
 
 import { STUDIO_DATA, currentRevIndex, setCurrentRevIndex, getSubjectClassification } from '../data/studio_data.js';
-import { renderMathInHtml, parseMarkdownToHtml, renderBlocksToHtml, renderCartesianPlaneSvg, renderTableToHtml } from './math_engine.js';
+import { renderMathInHtml, parseMarkdownToHtml, renderBlocksToHtml, renderCartesianPlaneSvg, renderTikzFbdSvg, renderTableToHtml } from './math_engine.js';
 import { getLastFocusedInput, setLastFocusedInput } from './equation_modal.js';
 
 export function compileBlocksToMarkdown(blocks) {
@@ -36,6 +36,11 @@ export function compileBlocksToMarkdown(blocks) {
       md += '\n';
     } else if (b.type === 'cartesian' || b.type === 'plot') {
       md += `\`\`\`plot\n${JSON.stringify(b, null, 2)}\n\`\`\`\n\n`;
+    } else if (b.type === 'tikz' || b.type === 'fbd') {
+      if (b.title) md += `**${b.title}**\n`;
+      md += `\`\`\`tikz\n${b.code || b.tikz || ''}\n\`\`\`\n`;
+      if (b.caption) md += `*${b.caption}*\n\n`;
+      else md += '\n';
     } else if (b.type === 'image') {
       const alt = b.alt || 'Figure diagram';
       md += `![${alt}](${b.url || ''})\n`;
@@ -60,6 +65,8 @@ export function parseMarkdownIntoBlocks(md) {
   let currentBulletBlock = null;
   let inPlotBlock = false;
   let plotJsonAccumulator = '';
+  let inTikzBlock = false;
+  let tikzCodeAccumulator = '';
   let inTable = false;
   let tableHeaders = [];
   let tableRows = [];
@@ -91,6 +98,45 @@ export function parseMarkdownIntoBlocks(md) {
         }
       } else {
         plotJsonAccumulator += rawLine + '\n';
+      }
+      continue;
+    }
+
+    // TikZ / FBD codeblock detection
+    if (line.startsWith('```tikz') || line.startsWith('```fbd')) {
+      if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
+      inTikzBlock = true;
+      tikzCodeAccumulator = '';
+      continue;
+    }
+    if (inTikzBlock) {
+      if (line.startsWith('```')) {
+        inTikzBlock = false;
+        let tikzTitle = 'Free-Body Diagram';
+        if (blocks.length > 0 && blocks[blocks.length - 1].type === 'paragraph') {
+          const mTitle = blocks[blocks.length - 1].text.match(/^\*\*([^*]+)\*\*$/);
+          if (mTitle) {
+            tikzTitle = mTitle[1];
+            blocks.pop();
+          }
+        }
+        let tikzCaption = '';
+        if (i + 1 < lines.length) {
+          const nextLine = lines[i + 1].trim();
+          const capMatch = nextLine.match(/^\*([^*]+)\*$|^_([^_]+)_$/);
+          if (capMatch) {
+            tikzCaption = capMatch[1] || capMatch[2] || '';
+            i++;
+          }
+        }
+        blocks.push({
+          type: 'tikz',
+          title: tikzTitle,
+          caption: tikzCaption,
+          code: tikzCodeAccumulator.trim()
+        });
+      } else {
+        tikzCodeAccumulator += rawLine + '\n';
       }
       continue;
     }
@@ -638,6 +684,43 @@ export function renderBlockCanvas() {
           </div>
         </div>
       `;
+    } else if (b.type === 'tikz' || b.type === 'fbd') {
+      headerLeft = `
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 flex items-center gap-1">
+            <i data-lucide="compass" class="w-3 h-3"></i> TikZ Free-Body Diagram
+          </span>
+          <button onclick="window.loadTikzPreset && window.loadTikzPreset(${bIdx}, 'inclined')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+            Preset: Inclined Plane
+          </button>
+          <button onclick="window.loadTikzPreset && window.loadTikzPreset(${bIdx}, 'standard')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+            Preset: Box on Floor
+          </button>
+        </div>
+      `;
+
+      bodyHtml = `
+        <div class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="text" value="${b.title || ''}" oninput="window.updateBlockField(${bIdx}, 'title', this.value)" placeholder="Diagram Title (e.g. Free-Body Diagram)..." class="w-full px-2.5 py-1 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+            <input type="text" value="${b.caption || ''}" oninput="window.updateBlockField(${bIdx}, 'caption', this.value)" placeholder="Caption / description..." class="w-full px-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TikZ / TikZ-FBD Code</label>
+              <span class="text-[9.5px] text-slate-400">Supports \\node[box|circle], \\draw[force,->,color]</span>
+            </div>
+            <textarea rows="6" oninput="window.updateBlockField(${bIdx}, 'code', this.value)" placeholder="\\begin{tikzpicture}\n  \\node[box] (m) at (0,0) {$m$};\n  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g$};\n  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};\n\\end{tikzpicture}" class="w-full p-2.5 text-xs font-mono bg-slate-900 text-slate-100 border border-slate-700 rounded-lg focus:ring-1 focus:ring-cyan-500">${b.code || b.tikz || ''}</textarea>
+          </div>
+
+          <!-- Live Inline SVG Preview -->
+          <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
+            <div class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-left">Diagram Preview:</div>
+            ${renderTikzFbdSvg(b)}
+          </div>
+        </div>
+      `;
     } else if (b.type === 'image') {
       headerLeft = `
         <div class="flex items-center gap-1.5 flex-wrap">
@@ -1110,6 +1193,38 @@ export function loadPlotPreset(bIdx, presetType) {
   if (window.showToast) window.showToast('Applied piecewise plot preset!');
 }
 
+export function loadTikzPreset(bIdx, presetType) {
+  const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
+  if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
+  const block = rev.blocks[bIdx];
+
+  if (presetType === 'inclined') {
+    block.title = 'Inclined Plane Free-Body Diagram';
+    block.caption = 'Block resting on an inclined plane at an angle $\\theta = 30^\\circ$.';
+    block.code = `\\begin{tikzpicture}
+  \\node[plane] (ramp) at (0,-0.5) {};
+  \\node[box, rotate=30] (m) at (0,0.5) {$m$};
+  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
+  \\draw[force,->,blue] (m) -- ++(60:2) node[above right] {$F_N$};
+  \\draw[force,->,amber] (m) -- ++(150:1.5) node[above left] {$f_s$};
+\\end{tikzpicture}`;
+  } else if (presetType === 'standard') {
+    block.title = 'Box on Horizontal Surface';
+    block.caption = 'Horizontal pulling force with kinetic friction opposing motion.';
+    block.code = `\\begin{tikzpicture}
+  \\node[box] (m) at (0,0) {$m = 10\\text{ kg}$};
+  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
+  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};
+  \\draw[force,->,emerald] (m) -- ++(2.5,0) node[right] {$F_{\\text{pull}}$};
+  \\draw[force,->,amber] (m) -- ++(-1.5,0) node[left] {$f_k$};
+\\end{tikzpicture}`;
+  }
+
+  renderBlockCanvas();
+  syncBlocksToPreview();
+  if (window.showToast) window.showToast('Applied TikZ diagram preset!');
+}
+
 /* =========================================================
    Add Content Block Controller (Zero-state Resilient)
    ========================================================= */
@@ -1205,6 +1320,19 @@ export function addContentBlock(type) {
           style: 'solid'
         }
       ]
+    });
+  } else if (type === 'tikz' || type === 'fbd') {
+    rev.blocks.push({
+      type: 'tikz',
+      title: 'Free-Body Diagram',
+      caption: 'Forces acting on mass $m = 10\\text{ kg}$ in equilibrium.',
+      code: `\\begin{tikzpicture}
+  \\node[box] (m) at (0,0) {$m = 10\\text{ kg}$};
+  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
+  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};
+  \\draw[force,->,emerald] (m) -- ++(2.5,0) node[right] {$F_{\\text{pull}}$};
+  \\draw[force,->,amber] (m) -- ++(-1.5,0) node[left] {$f_k$};
+\\end{tikzpicture}`
     });
   } else if (type === 'image') {
     rev.blocks.push({
