@@ -1,7 +1,7 @@
 {
-  "version": "1.6.2",
-  "updatedAt": "2026-10-07T21:19:28.038131+00:00",
-  "announcement": "Refreshed 2 Reviewers (added Finite Math Reviewer), 13 Study Materials, and Deadlines.",
+  "version": "1.8.0",
+  "updatedAt": "2026-10-08T06:10:00.000000+00:00",
+  "announcement": "Refreshed 3 Reviewers (added Kasaysayan Reviewer), 13 Study Materials, and Deadlines.",
   "calendarEvents": [
     {
       "id": 1790325028547,
@@ -657,6 +657,492 @@
               "Compound Combination",
               "$C(m, 3) \\times C(w, 2)$",
               "Select sub-groups with $C$, then multiply totals using FCP."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reviewer_summative_test_1_kasaysayan",
+      "subject": "Kasaysayan",
+      "tag": "Reviewer",
+      "color": "border-l-4 border-amber-600",
+      "title": "Summative Test 1 - Kasaysayan Reviewer",
+      "summary": "Mabilis at komprehensibong reviewer para sa Summative Test 1: Kamalayang Pilipino bago ang kolonyalismo, balangkas ni Salazar (Pamayanan-Bayan-Bansa), herarkiyang kolonyal, institusyon, at mga anyo ng pakikibaka at pakikiangkop.",
+      "blocks": [
+        {
+          "type": "heading",
+          "level": "h2",
+          "text": "1. Saligang Kamalayan Bago ang Kolonyalismo"
+        },
+        {
+          "type": "paragraph",
+          "text": "Bago ang pananakop ng mga Espanyol, may umiiral nang buo at organisadong kamalayan ang mga katutubo tungkol sa sarili, kapwa, at pamayanan na nakasalig sa ginhawa at tungkulin:"
+        },
+        {
+          "type": "table",
+          "title": "Kaluluwa vs Ginhawa: Katutubong Dalumat ng Pagkatao",
+          "headers": [
+            "Konsepto",
+            "Lokasyon sa Katawan",
+            "Kahulugan at Katangian",
+            "Pang-araw-araw na Paniniwala / Gamit"
+          ],
+          "rows": [
+            [
+              "Kaluluwa",
+              "Utak / Ulo",
+              "Nagbibigay ng kalooban, katuwiran, at kaalaman; espiritwal na puwersa ng buhay.",
+              "Naglalakbay habang natutulog; kapag nagambala ay nagdudulot ng 'usog'. Pinoprotektahan ng gintong alahas ('kaliwanagan') ang mga butas ng katawan."
+            ],
+            [
+              "Ginhawa",
+              "Atay / Sikmura",
+              "Magaan at komportableng pamumuhay, kapayapaan ng isip, at kalusugan ng pamilya.",
+              "Higit na pinahahalagahan kaysa kayamanan. Walang saysay ang yaman kung walang ginhawa."
+            ],
+            [
+              "Kapwa at Sandugo",
+              "Loob / Dugo",
+              "Ang sarili ay hindi hiwalay sa iba kundi bahagi ng iisang kabuuan.",
+              "Ritwal ng sandugo: pagpapatibay ng kapatiran at katapatan ng dalawang panig sa pamamagitan ng dugo."
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": "h3",
+          "text": "Apat na Batayan ng Sinaunang Bayan"
+        },
+        {
+          "type": "table",
+          "title": "Apat na Tungkulin sa Sinaunang Lipunan (Salazar)",
+          "headers": [
+            "Tungkulin / Papel",
+            "Katangian at Pananagutan",
+            "Dulot sa Bayan",
+            "Kaugnayan sa Kasaysayan"
+          ],
+          "rows": [
+            [
+              "Datu / Hari",
+              "Namumuno sa pulitika at ekonomiya ng balangay o bayan.",
+              "Kaayusan at kagalingang pampulitika",
+              "Ugat ng Principalia (ginawang Gobernadorcillo noong panahon ng Espanyol)."
+            ],
+            [
+              "Babaylan",
+              "Tagapamagitan sa mga anito, ritwal, panggagamot, at astronomiya.",
+              "Espiritwal na ginhawa at kalusugan",
+              "Bumagsak ang katayuan sa pagpasok ng Simbahang Katolika at praylokrasya."
+            ],
+            [
+              "Bayani",
+              "Tagapagtanggol ng balangay laban sa kaaway (mula sa Malayong 'berani').",
+              "Seguridad at pagtatanggol sa bayan",
+              "Ugat ng marahas at armadong pakikibaka; matagal nang umiral bago ang Espanyol."
+            ],
+            [
+              "Panday / Manghahabi / Mamamalayok",
+              "Gumagawa ng sandata, bangka, kasangkapan, at kagamitang pangkabuhayan.",
+              "Materyal na ginhawa at kabuhayan",
+              "Pundasyon ng produksyon at suporta sa pagtatanggol at mapayapang pamumuhay."
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "style": "info",
+          "title": "Susing Konsepto: Radikal na Pagkasira",
+          "text": "• **Sinaunang Sistema**: Nakabatay sa **TUNGKULIN** (datu-babaylan-bayani-panday) — may pagkakataong umangat ang may kakayahan at husay.\n• **Kolonyal na Sistema**: Nakabatay sa **LAHI** — hindi na makaaangat ang katutubo gaano man siya kagaling. Ito ang ugat ng 'krisis ng pamayanang Pilipino' (1588–1663)."
+        },
+        {
+          "type": "heading",
+          "level": "h2",
+          "text": "2. Tatlong Yugto ng Kapilipinuhan & Dalawang Landas ng Bansa"
+        },
+        {
+          "type": "paragraph",
+          "text": "Ayon sa Bagong Balangkas ni Dr. Zeus Salazar, ang kasaysayan ay hindi hiwa-hiwalay na digmaan kundi tuluy-tuloy na paglawak ng saklaw ng kabuuan:"
+        },
+        {
+          "type": "table",
+          "title": "Tatlong Yugto ng Kasaysayan ng Kapilipinuhan",
+          "headers": [
+            "Yugto",
+            "Sakop na Panahon",
+            "Pangunahing Katangian",
+            "Kaugnayan sa Aralin 4"
+          ],
+          "rows": [
+            [
+              "PAMAYANAN",
+              "h-k. 500,000 BK – 1588",
+              "Sinaunang bayan at estadong etniko (balangay $\\to$ bayan $\\to$ karahaan/sultanato).",
+              "Saligang kamalayan bago ang pananakop."
+            ],
+            [
+              "BAYAN",
+              "1588 – 1913",
+              "Krisis ng pamayanan sa ilalim ng banyaga; muling pagbubuo ng kabuuan sa ilalim ng kolonyalismo.",
+              "Sakop ng Aralin 4 (Espanyol, Amerikano, at Hapones)."
+            ],
+            [
+              "BANSA",
+              "1913 – Kasalukuyan",
+              "Pagbubuo ng pambansang estado mula sa magkatunggaling proyekto.",
+              "Modernong estadong nasyonal."
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": "h3",
+          "text": "Dalawang Magkatunggaling Proyekto Patungo sa Bansa"
+        },
+        {
+          "type": "table",
+          "title": "Nación vs Inang Bayan / Haring Bayan",
+          "headers": [
+            "Pamantayan",
+            "Proyektong 'Nación' (Ilustrado)",
+            "Proyektong 'Inang Bayan' (Bonifacio / Katipunan)"
+          ],
+          "rows": [
+            [
+              "Pinagmulan at Ugat",
+              "Kanluranin / Europeo; hango sa estadong kolonyal ng Filipinas.",
+              "Taal na kalinangan at tradisyon ng Bayan (kapatiran, damayan, ginhawa)."
+            ],
+            [
+              "Pangunahing Pangkat",
+              "Kriyolyo, mestiso, ladinong paring sekular, at mga akulturadong ilustrado.",
+              "Masa, mga anak ng bayan, KKK, at mga manggagawa."
+            ],
+            [
+              "Layunin at Pamamaraan",
+              "Reporma at asimilasyon sa Espanya; intelektuwal at mapayapang pakikibaka.",
+              "Ganap na kasarinlan at paghiwalay; armadong rebolusyon at himagsikan."
+            ],
+            [
+              "Metapora / Konsepto",
+              "Nasyonal na estado ('Nación'); pormal na institusyon at batas.",
+              "'Inang Bayan' at mag-anak; pag-ibig sa bayan at kapatiran."
+            ],
+            [
+              "Makasaysayang Tagpo",
+              "Umagaw ng pamumuno sa Tejeros Convention (1897) sa pamumuno ni Aguinaldo.",
+              "Itinatag ang KKK (1892) at Haring Bayang Katagalugan (1896)."
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "style": "warning",
+          "title": "Tandaan sa Pagsusulit",
+          "text": "Ang **marahas vs. mapayapa** ay tumutukoy sa **PAMAMARAAN** ng pakikibaka; ang **Nación vs. Haring Bayan** ay tumutukoy sa **PROYEKTO** o uri ng bansang nais itatag."
+        },
+        {
+          "type": "heading",
+          "level": "h2",
+          "text": "3. Kolonyalismong Espanyol: Herarkiya at Institusyon"
+        },
+        {
+          "type": "table",
+          "title": "Herarkiyang Panlipunan Batay sa Lahi (Kapanahunang Espanyol)",
+          "headers": [
+            "Antas ng Lahi",
+            "Paglalarawan at Katangian",
+            "Pribilehiyo at Tungkulin"
+          ],
+          "rows": [
+            [
+              "Peninsulares",
+              "Mga purong Espanyol na isinilang sa Espanya.",
+              "Pinakamataas na posisyon sa pamahalaan at simbahan; may legal na eksempsyon sa buwis at sapilitang paggawa."
+            ],
+            [
+              "Insulares (Creoles)",
+              "Mga purong Espanyol na isinilang sa Pilipinas.",
+              "May papel sa lokal na administrasyon, lupa, at negosyo; madalas hindi itinatalaga sa pinakamataas na pwesto."
+            ],
+            [
+              "Mestizo",
+              "May halong lahing Espanyol at katutubo, o Tsino at katutubo.",
+              "Umunlad sa kalakalan at komersyo; nakapag-aral ang mga anak (naging ugat ng mga Ilustrado)."
+            ],
+            [
+              "Principalia / Ilustrados",
+              "Lokal na uring namumuno (mula sa angkan ng datu) at edukadong Pilipino.",
+              "Naging gobernadorcillo at cabeza de barangay; labas sa purong herarkiya ng lahi."
+            ],
+            [
+              "Indio",
+              "Mga katutubong Pilipino; pinakailalim ng lipunan.",
+              "Walang kapangyarihang pampulitika; sapilitang pinagbayad ng tributo at pinagtrabaho sa polo y servicio."
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": "h3",
+          "text": "Pangunahing Kolonyal na Institusyon"
+        },
+        {
+          "type": "table",
+          "title": "Edukasyon, Hustisya, at Kalayaang Sibil",
+          "headers": [
+            "Aspekto",
+            "Mga Patakaran at Institusyon",
+            "Epekto sa Mamamayan",
+            "Pagsusuring Kolonyal"
+          ],
+          "rows": [
+            [
+              "Edukasyon",
+              "Reducción (bajo el son de la campana); mga orden (Agustino, Pransiskano, Heswita, Dominiko); UST (1611); Education Decree of 1863.",
+              "Elitista at kontrolado ng katesismo. Ang Decree of 1863 ay nagdulot ng hindi inaasahang bunga: nagsilang ng mga Ilustrado na gumamit ng edukasyon para lumaban.",
+              "Limitasyon: Hindi pantay ang pag-access sa edukasyon."
+            ],
+            [
+              "Hustisya",
+              "Batayan: Siete Partidas, Nueva Recopilación, Leyes de las Indias. Apat na hukuman: Royal Audiencia (Korte Suprema), Territorial Audiencias, Courts of First Instance, Justice of the Peace.",
+              "Mabagal at hindi patas; ang Justice of the Peace ay pinatakbo ng personal na interes at padrino. Frailocracy (kapangyarihan ng prayle sa lupa at batas).",
+              "Kontrol: Ginamit ang batas upang panatilihin ang kapangyarihang kolonyal."
+            ],
+            [
+              "Kalayaang Sibil",
+              "Pagkakait ng kalayaan sa pamamahayag, pananalita, at pagtitipon; mahigpit na censorship; pagpapatapon (exile nina Del Pilar, Lopez Jaena, Rizal).",
+              "Ginamit ang Cavite Mutiny upang bitayin ang GomBurZa (1872) at patahimikin ang sekularisasyon; nagmulat sa pambansang damdamin.",
+              "Diskriminasyon at Panunupil: Sistemikong pagkakait ng karapatan sa mga Indio."
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": "h2",
+          "text": "4. Mga Anyo ng Pakikibaka at Pakikiangkop"
+        },
+        {
+          "type": "paragraph",
+          "text": "Ipinamalas ng mga Pilipino ang iba't ibang estratehiya sa pagtugon sa pang-aapi at kolonyalismo sa paglipas ng panahon:"
+        },
+        {
+          "type": "table",
+          "title": "Talahanayan ng mga Anyo ng Pakikibaka",
+          "headers": [
+            "Anyo ng Pakikibaka",
+            "Katangian at Kahulugan",
+            "Makasaysayang Halimbawa",
+            "Pangunahing Bentahe at Panganib"
+          ],
+          "rows": [
+            [
+              "Armadong Pag-aalsa",
+              "Marahas na paglaban gamit ang armas upang ibagsak ang dayuhang kapangyarihan.",
+              "Katipunan (1892), Himagsikan ng 1896, Sigaw ng Pugad Lawin / Balintawak.",
+              "Bentahe: Tuwirang hinahamon ang kapangyarihan; Panganib: Mataas na bilang ng nasasawi at pinsala."
+            ],
+            [
+              "Konbensyonal na Digma",
+              "Pormal na labanan ng dalawang organisadong hukbo gamit ang estratehiyang militar.",
+              "Digmaang Pilipino-Amerikano (1899–1902) sa ilalim ng Unang Republika.",
+              "Bentahe: Kinikilalang estado; Panganib: Madaling matalo laban sa mas superyor na hukbo (pagdakip kay Aguinaldo sa Palanan 1901)."
+            ],
+            [
+              "Gerilya",
+              "Maliliit at mabilis na yunit na sumasalakay at umaasa sa suporta ng lokal na komunidad.",
+              "Pagpapatuloy nina Heneral Malvar at Macario Sakay; Hukbalahap at Wha-Chi (panahon ng Hapon).",
+              "Bentahe: Mahirap lipulin ng malalaking hukbo; Panganib: Paghihiganti ng kaaway sa mga sibilyan."
+            ],
+            [
+              "Intelektuwal na Pakikibaka",
+              "Paggamit ng panulat, sining, pamamahayag, at literatura upang humingi ng reporma o magmulat.",
+              "Kilusang Propaganda, La Solidaridad nina Rizal, Marcelo H. del Pilar, Graciano López Jaena; Balagtas at sarswela.",
+              "Bentahe: Nagbubuo ng pambansang kamalayan; Panganib: Censorship, pagpapatapon (exile), at pagbitay."
+            ],
+            [
+              "Pampolitika / Konstitusyonal",
+              "Pakikilahok sa halalan, batas, at institusyon ng pamahalaan.",
+              "Komonwelt ng Pilipinas (1935); mga batas sa sariling pamamahala mula 1913.",
+              "Bentahe: May pormal na proteksyon ng batas; Panganib: Maaaring maging kasangkapan ng kolonisador."
+            ],
+            [
+              "Pakikiangkop (Strategic Adaptation)",
+              "Estratehikong pakikibagay sa umiiral na sistema upang mapanatili ang buhay, pamayanan, at ugnayan.",
+              "Sultan Diamarol sa Mindanao; pakikipagtulungan ng ilang lider habang nag-aantay ng pagkakataon.",
+              "Bentahe: Nakapagliligtas ng buhay at kultura; Panganib: Maaaring mapagkamalang pagsuko o pagtataksil."
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "style": "info",
+          "title": "Pakikiangkop: Estratehiya vs Pagsuko",
+          "text": "• **Matalinong Estratehiya**: Kapag ginagamit upang protektahan ang komunidad, panatilihin ang katapatan sa kapwa, at magpalakas habang hinihintay ang tamang panahon upang kumilos.\n• **Pagsuko**: Kapag tuluyan nang kinalimutan ang kapakanan ng bayan kapalit ng personal na pabor, kapangyarihan, at pribilehiyo."
+        },
+        {
+          "type": "heading",
+          "level": "h2",
+          "text": "5. Konseptuwal na Pagsusuri & Past to Present"
+        },
+        {
+          "type": "table",
+          "title": "Anim na Konsepto sa Pagsusuri ng Sistemang Kolonyal",
+          "headers": [
+            "Konsepto",
+            "Paliwanag sa Panahon ng Espanyol",
+            "Kahalagahan sa Pagsusuri"
+          ],
+          "rows": [
+            [
+              "Herarkiya",
+              "Estrukturang panlipunan na nagbigay ng kapangyarihan sa Peninsulares at naglagay sa Indio sa ilalim.",
+              "Ipinakita kung paano pinanatili ang kapangyarihan sa pamamagitan ng paghahati-hati."
+            ],
+            [
+              "Limitasyon",
+              "Hindi pantay na akses sa de-kalidad na edukasyon, posisyon sa gobyerno, at yaman.",
+              "Nagpatunay na ang edukasyon ay ginamit muna bilang paraan ng pagpigil bago naging sandata ng paglaya."
+            ],
+            [
+              "Kontrol",
+              "Paggamit sa hukumang militar, simbahan, at justice of the peace upang patahimikin ang tumututol.",
+              "Nagpatibay sa kaayusang kolonyal sa pamamagitan ng institusyonal na pananakot."
+            ],
+            [
+              "Sistema",
+              "Magkakaugnay ang edukasyon, hustisya, at kalayaang sibil sa pagtataguyod ng pananakop.",
+              "Hindi hiwa-hiwalay ang mga suliranin; iisa ang makinaryang nagpapatakbo sa mga ito."
+            ],
+            [
+              "Diskriminasyon",
+              "Sistemikong pangmamaliit at pagpapataw ng mabibigat na pasanin (tributo, polo) sa mga katutubo.",
+              "Hindi lamang personal na hidwaan kundi batas at polisiya ng pamahalaan."
+            ],
+            [
+              "Kamalayan",
+              "Paggamit ng mga Ilustrado sa edukasyon upang imulat ang bayan at kuwestiyunin ang sistema.",
+              "Nagbunsod ng Kilusang Propaganda at naging mitsa ng Himagsikan."
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Past to Present: Pag-uugnay ng Nakaraan sa Kasalukuyan",
+          "headers": [
+            "Konseptong Kolonyal",
+            "Modernong Manipestasyon sa Lipunan",
+            "Kritikal na Pagsusuri"
+          ],
+          "rows": [
+            [
+              "Hirarkiya",
+              "Umiiral sa mga institusyon kung saan ang ilang pangkat ay may labis na pribilehiyo at kapangyarihan kaysa iba.",
+              "Nagdudulot ng elitismo sa pamamahala at kawalan ng boses ng karaniwang mamamayan."
+            ],
+            [
+              "Hindi-pagkakapantay-pantay",
+              "Hindi pantay na akses ng mamamayan sa de-kalidad na edukasyon, serbisyong pangkalusugan, at hanapbuhay.",
+              "Bunga ng agwat sa ekonomiya na nagpapatuloy mula sa kolonyal na estruktura."
+            ],
+            [
+              "Kalayaan",
+              "Karapatan sa pamamahayag, mapayapang pagtitipon, at paglahok sa mga usaping pampubliko.",
+              "Haligi ng isang demokratikong lipunan na ipinagkait noong panahon ng kolonyalismo."
+            ],
+            [
+              "Korupsiyon",
+              "Paggamit ng pampublikong kapangyarihan o katayuan para sa pansariling pakinabang at hindi patas na pabor.",
+              "Pinahihina ang katarungan at sumisira sa tiwala ng mamamayan sa pamahalaan."
+            ],
+            [
+              "Kritikal na Kamalayan",
+              "Paggamit sa pag-aaral ng kasaysayan upang suriin at unawain ang mga ugat ng kasalukuyang suliranin.",
+              "Pundasyon sa paghahanap ng pangmatagalang solusyon sa mga isyung panlipunan."
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "level": "h2",
+          "text": "6. Mabilisang Talasalitaan (Exam Cheat Sheet)"
+        },
+        {
+          "type": "table",
+          "title": "Glosaryo ng mga Mahahalagang Termino",
+          "headers": [
+            "Termino",
+            "Mabilisang Kahulugan para sa Pagsusulit"
+          ],
+          "rows": [
+            [
+              "Peninsulares",
+              "Espanyol na isinilang sa Espanya; may hawak ng pinakamataas na kapangyarihan."
+            ],
+            [
+              "Insulares",
+              "Espanyol na isinilang sa Pilipinas (tinatawag ding creoles)."
+            ],
+            [
+              "Mestizo",
+              "May halong lahing Espanyol at katutubo, o Tsino at katutubo."
+            ],
+            [
+              "Indio",
+              "Tawag ng mga Espanyol sa katutubong Pilipino; nasa pinakailalim ng antas ng lipunan."
+            ],
+            [
+              "Principalia",
+              "Lokal na uring namumuno; nagmula sa sinaunang angkan ng mga datu at naging gobernadorcillo."
+            ],
+            [
+              "Frailocracy",
+              "Paghahari o malawak na kapangyarihan at impluwensiya ng mga prayle sa pamahalaan at lipunan."
+            ],
+            [
+              "Reducción",
+              "Sapilitang pagtitipon ng mga pamayanan sa poblacion sa ilalim ng tunog ng kampana (bajo el son de la campana)."
+            ],
+            [
+              "Tributo",
+              "Buwis na ipinataw sa mga katutubong Pilipino bilang tanda ng pagpapasakop sa Espanya."
+            ],
+            [
+              "Polo y Servicio",
+              "Sapilitang paggawa na ipinataw sa mga kalalakihang indio (16–60 taong gulang)."
+            ],
+            [
+              "Royal Audiencia",
+              "Pinakamataas na hukuman sa kolonya na katumbas ng Korte Suprema ngayon."
+            ],
+            [
+              "Justice of the Peace",
+              "Lokal na hukom sa antas ng bayan para sa maliliit na kasong sibil at kriminal."
+            ],
+            [
+              "Leyes de Indias",
+              "Kalipunan ng mga batas na ipinatupad ng Espanya para sa pamamahala sa mga kolonya nito."
+            ],
+            [
+              "Education Decree of 1863",
+              "Batas na nag-utos ng libre at sapilitang primaryang edukasyon na may sekular na kurikulum."
+            ],
+            [
+              "GomBurZa",
+              "Tatlong paring sekular (Gomez, Burgos, Zamora) na binitay noong 17 Pebrero 1872 dahil sa Cavite Mutiny."
+            ],
+            [
+              "Ladinos",
+              "Mga katutubong natutong magsalita at magsulat sa wikang Espanyol na naging tagapamagitan ng prayle."
+            ],
+            [
+              "Puppet Government",
+              "Pamahalaang may pormal na estruktura ngunit kontrolado ng dayuhang hukbo (hal. panahon ng Hapon)."
+            ],
+            [
+              "Exile",
+              "Sapilitang pagpapatapon sa ibang lugar upang putulin ang impluwensiyang pampolitika."
             ]
           ]
         }
