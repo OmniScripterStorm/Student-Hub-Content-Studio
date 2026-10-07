@@ -5,6 +5,7 @@
 export const OFFICIAL_SUBJECTS = {
   'TagSci': { type: 'Institutional', color: 'border-l-4 border-tagsci-700' },
   'DepEd': { type: 'DepEd', color: 'border-l-4 border-blue-600' },
+  'Kasaysayan': { type: 'Main', color: 'border-l-4 border-amber-600' },
   'Effective Communications': { type: 'Main', color: 'border-l-4 border-blue-500' },
   'Mabisang Komunikasyon': { type: 'Main', color: 'border-l-4 border-amber-500' },
   'Life and Career Skills': { type: 'Main', color: 'border-l-4 border-emerald-500' },
