@@ -674,9 +674,9 @@ export function renderTableToHtml(block) {
 }
 
 /* =========================================================
-   TikZ-FBD Legacy SVG Fallback Renderer
+   TikZ-FBD Native SVG Renderer
    ========================================================= */
-function renderTikzFbdSvgLegacy(input, isDark = false) {
+export function renderTikzFbdSvg(input, isDark = false) {
   let code = '';
   let title = '';
   let caption = '';
@@ -687,6 +687,11 @@ function renderTikzFbdSvgLegacy(input, isDark = false) {
     caption = input.caption || '';
   } else {
     code = String(input || '');
+  }
+
+  // Fallback to JSXGraph if code is actually JSXGraph script
+  if (code.includes('board.create') || code.includes('JXG.')) {
+    return renderJsxgraphBlock(input, isDark);
   }
 
   if (!code.trim()) return '';
@@ -1025,7 +1030,7 @@ export function renderJsxgraphBlock(input, isDark = false) {
       ${caption ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">${renderMathInHtml(caption)}</p>` : ''}
       
       <div class="w-full flex justify-center items-center bg-slate-50/70 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-100 dark:border-slate-800/80 overflow-x-auto">
-        <div id="${boardId}" class="jxgbox w-full max-w-xl aspect-[4/3] rounded-xl overflow-hidden select-none border border-slate-200/50 dark:border-slate-800/50 shadow-inner"
+        <div id="${boardId}" class="jxgbox w-full max-w-xl aspect-[4/3] rounded-xl overflow-hidden select-none border border-slate-200/50 dark:border-slate-800/50 shadow-inner !bg-white dark:!bg-slate-900 min-h-[300px] sm:min-h-[360px]" style="min-height: 320px;"
           data-jxg-code="${encodedCode}"
           data-jxg-bbox="${encodedBbox}"
           data-jxg-axes="${showAxes}"
@@ -1065,8 +1070,15 @@ export function initializeJsxgraphBoards(container = document) {
       try {
         if (el.clientWidth > 0 && el.clientHeight > 0) {
           el._jxgBoard.resizeContainer(el.clientWidth, el.clientHeight);
+          if (typeof el._jxgBoard.fullUpdate === 'function') el._jxgBoard.fullUpdate();
         }
       } catch (e) {}
+      return;
+    }
+
+    // If container element is currently detached or has zero dimensions, defer until layout resolves
+    if (el.clientWidth === 0 && el.clientHeight === 0 && !el.offsetParent) {
+      setTimeout(() => initializeJsxgraphBoards(el.parentElement || container), 60);
       return;
     }
 
@@ -1103,11 +1115,21 @@ export function initializeJsxgraphBoards(container = document) {
         showNavigation: false,
         showCopyright: false,
         keepaspectratio: false,
+        resize: { enabled: true, throttle: 20 },
         renderer: 'svg'
       });
 
+      // Provide responsive fallback dimensions if container layout hasn't set pixel dimensions yet
+      if ((board.canvasWidth <= 0 || board.canvasHeight <= 0) && el.clientWidth > 0 && el.clientHeight > 0) {
+        board.resizeContainer(el.clientWidth, el.clientHeight, true);
+      }
+
       const runner = new Function('board', 'JXG', 'colors', 'isDark', code);
       runner(board, window.JXG, colors, isDarkMode);
+
+      if (typeof board.fullUpdate === 'function') {
+        board.fullUpdate();
+      }
 
       el._jxgBoard = board;
     } catch (err) {
@@ -1117,12 +1139,13 @@ export function initializeJsxgraphBoards(container = document) {
   });
 }
 
-export const renderTikzFbdSvg = renderJsxgraphBlock;
+export const renderTikzFbdSvgLegacy = renderTikzFbdSvg;
 
 if (typeof window !== 'undefined') {
   window.renderJsxgraphBlock = renderJsxgraphBlock;
   window.initializeJsxgraphBoards = initializeJsxgraphBoards;
-  window.renderTikzFbdSvg = renderJsxgraphBlock;
+  window.renderTikzFbdSvg = renderTikzFbdSvg;
+  window.renderTikzFbdSvgLegacy = renderTikzFbdSvg;
 }
 
 /* =========================================================
@@ -1203,7 +1226,9 @@ export function renderBlocksToHtml(blocks) {
       html += renderTableToHtml(b);
     } else if (b.type === 'cartesian' || b.type === 'plot') {
       html += renderCartesianPlaneSvg(b);
-    } else if (b.type === 'jsxgraph' || b.type === 'jxg' || b.type === 'tikz' || b.type === 'fbd') {
+    } else if (b.type === 'tikz' || b.type === 'fbd') {
+      html += renderTikzFbdSvg(b);
+    } else if (b.type === 'jsxgraph' || b.type === 'jxg') {
       html += renderJsxgraphBlock(b);
     } else if (b.type === 'image') {
       const url = b.url || '';
