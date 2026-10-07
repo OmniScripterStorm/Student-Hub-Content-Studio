@@ -12,6 +12,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- JSXGraph Local Offline Assets -->
+  <link rel="stylesheet" href="./vendor/jsxgraph/jsxgraph.css">
+  <script src="./vendor/jsxgraph/jsxgraphcore.js"></script>
 
   <script>
     tailwind.config = {
@@ -520,11 +523,11 @@
                     <div class="text-[10px] text-slate-400">Piecewise & coordinate functions</div>
                   </div>
                 </button>
-                <button onclick="handleAddBlockSelect('tikz')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
+                <button onclick="handleAddBlockSelect('jsxgraph')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
                   <i data-lucide="compass" class="w-4 h-4 text-cyan-500 shrink-0"></i>
                   <div>
-                    <div class="font-bold text-slate-900 dark:text-white">TikZ Physics / FBD</div>
-                    <div class="text-[10px] text-slate-400">Free-body diagrams & force vectors</div>
+                    <div class="font-bold text-slate-900 dark:text-white">JSXGraph Diagram</div>
+                    <div class="text-[10px] text-slate-400">Interactive physics boards & geometry</div>
                   </div>
                 </button>
                 <button onclick="handleAddBlockSelect('image')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
@@ -794,11 +797,11 @@
                       <div class="text-[10px] text-slate-400">Piecewise & coordinate functions</div>
                     </div>
                   </button>
-                  <button onclick="handleMatAddBlockSelect('tikz')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
+                  <button onclick="handleMatAddBlockSelect('jsxgraph')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
                     <i data-lucide="compass" class="w-4 h-4 text-cyan-500 shrink-0"></i>
                     <div>
-                      <div class="font-bold text-slate-900 dark:text-white">TikZ Physics / FBD</div>
-                      <div class="text-[10px] text-slate-400">Free-body diagrams & force vectors</div>
+                      <div class="font-bold text-slate-900 dark:text-white">JSXGraph Diagram</div>
+                      <div class="text-[10px] text-slate-400">Interactive physics boards & geometry</div>
                     </div>
                   </button>
                   <button onclick="handleMatAddBlockSelect('image')" class="w-full px-3 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70 flex items-center gap-2.5 font-medium transition-colors">
@@ -2622,12 +2625,9 @@ function renderTableToHtml(block) {
 }
 
 /* =========================================================
-   TikZ-FBD Native Physics Diagram Renderer
-   - 100% Zero-dependency & Offline
-   - Native SVG vector & force rendering
-   - Supports TikZ nodes, shapes, rotations, forces, and relative coordinates
+   TikZ-FBD Legacy Fallback Renderer
    ========================================================= */
-function renderTikzFbdSvg(input, isDark = false) {
+function renderTikzFbdSvgLegacy(input, isDark = false) {
   let code = '';
   let title = '';
   let caption = '';
@@ -2929,6 +2929,154 @@ function renderTikzFbdSvg(input, isDark = false) {
 }
 
 /* =========================================================
+   JSXGraph Interactive Physics & Math Board Renderer
+   - Local offline vendor: vendor/jsxgraph/jsxgraphcore.js
+   - Interactive vectors, geometries, coordinate boards & forces
+   ========================================================= */
+function renderJsxgraphBlock(input, isDark = false) {
+  let code = '';
+  let title = '';
+  let caption = '';
+  let bBox = [-5, 5, 5, -5];
+  let showAxes = false;
+  let showGrid = false;
+  let id = '';
+
+  if (typeof input === 'object' && input !== null) {
+    code = input.code || input.jsxgraph || input.jxg || input.tikz || '';
+    title = input.title || '';
+    caption = input.caption || '';
+    if (Array.isArray(input.boundingBox) && input.boundingBox.length === 4) {
+      bBox = input.boundingBox;
+    } else if (Array.isArray(input.bBox) && input.bBox.length === 4) {
+      bBox = input.bBox;
+    }
+    if (input.axis !== undefined) showAxes = !!input.axis;
+    if (input.axes !== undefined) showAxes = !!input.axes;
+    if (input.grid !== undefined) showGrid = !!input.grid;
+    id = input.id || '';
+  } else {
+    code = String(input || '');
+  }
+
+  if (!code.trim()) return '';
+
+  // Backward-compatibility: if input is legacy TikZ code, route to TikZ SVG renderer
+  if (code.includes('\\begin{tikzpicture}') || code.includes('\\node[')) {
+    return renderTikzFbdSvgLegacy({ code, title, caption }, isDark);
+  }
+
+  const boardId = id ? `jxg-${id.replace(/[^a-zA-Z0-9_-]/g, '_')}` : `jxg-${Math.random().toString(36).slice(2, 10)}`;
+  const encodedCode = encodeURIComponent(code);
+  const encodedBbox = encodeURIComponent(JSON.stringify(bBox));
+
+  return `
+    <div class="my-4 p-4 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      ${title ? `<h4 class="font-black text-xs sm:text-sm text-slate-900 dark:text-white mb-1 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>${renderMathInHtml(title)}</h4>` : ''}
+      ${caption ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">${renderMathInHtml(caption)}</p>` : ''}
+      
+      <div class="w-full flex justify-center items-center bg-slate-50/70 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-100 dark:border-slate-800/80 overflow-x-auto">
+        <div id="${boardId}" class="jxgbox w-full max-w-xl aspect-[4/3] rounded-xl overflow-hidden select-none border border-slate-200/50 dark:border-slate-800/50 shadow-inner"
+          data-jxg-code="${encodedCode}"
+          data-jxg-bbox="${encodedBbox}"
+          data-jxg-axes="${showAxes}"
+          data-jxg-grid="${showGrid}">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function initializeJsxgraphBoards(container = document) {
+  if (typeof window === 'undefined') return;
+  if (!window.JXG) {
+    setTimeout(() => initializeJsxgraphBoards(container), 80);
+    return;
+  }
+
+  const root = (container && container.querySelectorAll) ? container : document;
+  const boardEls = root.querySelectorAll('[data-jxg-code]');
+  if (!boardEls || boardEls.length === 0) return;
+
+  const isDarkMode = (typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  const colors = {
+    bg: isDarkMode ? '#0f172a' : '#f8fafc',
+    axis: isDarkMode ? '#64748b' : '#94a3b8',
+    grid: isDarkMode ? '#1e293b' : '#e2e8f0',
+    primary: isDarkMode ? '#34d399' : '#059669',
+    secondary: isDarkMode ? '#38bdf8' : '#0284c7',
+    accent: isDarkMode ? '#f472b6' : '#db2777',
+    warning: isDarkMode ? '#fbbf24' : '#d97706',
+    danger: isDarkMode ? '#f87171' : '#dc2626',
+    text: isDarkMode ? '#f1f5f9' : '#0f172a'
+  };
+
+  boardEls.forEach(el => {
+    if (el._jxgBoard) {
+      try {
+        if (el.clientWidth > 0 && el.clientHeight > 0) {
+          el._jxgBoard.resizeContainer(el.clientWidth, el.clientHeight);
+        }
+      } catch (e) {}
+      return;
+    }
+
+    try {
+      const rawCode = el.getAttribute('data-jxg-code');
+      const code = rawCode ? decodeURIComponent(rawCode) : '';
+      if (!code.trim()) return;
+
+      let bBox = [-5, 5, 5, -5];
+      const rawBbox = el.getAttribute('data-jxg-bbox');
+      if (rawBbox) {
+        try {
+          bBox = JSON.parse(decodeURIComponent(rawBbox));
+        } catch (e) {
+          bBox = [-5, 5, 5, -5];
+        }
+      }
+
+      const showAxes = el.getAttribute('data-jxg-axes') === 'true';
+      const showGrid = el.getAttribute('data-jxg-grid') === 'true';
+
+      if (window.JXG.boards && window.JXG.boards[el.id]) {
+        try {
+          window.JXG.JSXGraph.freeBoard(el.id);
+        } catch (e) {}
+      }
+
+      el.innerHTML = '';
+
+      const board = window.JXG.JSXGraph.initBoard(el.id, {
+        boundingbox: bBox,
+        axis: showAxes,
+        grid: showGrid,
+        showNavigation: false,
+        showCopyright: false,
+        keepaspectratio: false,
+        renderer: 'svg'
+      });
+
+      const runner = new Function('board', 'JXG', 'colors', 'isDark', code);
+      runner(board, window.JXG, colors, isDarkMode);
+
+      el._jxgBoard = board;
+    } catch (err) {
+      console.error('JSXGraph init failed on', el.id, err);
+      el.innerHTML = `<div class="p-3 text-xs text-rose-500 font-mono">Diagram render error: ${err.message}</div>`;
+    }
+  });
+}
+
+function renderTikzFbdSvg(input, isDark = false) {
+  return renderJsxgraphBlock(input, isDark);
+}
+
+window.renderJsxgraphBlock = renderJsxgraphBlock;
+window.initializeJsxgraphBoards = initializeJsxgraphBoards;
+window.renderTikzFbdSvg = renderTikzFbdSvg;
+
+/* =========================================================
    Unified Block Array to Rendered HTML
    ========================================================= */
 function renderBlocksToHtml(blocks) {
@@ -2959,13 +3107,13 @@ function renderBlocksToHtml(blocks) {
         } else {
           html += `<p class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed my-2">${renderMathInHtml(text)}</p>`;
         }
-      } else if (text.includes('```tikz') || text.includes('```fbd')) {
-        const tikzMatch = text.match(/```(?:tikz|fbd)\s*([\s\S]*?)\s*```/);
-        if (tikzMatch) {
-          const before = text.substring(0, tikzMatch.index).trim();
-          const after = text.substring(tikzMatch.index + tikzMatch[0].length).trim();
+      } else if (text.includes('```jsxgraph') || text.includes('```jxg') || text.includes('```tikz') || text.includes('```fbd')) {
+        const jxgMatch = text.match(/```(?:jsxgraph|jxg|tikz|fbd)\s*([\s\S]*?)\s*```/);
+        if (jxgMatch) {
+          const before = text.substring(0, jxgMatch.index).trim();
+          const after = text.substring(jxgMatch.index + jxgMatch[0].length).trim();
           if (before) html += `<p class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed my-2">${renderMathInHtml(before)}</p>`;
-          html += renderTikzFbdSvg(tikzMatch[1]);
+          html += renderJsxgraphBlock(jxgMatch[1]);
           if (after) html += `<p class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed my-2">${renderMathInHtml(after)}</p>`;
         } else {
           html += `<p class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed my-2">${renderMathInHtml(text)}</p>`;
@@ -3006,8 +3154,8 @@ function renderBlocksToHtml(blocks) {
       html += renderTableToHtml(b);
     } else if (b.type === 'cartesian' || b.type === 'plot') {
       html += renderCartesianPlaneSvg(b);
-    } else if (b.type === 'tikz' || b.type === 'fbd') {
-      html += renderTikzFbdSvg(b);
+    } else if (b.type === 'jsxgraph' || b.type === 'jxg' || b.type === 'tikz' || b.type === 'fbd') {
+      html += renderJsxgraphBlock(b);
     } else if (b.type === 'image') {
       const url = b.url || '';
       const alt = b.alt || 'Figure diagram';
@@ -3517,9 +3665,9 @@ function compileBlocksToMarkdown(blocks) {
       md += '\n';
     } else if (b.type === 'cartesian' || b.type === 'plot') {
       md += `\`\`\`plot\n${JSON.stringify(b, null, 2)}\n\`\`\`\n\n`;
-    } else if (b.type === 'tikz' || b.type === 'fbd') {
+    } else if (b.type === 'jsxgraph' || b.type === 'jxg' || b.type === 'tikz' || b.type === 'fbd') {
       if (b.title) md += `**${b.title}**\n`;
-      md += `\`\`\`tikz\n${b.code || b.tikz || ''}\n\`\`\`\n`;
+      md += `\`\`\`jsxgraph\n${b.code || b.jsxgraph || b.tikz || ''}\n\`\`\`\n`;
       if (b.caption) md += `*${b.caption}*\n\n`;
       else md += '\n';
     } else if (b.type === 'image') {
@@ -3583,8 +3731,8 @@ function parseMarkdownIntoBlocks(md) {
       continue;
     }
 
-    // TikZ / FBD codeblock detection
-    if (line.startsWith('```tikz') || line.startsWith('```fbd')) {
+    // JSXGraph / TikZ codeblock detection
+    if (line.startsWith('```jsxgraph') || line.startsWith('```jxg') || line.startsWith('```tikz') || line.startsWith('```fbd')) {
       if (currentBulletBlock) { blocks.push(currentBulletBlock); currentBulletBlock = null; }
       inTikzBlock = true;
       tikzCodeAccumulator = '';
@@ -3593,28 +3741,31 @@ function parseMarkdownIntoBlocks(md) {
     if (inTikzBlock) {
       if (line.startsWith('```')) {
         inTikzBlock = false;
-        let tikzTitle = 'Free-Body Diagram';
+        let jxgTitle = 'JSXGraph Diagram';
         if (blocks.length > 0 && blocks[blocks.length - 1].type === 'paragraph') {
           const mTitle = blocks[blocks.length - 1].text.match(/^\*\*([^*]+)\*\*$/);
           if (mTitle) {
-            tikzTitle = mTitle[1];
+            jxgTitle = mTitle[1];
             blocks.pop();
           }
         }
-        let tikzCaption = '';
+        let jxgCaption = '';
         if (i + 1 < lines.length) {
           const nextLine = lines[i + 1].trim();
           const capMatch = nextLine.match(/^\*([^*]+)\*$|^_([^_]+)_$/);
           if (capMatch) {
-            tikzCaption = capMatch[1] || capMatch[2] || '';
+            jxgCaption = capMatch[1] || capMatch[2] || '';
             i++;
           }
         }
         blocks.push({
-          type: 'tikz',
-          title: tikzTitle,
-          caption: tikzCaption,
-          code: tikzCodeAccumulator.trim()
+          type: 'jsxgraph',
+          title: jxgTitle,
+          caption: jxgCaption,
+          code: tikzCodeAccumulator.trim(),
+          boundingBox: [-5, 5, 5, -5],
+          axis: true,
+          grid: true
         });
       } else {
         tikzCodeAccumulator += rawLine + '\n';
@@ -4144,17 +4295,20 @@ function renderBlockCanvas() {
           </div>
         </div>
       `;
-    } else if (b.type === 'tikz' || b.type === 'fbd') {
+    } else if (b.type === 'jsxgraph' || b.type === 'jxg' || b.type === 'tikz' || b.type === 'fbd') {
       headerLeft = `
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 flex items-center gap-1">
-            <i data-lucide="compass" class="w-3 h-3"></i> TikZ Free-Body Diagram
+            <i data-lucide="compass" class="w-3 h-3"></i> JSXGraph Diagram
           </span>
-          <button onclick="window.loadTikzPreset && window.loadTikzPreset(${bIdx}, 'inclined')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+          <button onclick="window.loadJsxgraphPreset && window.loadJsxgraphPreset(${bIdx}, 'inclined')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
             Preset: Inclined Plane
           </button>
-          <button onclick="window.loadTikzPreset && window.loadTikzPreset(${bIdx}, 'standard')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
-            Preset: Box on Floor
+          <button onclick="window.loadJsxgraphPreset && window.loadJsxgraphPreset(${bIdx}, 'beam')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+            Preset: Beam Forces
+          </button>
+          <button onclick="window.loadJsxgraphPreset && window.loadJsxgraphPreset(${bIdx}, 'collision')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+            Preset: 1D Collision
           </button>
         </div>
       `;
@@ -4168,16 +4322,16 @@ function renderBlockCanvas() {
 
           <div class="space-y-1">
             <div class="flex items-center justify-between">
-              <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TikZ / TikZ-FBD Code</label>
-              <span class="text-[9.5px] text-slate-400">Supports \\node[box|circle], \\draw[force,->,color]</span>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">JSXGraph Board Script (JS)</label>
+              <span class="text-[9.5px] text-slate-400 font-mono">Available: board, JXG, colors, isDark</span>
             </div>
-            <textarea rows="6" oninput="window.updateBlockField(${bIdx}, 'code', this.value)" placeholder="\\begin{tikzpicture}\n  \\node[box] (m) at (0,0) {$m$};\n  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g$};\n  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};\n\\end{tikzpicture}" class="w-full p-2.5 text-xs font-mono bg-slate-900 text-slate-100 border border-slate-700 rounded-lg focus:ring-1 focus:ring-cyan-500">${b.code || b.tikz || ''}</textarea>
+            <textarea rows="7" oninput="window.updateBlockField(${bIdx}, 'code', this.value)" placeholder="// JSXGraph Board Code&#10;const p1 = board.create('point', [0, 0]);" class="w-full p-2.5 text-xs font-mono bg-slate-900 text-slate-100 border border-slate-700 rounded-lg focus:ring-1 focus:ring-cyan-500">${b.code || b.jsxgraph || b.tikz || ''}</textarea>
           </div>
 
-          <!-- Live Inline SVG Preview -->
+          <!-- Live Inline Board Preview -->
           <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
             <div class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-left">Diagram Preview:</div>
-            ${renderTikzFbdSvg(b)}
+            ${renderJsxgraphBlock(b)}
           </div>
         </div>
       `;
@@ -4376,6 +4530,11 @@ function renderBlockCanvas() {
   });
 
   if (window.lucide) window.lucide.createIcons();
+  if (typeof initializeJsxgraphBoards === 'function') {
+    initializeJsxgraphBoards(container);
+  } else if (typeof window !== 'undefined' && typeof window.initializeJsxgraphBoards === 'function') {
+    window.initializeJsxgraphBoards(container);
+  }
 }
 function syncBlocksToPreview() {
   const revs = STUDIO_DATA.stemReviewers || [];
@@ -4438,6 +4597,11 @@ function syncBlocksToPreview() {
       </div>
       <div class="mt-3 text-slate-800 dark:text-slate-100">${rev.content || '<span class="text-slate-400 italic">No content blocks added yet...</span>'}</div>
     `;
+    if (typeof initializeJsxgraphBoards === 'function') {
+      initializeJsxgraphBoards(previewPane);
+    } else if (typeof window !== 'undefined' && typeof window.initializeJsxgraphBoards === 'function') {
+      window.initializeJsxgraphBoards(previewPane);
+    }
   }
 }
 function updateBlockField(bIdx, field, val) {
@@ -4658,37 +4822,100 @@ function loadPlotPreset(bIdx, presetType) {
   if (window.showToast) window.showToast('Applied piecewise plot preset!');
 }
 
-function loadTikzPreset(bIdx, presetType) {
+function loadJsxgraphPreset(bIdx, presetType) {
   const rev = STUDIO_DATA.stemReviewers[currentRevIndex];
   if (!rev || !rev.blocks || !rev.blocks[bIdx]) return;
   const block = rev.blocks[bIdx];
+  block.type = 'jsxgraph';
 
   if (presetType === 'inclined') {
     block.title = 'Inclined Plane Free-Body Diagram';
     block.caption = 'Block resting on an inclined plane at an angle $\\theta = 30^\\circ$.';
-    block.code = `\\begin{tikzpicture}
-  \\node[plane] (ramp) at (0,-0.5) {};
-  \\node[box, rotate=30] (m) at (0,0.5) {$m$};
-  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
-  \\draw[force,->,blue] (m) -- ++(60:2) node[above right] {$F_N$};
-  \\draw[force,->,amber] (m) -- ++(150:1.5) node[above left] {$f_s$};
-\\end{tikzpicture}`;
-  } else if (presetType === 'standard') {
-    block.title = 'Box on Horizontal Surface';
-    block.caption = 'Horizontal pulling force with kinetic friction opposing motion.';
-    block.code = `\\begin{tikzpicture}
-  \\node[box] (m) at (0,0) {$m = 10\\text{ kg}$};
-  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
-  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};
-  \\draw[force,->,emerald] (m) -- ++(2.5,0) node[right] {$F_{\\text{pull}}$};
-  \\draw[force,->,amber] (m) -- ++(-1.5,0) node[left] {$f_k$};
-\\end{tikzpicture}`;
+    block.code = `// Inclined Plane Free-Body Diagram
+const theta = 30 * (Math.PI / 180);
+const len = 7;
+const rampStart = board.create('point', [-4, -3], {visible: false, fixed: true});
+const rampCorner = board.create('point', [-4 + len * Math.cos(theta), -3], {visible: false, fixed: true});
+const rampPeak = board.create('point', [-4 + len * Math.cos(theta), -3 + len * Math.sin(theta)], {visible: false, fixed: true});
+board.create('polygon', [rampStart, rampCorner, rampPeak], {
+  fillColor: colors.grid,
+  fillOpacity: 0.35,
+  borders: {strokeColor: colors.axis, strokeWidth: 2}
+});
+board.create('angle', [rampCorner, rampStart, rampPeak], {
+  radius: 1.5,
+  name: '&theta; = 30°',
+  fillColor: colors.warning,
+  fillOpacity: 0.25
+});
+const bx = -4 + 0.5 * len * Math.cos(theta);
+const by = -3 + 0.5 * len * Math.sin(theta);
+const block = board.create('point', [bx, by], {
+  name: 'm',
+  size: 6,
+  color: colors.primary,
+  fixed: true,
+  label: {offset: [-15, 15], color: colors.text}
+});
+board.create('arrow', [block, [bx - 1.8 * Math.sin(theta), by + 1.8 * Math.cos(theta)]], {
+  strokeColor: colors.secondary,
+  strokeWidth: 3,
+  name: 'F_N',
+  withLabel: true,
+  label: {color: colors.secondary, offset: [5, 10]}
+});
+board.create('arrow', [block, [bx, by - 2.5]], {
+  strokeColor: colors.danger,
+  strokeWidth: 3,
+  name: 'F_g = mg',
+  withLabel: true,
+  label: {color: colors.danger, offset: [5, -10]}
+});
+board.create('arrow', [block, [bx - 1.2 * Math.cos(theta), by - 1.2 * Math.sin(theta)]], {
+  strokeColor: colors.accent,
+  strokeWidth: 3,
+  name: 'f_k',
+  withLabel: true,
+  label: {color: colors.accent, offset: [-20, 5]}
+});`;
+  } else if (presetType === 'beam') {
+    block.title = 'Simply Supported Beam with Point Loads';
+    block.caption = 'Equilibrium of a beam with pin and roller supports.';
+    block.code = `// Simply Supported Beam with Point Loads
+const p1 = board.create('point', [-4, 0], {visible: false, fixed: true});
+const p2 = board.create('point', [4, 0], {visible: false, fixed: true});
+board.create('segment', [p1, p2], {strokeColor: colors.axis, strokeWidth: 6});
+const suppA = board.create('point', [-3, 0], {name: 'A', color: colors.primary, size: 4, fixed: true, label: {offset: [-5, -15], color: colors.text}});
+board.create('polygon', [[-3, 0], [-3.4, -0.7], [-2.6, -0.7]], {fillColor: colors.primary, fillOpacity: 0.5, borders: {strokeColor: colors.primary, strokeWidth: 1.5}});
+const suppB = board.create('point', [3, 0], {name: 'B', color: colors.primary, size: 4, fixed: true, label: {offset: [-5, -15], color: colors.text}});
+board.create('circle', [[3, -0.35], 0.35], {fillColor: colors.primary, fillOpacity: 0.5, strokeColor: colors.primary, strokeWidth: 1.5});
+board.create('arrow', [[0, 2.5], [0, 0]], {strokeColor: colors.danger, strokeWidth: 3.5, name: 'P = 50 kN', withLabel: true, label: {color: colors.danger, offset: [5, 10]}});
+board.create('arrow', [[-3, -2], [-3, 0]], {strokeColor: colors.secondary, strokeWidth: 3, name: 'R_A = 25 kN', withLabel: true, label: {color: colors.secondary, offset: [-35, -10]}});
+board.create('arrow', [[3, -2], [3, 0]], {strokeColor: colors.secondary, strokeWidth: 3, name: 'R_B = 25 kN', withLabel: true, label: {color: colors.secondary, offset: [5, -10]}});`;
+  } else if (presetType === 'collision' || presetType === 'standard') {
+    block.title = '1D Collision & Momentum Conservation';
+    block.caption = 'Two colliding carts with masses $m_1, m_2$ and initial velocities.';
+    block.code = `// 1D Collision / Momentum Diagram
+board.create('line', [[-5, -1], [5, -1]], {straightFirst: false, straightLast: false, strokeColor: colors.axis, strokeWidth: 2});
+board.create('polygon', [[-3.5, -1], [-1.5, -1], [-1.5, 0.5], [-3.5, 0.5]], {fillColor: colors.primary, fillOpacity: 0.4, borders: {strokeColor: colors.primary, strokeWidth: 2}});
+board.create('text', [-2.5, -0.25, 'm_1 = 2 kg'], {anchorX: 'middle', anchorY: 'middle', color: colors.text, fontSize: 12});
+board.create('arrow', [[-2.5, 1], [-0.5, 1]], {strokeColor: colors.secondary, strokeWidth: 3, name: 'v_1 = +4 m/s', withLabel: true, label: {color: colors.secondary, offset: [-10, 10]}});
+board.create('polygon', [[1, -1], [3.5, -1], [3.5, 0.5], [1, 0.5]], {fillColor: colors.accent, fillOpacity: 0.4, borders: {strokeColor: colors.accent, strokeWidth: 2}});
+board.create('text', [2.25, -0.25, 'm_2 = 3 kg'], {anchorX: 'middle', anchorY: 'middle', color: colors.text, fontSize: 12});
+board.create('arrow', [[2.25, 1], [0.75, 1]], {strokeColor: colors.danger, strokeWidth: 3, name: 'v_2 = -2 m/s', withLabel: true, label: {color: colors.danger, offset: [-10, 10]}});`;
   }
 
   renderBlockCanvas();
   syncBlocksToPreview();
-  if (window.showToast) window.showToast('Applied TikZ diagram preset!');
+  if (window.showToast) window.showToast('Applied JSXGraph diagram preset!');
 }
+
+function loadTikzPreset(bIdx, presetType) {
+  return loadJsxgraphPreset(bIdx, presetType);
+}
+
+window.loadJsxgraphPreset = loadJsxgraphPreset;
+window.loadTikzPreset = loadTikzPreset;
 
 /* =========================================================
    Add Content Block Controller (Zero-state Resilient)
@@ -4786,18 +5013,18 @@ function addContentBlock(type) {
         }
       ]
     });
-  } else if (type === 'tikz' || type === 'fbd') {
+  } else if (type === 'jsxgraph' || type === 'jxg' || type === 'tikz' || type === 'fbd') {
     rev.blocks.push({
-      type: 'tikz',
-      title: 'Free-Body Diagram',
-      caption: 'Forces acting on mass $m = 10\\text{ kg}$ in equilibrium.',
-      code: `\\begin{tikzpicture}
-  \\node[box] (m) at (0,0) {$m = 10\\text{ kg}$};
-  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
-  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};
-  \\draw[force,->,emerald] (m) -- ++(2.5,0) node[right] {$F_{\\text{pull}}$};
-  \\draw[force,->,amber] (m) -- ++(-1.5,0) node[left] {$f_k$};
-\\end{tikzpicture}`
+      type: 'jsxgraph',
+      title: 'Physics Free-Body Diagram',
+      caption: 'Interactive force diagram and coordinate model.',
+      boundingBox: [-5, 5, 5, -5],
+      axis: true,
+      grid: true,
+      code: `// Interactive Coordinate / Force Diagram
+const O = board.create('point', [0, 0], {name: 'Origin', size: 4, color: colors.primary, fixed: true});
+const P = board.create('point', [3, 2], {name: 'P', size: 4, color: colors.secondary});
+board.create('arrow', [O, P], {strokeColor: colors.danger, strokeWidth: 3, name: 'F', withLabel: true});`
     });
   } else if (type === 'image') {
     rev.blocks.push({
@@ -5299,17 +5526,20 @@ function renderMaterialBlockCanvas() {
           </div>
         </div>
       `;
-    } else if (b.type === 'tikz' || b.type === 'fbd') {
+    } else if (b.type === 'jsxgraph' || b.type === 'jxg' || b.type === 'tikz' || b.type === 'fbd') {
       headerLeft = `
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 flex items-center gap-1">
-            <i data-lucide="compass" class="w-3 h-3"></i> TikZ Free-Body Diagram
+            <i data-lucide="compass" class="w-3 h-3"></i> JSXGraph Diagram
           </span>
-          <button onclick="window.loadMaterialTikzPreset && window.loadMaterialTikzPreset(${bIdx}, 'inclined')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+          <button onclick="window.loadMaterialJsxgraphPreset && window.loadMaterialJsxgraphPreset(${bIdx}, 'inclined')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
             Preset: Inclined Plane
           </button>
-          <button onclick="window.loadMaterialTikzPreset && window.loadMaterialTikzPreset(${bIdx}, 'standard')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
-            Preset: Box on Floor
+          <button onclick="window.loadMaterialJsxgraphPreset && window.loadMaterialJsxgraphPreset(${bIdx}, 'beam')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+            Preset: Beam Forces
+          </button>
+          <button onclick="window.loadMaterialJsxgraphPreset && window.loadMaterialJsxgraphPreset(${bIdx}, 'collision')" class="text-[10.5px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded hover:bg-cyan-100">
+            Preset: 1D Collision
           </button>
         </div>
       `;
@@ -5323,16 +5553,16 @@ function renderMaterialBlockCanvas() {
 
           <div class="space-y-1">
             <div class="flex items-center justify-between">
-              <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">TikZ / TikZ-FBD Code</label>
-              <span class="text-[9.5px] text-slate-400">Supports \\node[box|circle], \\draw[force,->,color]</span>
+              <label class="text-[10px] font-bold uppercase tracking-wider text-slate-400">JSXGraph Board Script (JS)</label>
+              <span class="text-[9.5px] text-slate-400 font-mono">Available: board, JXG, colors, isDark</span>
             </div>
-            <textarea rows="6" oninput="window.updateMaterialBlockField(${bIdx}, 'code', this.value)" placeholder="\\begin{tikzpicture}\n  \\node[box] (m) at (0,0) {$m$};\n  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g$};\n  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};\n\\end{tikzpicture}" class="w-full p-2.5 text-xs font-mono bg-slate-900 text-slate-100 border border-slate-700 rounded-lg focus:ring-1 focus:ring-cyan-500">${b.code || b.tikz || ''}</textarea>
+            <textarea rows="7" oninput="window.updateMaterialBlockField(${bIdx}, 'code', this.value)" placeholder="// JSXGraph Board Code&#10;const p1 = board.create('point', [0, 0]);" class="w-full p-2.5 text-xs font-mono bg-slate-900 text-slate-100 border border-slate-700 rounded-lg focus:ring-1 focus:ring-cyan-500">${b.code || b.jsxgraph || b.tikz || ''}</textarea>
           </div>
 
-          <!-- Live Inline SVG Preview -->
+          <!-- Live Inline Board Preview -->
           <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-center">
             <div class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-left">Diagram Preview:</div>
-            ${renderTikzFbdSvg(b)}
+            ${renderJsxgraphBlock(b)}
           </div>
         </div>
       `;
@@ -5531,6 +5761,11 @@ function renderMaterialBlockCanvas() {
   });
 
   if (window.lucide) window.lucide.createIcons();
+  if (typeof initializeJsxgraphBoards === 'function') {
+    initializeJsxgraphBoards(container);
+  } else if (typeof window !== 'undefined' && typeof window.initializeJsxgraphBoards === 'function') {
+    window.initializeJsxgraphBoards(container);
+  }
 }
 function syncMaterialBlocksToPreview() {
   const mats = STUDIO_DATA.studyMaterials || [];
@@ -5594,6 +5829,11 @@ function syncMaterialBlocksToPreview() {
       </div>
       <div class="mt-3 text-slate-800 dark:text-slate-100">${mat.content || '<span class="text-slate-400 italic">No content blocks added yet...</span>'}</div>
     `;
+    if (typeof initializeJsxgraphBoards === 'function') {
+      initializeJsxgraphBoards(previewPane);
+    } else if (typeof window !== 'undefined' && typeof window.initializeJsxgraphBoards === 'function') {
+      window.initializeJsxgraphBoards(previewPane);
+    }
   }
 }
 function updateMaterialBlockField(bIdx, field, val) {
@@ -5763,37 +6003,94 @@ function toggleMaterialPiecewiseEndpoint(bIdx, pIdx, field) {
   }
 }
 
-function loadMaterialTikzPreset(bIdx, presetType) {
+function loadMaterialJsxgraphPreset(bIdx, presetType) {
   const mat = (STUDIO_DATA.studyMaterials || [])[currentMatIndex];
   if (!mat || !mat.blocks || !mat.blocks[bIdx]) return;
   const block = mat.blocks[bIdx];
+  block.type = 'jsxgraph';
 
   if (presetType === 'inclined') {
     block.title = 'Inclined Plane Free-Body Diagram';
     block.caption = 'Block resting on an inclined plane at an angle $\\theta = 30^\\circ$.';
-    block.code = `\\begin{tikzpicture}
-  \\node[plane] (ramp) at (0,-0.5) {};
-  \\node[box, rotate=30] (m) at (0,0.5) {$m$};
-  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
-  \\draw[force,->,blue] (m) -- ++(60:2) node[above right] {$F_N$};
-  \\draw[force,->,amber] (m) -- ++(150:1.5) node[above left] {$f_s$};
-\\end{tikzpicture}`;
-  } else if (presetType === 'standard') {
-    block.title = 'Box on Horizontal Surface';
-    block.caption = 'Horizontal pulling force with kinetic friction opposing motion.';
-    block.code = `\\begin{tikzpicture}
-  \\node[box] (m) at (0,0) {$m = 10\\text{ kg}$};
-  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
-  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};
-  \\draw[force,->,emerald] (m) -- ++(2.5,0) node[right] {$F_{\\text{pull}}$};
-  \\draw[force,->,amber] (m) -- ++(-1.5,0) node[left] {$f_k$};
-\\end{tikzpicture}`;
+    block.code = `// Inclined Plane Free-Body Diagram
+const theta = 30 * (Math.PI / 180);
+const len = 7;
+const rampStart = board.create('point', [-4, -3], {visible: false, fixed: true});
+const rampCorner = board.create('point', [-4 + len * Math.cos(theta), -3], {visible: false, fixed: true});
+const rampPeak = board.create('point', [-4 + len * Math.cos(theta), -3 + len * Math.sin(theta)], {visible: false, fixed: true});
+board.create('polygon', [rampStart, rampCorner, rampPeak], {
+  fillColor: colors.grid,
+  fillOpacity: 0.35,
+  borders: {strokeColor: colors.axis, strokeWidth: 2}
+});
+board.create('angle', [rampCorner, rampStart, rampPeak], {
+  radius: 1.5,
+  name: '&theta; = 30°',
+  fillColor: colors.warning,
+  fillOpacity: 0.25
+});
+const bx = -4 + 0.5 * len * Math.cos(theta);
+const by = -3 + 0.5 * len * Math.sin(theta);
+const block = board.create('point', [bx, by], {
+  name: 'm',
+  size: 6,
+  color: colors.primary,
+  fixed: true,
+  label: {offset: [-15, 15], color: colors.text}
+});
+board.create('arrow', [block, [bx - 1.8 * Math.sin(theta), by + 1.8 * Math.cos(theta)]], {
+  strokeColor: colors.secondary,
+  strokeWidth: 3,
+  name: 'F_N',
+  withLabel: true,
+  label: {color: colors.secondary, offset: [5, 10]}
+});
+board.create('arrow', [block, [bx, by - 2.5]], {
+  strokeColor: colors.danger,
+  strokeWidth: 3,
+  name: 'F_g = mg',
+  withLabel: true,
+  label: {color: colors.danger, offset: [5, -10]}
+});
+board.create('arrow', [block, [bx - 1.2 * Math.cos(theta), by - 1.2 * Math.sin(theta)]], {
+  strokeColor: colors.accent,
+  strokeWidth: 3,
+  name: 'f_k',
+  withLabel: true,
+  label: {color: colors.accent, offset: [-20, 5]}
+});`;
+  } else if (presetType === 'beam') {
+    block.title = 'Simply Supported Beam with Point Loads';
+    block.caption = 'Equilibrium of a beam with pin and roller supports.';
+    block.code = `// Simply Supported Beam with Point Loads
+const p1 = board.create('point', [-4, 0], {visible: false, fixed: true});
+const p2 = board.create('point', [4, 0], {visible: false, fixed: true});
+board.create('segment', [p1, p2], {strokeColor: colors.axis, strokeWidth: 6});
+const suppA = board.create('point', [-3, 0], {name: 'A', color: colors.primary, size: 4, fixed: true, label: {offset: [-5, -15], color: colors.text}});
+board.create('polygon', [[-3, 0], [-3.4, -0.7], [-2.6, -0.7]], {fillColor: colors.primary, fillOpacity: 0.5, borders: {strokeColor: colors.primary, strokeWidth: 1.5}});
+const suppB = board.create('point', [3, 0], {name: 'B', color: colors.primary, size: 4, fixed: true, label: {offset: [-5, -15], color: colors.text}});
+board.create('circle', [[3, -0.35], 0.35], {fillColor: colors.primary, fillOpacity: 0.5, strokeColor: colors.primary, strokeWidth: 1.5});
+board.create('arrow', [[0, 2.5], [0, 0]], {strokeColor: colors.danger, strokeWidth: 3.5, name: 'P = 50 kN', withLabel: true, label: {color: colors.danger, offset: [5, 10]}});
+board.create('arrow', [[-3, -2], [-3, 0]], {strokeColor: colors.secondary, strokeWidth: 3, name: 'R_A = 25 kN', withLabel: true, label: {color: colors.secondary, offset: [-35, -10]}});
+board.create('arrow', [[3, -2], [3, 0]], {strokeColor: colors.secondary, strokeWidth: 3, name: 'R_B = 25 kN', withLabel: true, label: {color: colors.secondary, offset: [5, -10]}});`;
+  } else if (presetType === 'collision' || presetType === 'standard') {
+    block.title = '1D Collision & Momentum Conservation';
+    block.caption = 'Two colliding carts with masses $m_1, m_2$ and initial velocities.';
+    block.code = `// 1D Collision / Momentum Diagram
+board.create('line', [[-5, -1], [5, -1]], {straightFirst: false, straightLast: false, strokeColor: colors.axis, strokeWidth: 2});
+board.create('polygon', [[-3.5, -1], [-1.5, -1], [-1.5, 0.5], [-3.5, 0.5]], {fillColor: colors.primary, fillOpacity: 0.4, borders: {strokeColor: colors.primary, strokeWidth: 2}});
+board.create('text', [-2.5, -0.25, 'm_1 = 2 kg'], {anchorX: 'middle', anchorY: 'middle', color: colors.text, fontSize: 12});
+board.create('arrow', [[-2.5, 1], [-0.5, 1]], {strokeColor: colors.secondary, strokeWidth: 3, name: 'v_1 = +4 m/s', withLabel: true, label: {color: colors.secondary, offset: [-10, 10]}});
+board.create('polygon', [[1, -1], [3.5, -1], [3.5, 0.5], [1, 0.5]], {fillColor: colors.accent, fillOpacity: 0.4, borders: {strokeColor: colors.accent, strokeWidth: 2}});
+board.create('text', [2.25, -0.25, 'm_2 = 3 kg'], {anchorX: 'middle', anchorY: 'middle', color: colors.text, fontSize: 12});
+board.create('arrow', [[2.25, 1], [0.75, 1]], {strokeColor: colors.danger, strokeWidth: 3, name: 'v_2 = -2 m/s', withLabel: true, label: {color: colors.danger, offset: [-10, 10]}});`;
   }
 
   renderMaterialBlockCanvas();
   syncMaterialBlocksToPreview();
-  if (window.showToast) window.showToast('Applied TikZ diagram preset!');
+  if (window.showToast) window.showToast('Applied JSXGraph diagram preset!');
 }
+const loadMaterialTikzPreset = loadMaterialJsxgraphPreset;
 
 function addMaterialContentBlock(type) {
   if (!STUDIO_DATA.studyMaterials || STUDIO_DATA.studyMaterials.length === 0) {
@@ -5861,18 +6158,58 @@ function addMaterialContentBlock(type) {
         { expr: 'x^2', domainMin: 1, domainMax: 3, minInclusive: false, maxInclusive: false, color: '#10b981', style: 'solid' }
       ]
     });
-  } else if (type === 'tikz' || type === 'fbd') {
+  } else if (type === 'jsxgraph' || type === 'jxg' || type === 'tikz' || type === 'fbd') {
     mat.blocks.push({
-      type: 'tikz',
-      title: 'Free-Body Diagram',
+      type: 'jsxgraph',
+      title: 'JSXGraph Physics Diagram',
       caption: 'Forces acting on mass $m = 10\\text{ kg}$ in equilibrium.',
-      code: `\\begin{tikzpicture}
-  \\node[box] (m) at (0,0) {$m = 10\\text{ kg}$};
-  \\draw[force,->,red] (m) -- ++(0,-2) node[below] {$F_g = mg$};
-  \\draw[force,->,blue] (m) -- ++(0,2) node[above] {$F_N$};
-  \\draw[force,->,emerald] (m) -- ++(2.5,0) node[right] {$F_{\\text{pull}}$};
-  \\draw[force,->,amber] (m) -- ++(-1.5,0) node[left] {$f_k$};
-\\end{tikzpicture}`
+      code: `// Inclined Plane Free-Body Diagram
+const theta = 30 * (Math.PI / 180);
+const len = 7;
+const rampStart = board.create('point', [-4, -3], {visible: false, fixed: true});
+const rampCorner = board.create('point', [-4 + len * Math.cos(theta), -3], {visible: false, fixed: true});
+const rampPeak = board.create('point', [-4 + len * Math.cos(theta), -3 + len * Math.sin(theta)], {visible: false, fixed: true});
+board.create('polygon', [rampStart, rampCorner, rampPeak], {
+  fillColor: colors.grid,
+  fillOpacity: 0.35,
+  borders: {strokeColor: colors.axis, strokeWidth: 2}
+});
+board.create('angle', [rampCorner, rampStart, rampPeak], {
+  radius: 1.5,
+  name: '&theta; = 30°',
+  fillColor: colors.warning,
+  fillOpacity: 0.25
+});
+const bx = -4 + 0.5 * len * Math.cos(theta);
+const by = -3 + 0.5 * len * Math.sin(theta);
+const block = board.create('point', [bx, by], {
+  name: 'm',
+  size: 6,
+  color: colors.primary,
+  fixed: true,
+  label: {offset: [-15, 15], color: colors.text}
+});
+board.create('arrow', [block, [bx - 1.8 * Math.sin(theta), by + 1.8 * Math.cos(theta)]], {
+  strokeColor: colors.secondary,
+  strokeWidth: 3,
+  name: 'F_N',
+  withLabel: true,
+  label: {color: colors.secondary, offset: [5, 10]}
+});
+board.create('arrow', [block, [bx, by - 2.5]], {
+  strokeColor: colors.danger,
+  strokeWidth: 3,
+  name: 'F_g = mg',
+  withLabel: true,
+  label: {color: colors.danger, offset: [5, -10]}
+});
+board.create('arrow', [block, [bx - 1.2 * Math.cos(theta), by - 1.2 * Math.sin(theta)]], {
+  strokeColor: colors.accent,
+  strokeWidth: 3,
+  name: 'f_k',
+  withLabel: true,
+  label: {color: colors.accent, offset: [-20, 5]}
+});`
     });
   } else if (type === 'image') {
     mat.blocks.push({
@@ -8075,8 +8412,12 @@ window.removePiecewiseSegment = removePiecewiseSegment;
 window.updatePiecewiseSegment = updatePiecewiseSegment;
 window.togglePiecewiseEndpoint = togglePiecewiseEndpoint;
 window.loadPlotPreset = loadPlotPreset;
+window.renderJsxgraphBlock = renderJsxgraphBlock;
+window.initializeJsxgraphBoards = initializeJsxgraphBoards;
 window.renderTikzFbdSvg = renderTikzFbdSvg;
+window.loadJsxgraphPreset = loadJsxgraphPreset;
 window.loadTikzPreset = loadTikzPreset;
+window.loadMaterialJsxgraphPreset = loadMaterialJsxgraphPreset;
 window.loadMaterialTikzPreset = loadMaterialTikzPreset;
 
 window.toggleAddBlockDropdown = function(event) {
