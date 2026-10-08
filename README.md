@@ -1,6 +1,6 @@
-# TagSci G11 Content Studio
+# Content Studio
 
-Visual authoring suite, reviewer block builder, interactive multi-format quiz designer, and curriculum OTA manager for the TagSci G11 Student Hub.
+Visual authoring suite, reviewer block builder, interactive multi-format quiz designer, and curriculum OTA manager for the Student Hub.
 
 ## 🚀 Live Site
 - **GitHub Pages URL**: `https://omniscripterstorm.github.io/Student-Hub-Content-Studio/`
