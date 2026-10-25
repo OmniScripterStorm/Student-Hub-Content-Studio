@@ -191,10 +191,10 @@
 
           <button data-tab="quizzes" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
             <div class="flex items-center gap-2.5">
-              <i data-lucide="brain-circuit" class="w-4 h-4 text-g11pink-500"></i>
-              <span>Quiz & Exam Banks</span>
+              <i data-lucide="layers" class="w-4 h-4 text-g11pink-500"></i>
+              <span>Flashcards & Active Recall</span>
             </div>
-            <span id="badge-count-quiz" class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.2 rounded font-bold">1</span>
+            <span id="badge-count-quiz" class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.2 rounded font-bold">2 Decks</span>
           </button>
 
           <button data-tab="calendar" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
@@ -903,12 +903,12 @@
         <aside class="w-full md:w-72 lg:w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-1/3 md:h-full shrink-0">
           <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Quiz Sets</span>
-              <span id="quiz-list-count" class="text-[11px] font-bold text-slate-400">(1 bank)</span>
+              <span class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Flashcard Decks</span>
+              <span id="quiz-list-count" class="text-[11px] font-bold text-slate-400">(2 decks)</span>
             </div>
             <button id="btn-add-quiz-set" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              New Quiz Set
+              New Deck
             </button>
           </div>
 
@@ -952,18 +952,18 @@
               </select>
             </div>
             <div class="sm:col-span-5">
-              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quiz Bank Title</label>
-              <input type="text" id="quiz-input-title" placeholder="Enter quiz bank title..." class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
+              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flashcard Deck Title</label>
+              <input type="text" id="quiz-input-title" placeholder="Enter flashcard deck title..." class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
             </div>
             <div class="sm:col-span-2">
-              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Time Limit (Min)</label>
-              <input type="number" id="quiz-input-timelimit" value="15" min="1" max="180" class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
+              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Cards</label>
+              <input type="number" id="quiz-input-timelimit" value="0" readonly class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none text-slate-500 cursor-not-allowed">
             </div>
             <div class="sm:col-span-2">
               <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Action</label>
               <button id="btn-add-question" class="w-full py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1">
                 <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                Add Question
+                Add Card
               </button>
             </div>
           </div>
@@ -1037,8 +1037,8 @@
             <div class="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4 bg-white dark:bg-slate-900/30">
               <div class="flex items-center justify-between">
                 <h2 class="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                  <i data-lucide="list-ordered" class="w-4 h-4 text-g11pink-500"></i>
-                  Questions in this Bank
+                  <i data-lucide="layers" class="w-4 h-4 text-g11pink-500"></i>
+                  Flashcards in this Deck
                 </h2>
                 <span id="question-count-badge" class="text-xs font-bold text-g11pink-600 dark:text-g11pink-400">0 Questions</span>
               </div>
@@ -1052,8 +1052,8 @@
             <div class="lg:col-span-5 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
               <div class="p-3 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="play-circle" class="w-4 h-4 text-emerald-500"></i>
-                  Live Quiz Player Test
+                  <i data-lucide="sparkles" class="w-4 h-4 text-emerald-500"></i>
+                  Interactive Flashcard Simulator
                 </span>
                 <button id="btn-reset-quiz-preview" class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
                   Restart Test
@@ -1573,22 +1573,25 @@ function getSubjectClassification(subj) {
   return OFFICIAL_SUBJECTS[subj] || { type: 'Main', color: 'border-l-4 border-tagsci-600' };
 }
 const STUDIO_DATA = {
-  version: "1.4.0",
+  version: "1.9.2",
   updatedAt: new Date().toISOString(),
   announcement: "Materials authored via TagSci G11 Content Studio.",
   calendarEvents: [],
   stemReviewers: [],
   studyMaterials: [],
   problemSets: [],
+  flashcardDecks: [],
   quizSets: []
 };
 let currentRevIndex = 0;
 let currentMatIndex = 0;
-let currentQuizSetIndex = 0;
+let currentDeckIndex = 0;
+let currentQuizSetIndex = 0; // Backwards-compatible alias
 let currentEditorMode = 'visual';
 function setCurrentRevIndex(idx) { currentRevIndex = idx; }
 function setCurrentMatIndex(idx) { currentMatIndex = idx; }
-function setCurrentQuizSetIndex(idx) { currentQuizSetIndex = idx; }
+function setCurrentDeckIndex(idx) { currentDeckIndex = idx; currentQuizSetIndex = idx; }
+function setCurrentQuizSetIndex(idx) { currentDeckIndex = idx; currentQuizSetIndex = idx; }
 function setCurrentEditorMode(mode) { currentEditorMode = mode; }
 
 
@@ -6561,37 +6564,68 @@ ${mdBody}
 
 
     /* =========================================================
-   TagSci Content Studio - Quiz & Drill Studio
+   TagSci Content Studio - Flashcards & Active Recall Studio
+   (Supports Spaced Repetition Decks & Flashcard Drills)
    ========================================================= */
-let testerQuestionIdx = 0;
-let testerRevealed = false;
+let testerCardIdx = 0;
+let testerFlipped = false;
 let testerHintRevealed = false;
-let testerSelectedMulti = [];
+
+// Ensure flashcardDecks array exists and sync with quizSets
+function getDecks() {
+  if (!STUDIO_DATA.flashcardDecks || !Array.isArray(STUDIO_DATA.flashcardDecks)) {
+    STUDIO_DATA.flashcardDecks = STUDIO_DATA.quizSets && STUDIO_DATA.quizSets.length > 0
+      ? STUDIO_DATA.quizSets.map(q => ({
+          id: q.id,
+          subject: q.subject,
+          tag: q.tag || 'Main',
+          color: q.color || 'border-l-4 border-amber-600',
+          title: q.title,
+          desc: q.desc,
+          cards: (q.questions || []).map((qu, i) => ({
+            id: `c_${i}`,
+            topic: qu.topic || qu.question || 'Concept',
+            front: qu.question || qu.front || '',
+            back: qu.explanation || qu.correctText || qu.back || '',
+            hint: qu.hint || ''
+          }))
+        }))
+      : [];
+  }
+  // Keep quizSets synced as an alias for backwards compatibility
+  STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
+  return STUDIO_DATA.flashcardDecks;
+}
 function renderQuizSetsList() {
   const container = document.getElementById('quiz-sets-container');
   const badgeCount = document.getElementById('badge-count-quiz');
   const countLabel = document.getElementById('quiz-list-count');
 
-  const sets = STUDIO_DATA.quizSets || [];
-  if (badgeCount) badgeCount.innerText = sets.length;
-  if (countLabel) countLabel.innerText = `(${sets.length} sets)`;
+  const decks = getDecks();
+  let totalCardsCount = 0;
+  decks.forEach(d => {
+    totalCardsCount += (d.cards ? d.cards.length : 0);
+  });
+
+  if (badgeCount) badgeCount.innerText = `${decks.length} Decks`;
+  if (countLabel) countLabel.innerText = `(${decks.length} decks • ${totalCardsCount} cards)`;
 
   if (!container) return;
   container.innerHTML = '';
 
-  if (sets.length === 0) {
+  if (decks.length === 0) {
     container.innerHTML = `
       <div class="p-6 text-center text-slate-400 text-xs">
-        <i data-lucide="brain-circuit" class="w-7 h-7 mx-auto mb-1.5 opacity-40"></i>
-        <p class="font-medium text-slate-500 dark:text-slate-400">No quiz banks drafted yet.</p>
-        <p class="text-[10px] text-slate-400 mt-1">Click "+ New Quiz Set" above or in the Hub to create one.</p>
+        <i data-lucide="layers" class="w-7 h-7 mx-auto mb-1.5 opacity-40 text-g11pink-500"></i>
+        <p class="font-medium text-slate-500 dark:text-slate-400">No Flashcard Decks drafted yet.</p>
+        <p class="text-[10px] text-slate-400 mt-1">Click "+ New Deck" above or in the Hub to create one.</p>
       </div>
     `;
     if (window.lucide) window.lucide.createIcons();
     return;
   }
 
-  sets.forEach((set, idx) => {
+  decks.forEach((deck, idx) => {
     const isActive = idx === currentQuizSetIndex;
     const card = document.createElement('div');
     card.className = `p-3 rounded-xl border cursor-pointer transition-all ${
@@ -6599,14 +6633,16 @@ function renderQuizSetsList() {
         ? 'bg-g11pink-50/80 dark:bg-g11pink-950/70 border-g11pink-500 shadow-sm'
         : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 hover:border-slate-300'
     }`;
-    const qCount = set.questions ? set.questions.length : 0;
+    const cCount = deck.cards ? deck.cards.length : 0;
+    const meta = getSubjectClassification(deck.subject);
+
     card.innerHTML = `
       <div class="flex items-center justify-between mb-1">
-        <span class="text-[10px] font-black uppercase tracking-wider text-g11pink-600 dark:text-g11pink-400">${set.subject || 'General Math'}</span>
-        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${qCount} Qs</span>
+        <span class="text-[10px] font-black uppercase tracking-wider text-g11pink-600 dark:text-g11pink-400">${deck.subject || 'General'}</span>
+        <span class="text-[9.5px] px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${cCount} Cards</span>
       </div>
-      <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">${set.title || 'Untitled Quiz'}</h4>
-      <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${set.desc || 'No description...'}</p>
+      <h4 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">${deck.title || 'Untitled Deck'}</h4>
+      <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">${deck.desc || 'Active recall & spaced repetition deck...'}</p>
     `;
     card.onclick = () => {
       setCurrentQuizSetIndex(idx);
@@ -6618,44 +6654,43 @@ function renderQuizSetsList() {
   if (window.lucide) window.lucide.createIcons();
 }
 function loadQuizSetToEditor() {
-  const sets = STUDIO_DATA.quizSets || [];
-  const set = sets[currentQuizSetIndex];
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
 
   const subjEl = document.getElementById('quiz-input-subject');
   const titleEl = document.getElementById('quiz-input-title');
   const timeEl = document.getElementById('quiz-input-timelimit');
 
-  if (!set) {
+  if (!deck) {
     if (titleEl) titleEl.value = '';
-    if (timeEl) timeEl.value = 15;
     renderQuestionsBuilder();
     renderLiveQuizTester();
     return;
   }
 
-  if (subjEl) subjEl.value = set.subject || 'Effective Communications';
-  if (titleEl) titleEl.value = set.title || '';
-  if (timeEl) timeEl.value = set.timeLimitMinutes || 15;
+  if (subjEl) subjEl.value = deck.subject || 'Kasaysayan';
+  if (titleEl) titleEl.value = deck.title || '';
+  if (timeEl) timeEl.value = deck.cards ? deck.cards.length : 0;
 
   renderQuestionsBuilder();
   renderLiveQuizTester();
 }
 function renderQuestionsBuilder() {
-  const sets = STUDIO_DATA.quizSets || [];
-  const set = sets[currentQuizSetIndex];
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
   const container = document.getElementById('questions-builder-container');
   const badge = document.getElementById('question-count-badge');
   if (!container) return;
 
-  if (!set || !set.questions || set.questions.length === 0) {
-    if (badge) badge.innerText = '0 Questions';
+  if (!deck || !deck.cards || deck.cards.length === 0) {
+    if (badge) badge.innerText = '0 Cards';
     container.innerHTML = `
       <div class="p-8 text-center text-slate-400 text-xs border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-2.5">
-        <i data-lucide="help-circle" class="w-8 h-8 mx-auto text-slate-400 opacity-60"></i>
-        <p class="font-bold text-slate-700 dark:text-slate-200">No Questions in this Bank</p>
-        <p class="text-[11px] text-slate-400 max-w-xs mx-auto">Click any question type button above to add Multiple Choice, True/False, Identification, Numerical, Multi-Select, or Flashcards.</p>
-        <button onclick="window.addQuestionBlock('mcq')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Multiple Choice
+        <i data-lucide="layers" class="w-8 h-8 mx-auto text-slate-400 opacity-60"></i>
+        <p class="font-bold text-slate-700 dark:text-slate-200">No Cards in this Deck</p>
+        <p class="text-[11px] text-slate-400 max-w-xs mx-auto">Add flashcards to empower students with active recall and spaced repetition drills.</p>
+        <button onclick="window.addQuestionBlock('flashcard')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add First Flashcard
         </button>
       </div>
     `;
@@ -6663,650 +6698,347 @@ function renderQuestionsBuilder() {
     return;
   }
 
-  if (badge) badge.innerText = `${set.questions.length} Questions`;
+  if (badge) badge.innerText = `${deck.cards.length} Cards`;
 
   container.innerHTML = '';
-  set.questions.forEach((q, qIdx) => {
-    const qCard = document.createElement('div');
-    qCard.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 shadow-sm hover:border-g11pink-300 dark:hover:border-g11pink-800 transition-all cursor-default';
-    qCard.setAttribute('draggable', 'true');
-    qCard.dataset.questionIndex = qIdx;
-    
-    let typeSpecificHtml = '';
-    if (q.type === 'mcq') {
-      typeSpecificHtml = `
-        <div class="space-y-2">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Choices (Select correct answer radio):</label>
-          ${(q.options || []).map((opt, oIdx) => `
-            <div class="flex items-center gap-2">
-              <input type="radio" name="q_correct_${qIdx}" ${q.answerIndex === oIdx ? 'checked' : ''} onchange="window.updateCorrectMcq(${qIdx}, ${oIdx})" class="text-g11pink-600 focus:ring-g11pink-500">
-              <input type="text" value="${opt}" oninput="window.updateMcqOption(${qIdx}, ${oIdx}, this.value)" placeholder="Option ${oIdx + 1}" class="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
-              <button onclick="window.removeMcqOption(${qIdx}, ${oIdx})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-            </div>
-          `).join('')}
-          <button onclick="window.addMcqOption(${qIdx})" class="text-[11px] font-bold text-g11pink-600 dark:text-g11pink-400 hover:underline inline-flex items-center gap-1 mt-1">
-            + Add Option
-          </button>
-        </div>
-      `;
-    } else if (q.type === 'true_false') {
-      typeSpecificHtml = `
-        <div class="space-y-2">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Correct Answer:</label>
-          <div class="flex items-center gap-3">
-            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-bold text-emerald-600 dark:text-emerald-400">
-              <input type="radio" name="tf_${qIdx}" ${q.answerBoolean === true || q.answerBoolean === 'true' ? 'checked' : ''} onchange="window.updateTrueFalse(${qIdx}, true)" class="text-emerald-600">
-              True
-            </label>
-            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-bold text-rose-600 dark:text-rose-400">
-              <input type="radio" name="tf_${qIdx}" ${q.answerBoolean === false || q.answerBoolean === 'false' ? 'checked' : ''} onchange="window.updateTrueFalse(${qIdx}, false)" class="text-rose-600">
-              False
-            </label>
-          </div>
-        </div>
-      `;
-    } else if (q.type === 'identification') {
-      typeSpecificHtml = `
-        <div class="space-y-2">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Correct Answer Text (Case-insensitive):</label>
-          <input type="text" value="${q.correctText || ''}" oninput="window.updateQuestionField(${qIdx}, 'correctText', this.value)" placeholder="Primary exact answer..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-slate-900 dark:text-white">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Accepted Aliases (Comma-separated):</label>
-          <input type="text" value="${q.aliases || ''}" oninput="window.updateQuestionField(${qIdx}, 'aliases', this.value)" placeholder="Alternative spellings or aliases (e.g. dna, deoxyribonucleic acid)" class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
-        </div>
-      `;
-    } else if (q.type === 'numerical') {
-      typeSpecificHtml = `
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div>
-            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Target Value</label>
-            <input type="text" value="${q.correctValue || ''}" oninput="window.updateQuestionField(${qIdx}, 'correctValue', this.value)" placeholder="e.g. 9.8" class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-bold">
-          </div>
-          <div>
-            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tolerance (&plusmn;)</label>
-            <input type="text" value="${q.tolerance || '0.05'}" oninput="window.updateQuestionField(${qIdx}, 'tolerance', this.value)" placeholder="0.05" class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
-          </div>
-          <div>
-            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Unit (Optional)</label>
-            <input type="text" value="${q.unit || ''}" oninput="window.updateQuestionField(${qIdx}, 'unit', this.value)" placeholder="m/s^2" class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono">
-          </div>
-        </div>
-      `;
-    } else if (q.type === 'multi_select') {
-      typeSpecificHtml = `
-        <div class="space-y-2">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Options (Check all correct answers):</label>
-          ${(q.options || []).map((opt, oIdx) => {
-            const isChecked = (q.answerIndices || []).includes(oIdx);
-            return `
-              <div class="flex items-center gap-2">
-                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window.toggleMultiSelectOption(${qIdx}, ${oIdx})" class="rounded text-g11pink-600 focus:ring-g11pink-500">
-                <input type="text" value="${opt}" oninput="window.updateMcqOption(${qIdx}, ${oIdx}, this.value)" placeholder="Option ${oIdx + 1}" class="flex-1 px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
-                <button onclick="window.removeMcqOption(${qIdx}, ${oIdx})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-              </div>
-            `;
-          }).join('')}
-          <button onclick="window.addMcqOption(${qIdx})" class="text-[11px] font-bold text-g11pink-600 dark:text-g11pink-400 hover:underline inline-flex items-center gap-1 mt-1">
-            + Add Option
-          </button>
-        </div>
-      `;
-    } else if (q.type === 'flashcard') {
-      typeSpecificHtml = `
-        <div class="space-y-2.5">
-          <div>
-            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flashcard Prompt / Front Text (Supports $LaTeX$):</label>
-            <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'front', this.value); window.updateQuestionField(${qIdx}, 'prompt', this.value)" placeholder="Front side question, term, or formula prompt..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">${q.front || q.prompt || ''}</textarea>
-          </div>
+  deck.cards.forEach((c, cIdx) => {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 shadow-sm hover:border-g11pink-300 dark:hover:border-g11pink-800 transition-all cursor-default';
+    cardEl.dataset.cardIndex = cIdx;
 
-          <div>
-            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flashcard Back / Definition / Solution (Supports $LaTeX$):</label>
-            <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'back', this.value)" placeholder="Back side answer, formula derivation or definition..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono-math">${q.back || ''}</textarea>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <div>
-              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">💡 Hint / Mnemonic (Optional):</label>
-              <input type="text" value="${q.hint || ''}" oninput="window.updateQuestionField(${qIdx}, 'hint', this.value)" placeholder="Collapsible clue on front..." class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
-            </div>
-            <div>
-              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Front Image / Diagram URL:</label>
-              <input type="text" value="${q.frontImage || ''}" oninput="window.updateQuestionField(${qIdx}, 'frontImage', this.value)" placeholder="https://... or ./image.png" class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono">
-            </div>
-            <div>
-              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Back Solution Image URL:</label>
-              <input type="text" value="${q.backImage || ''}" oninput="window.updateQuestionField(${qIdx}, 'backImage', this.value)" placeholder="https://... or ./diagram.png" class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono">
-            </div>
-          </div>
+    cardEl.innerHTML = `
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded font-black text-[10px] bg-g11pink-100 dark:bg-g11pink-950 text-g11pink-700 dark:text-g11pink-300">
+            Card #${cIdx + 1}
+          </span>
+          <input 
+            type="text" 
+            value="${c.topic || ''}" 
+            oninput="window.updateQuestionField(${cIdx}, 'topic', this.value)" 
+            placeholder="Topic / Category (e.g. Batayang Kahulugan)..." 
+            class="px-2 py-0.5 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-white w-48 sm:w-64"
+          >
         </div>
-      `;
-    }
-
-    qCard.innerHTML = `
-      <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-700">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 -ml-1 text-slate-400 hover:text-g11pink-600 dark:hover:text-g11pink-400 select-none transition-colors rounded hover:bg-slate-100 dark:hover:bg-slate-800" title="Click and drag to reorder question placement">
-            <i data-lucide="grip-vertical" class="w-4 h-4"></i>
-          </div>
-          <span class="text-xs font-black text-slate-700 dark:text-slate-300">Q${qIdx + 1}</span>
-          <select onchange="window.changeQuestionType(${qIdx}, this.value)" class="text-xs font-bold px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-g11pink-600 dark:text-g11pink-400">
-            <option value="mcq" ${q.type === 'mcq' ? 'selected' : ''}>Multiple Choice</option>
-            <option value="true_false" ${q.type === 'true_false' ? 'selected' : ''}>True / False</option>
-            <option value="identification" ${q.type === 'identification' ? 'selected' : ''}>Identification</option>
-            <option value="numerical" ${q.type === 'numerical' ? 'selected' : ''}>Numerical</option>
-            <option value="multi_select" ${q.type === 'multi_select' ? 'selected' : ''}>Multi-Select</option>
-            <option value="flashcard" ${q.type === 'flashcard' ? 'selected' : ''}>Flashcard</option>
-          </select>
-          <input type="text" value="${q.topic || ''}" oninput="window.updateQuestionField(${qIdx}, 'topic', this.value)" placeholder="Topic label..." class="px-2 py-0.5 text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md w-36">
-        </div>
-
-        <div class="flex items-center gap-1 shrink-0">
-          <button onclick="window.moveQuestion(${qIdx}, -1)" ${qIdx === 0 ? 'disabled' : ''} title="Move Up" class="p-1 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 transition-colors">
-            <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+        <div class="flex items-center gap-1">
+          <button onclick="window.moveQuestion(${cIdx}, -1)" ${cIdx === 0 ? 'disabled' : ''} class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30" title="Move Up">
+            <i data-lucide="chevron-up" class="w-4 h-4"></i>
           </button>
-          <button onclick="window.moveQuestion(${qIdx}, 1)" ${qIdx === set.questions.length - 1 ? 'disabled' : ''} title="Move Down" class="p-1 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 transition-colors">
-            <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+          <button onclick="window.moveQuestion(${cIdx}, 1)" ${cIdx === deck.cards.length - 1 ? 'disabled' : ''} class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30" title="Move Down">
+            <i data-lucide="chevron-down" class="w-4 h-4"></i>
           </button>
-          <button onclick="window.duplicateQuestion(${qIdx})" title="Duplicate Question" class="p-1 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+          <button onclick="window.duplicateQuestion(${cIdx})" class="p-1 rounded text-slate-400 hover:text-blue-500" title="Duplicate Card">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
           </button>
-          <button onclick="window.deleteQuestion(${qIdx})" title="Delete Question" class="p-1 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors">
+          <button onclick="window.deleteQuestion(${cIdx})" class="p-1 rounded text-slate-400 hover:text-red-500" title="Delete Card">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </div>
       </div>
 
-      <div>
-        <div class="flex items-center justify-between mb-1">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Question Prompt (Supports $LaTeX$):</label>
-          <button onclick="window.openMathBuilderModal()" class="text-[10px] text-tagsci-700 dark:text-tagsci-400 hover:underline inline-flex items-center gap-0.5 font-bold">
-            <i data-lucide="function-square" class="w-3 h-3"></i> Insert Math
-          </button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- Front Prompt -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              Front (Prompt / Question)
+            </label>
+            <span class="text-[9.5px] text-slate-400 font-mono">LaTeX ($$) ok</span>
+          </div>
+          <textarea 
+            rows="3" 
+            oninput="window.updateQuestionField(${cIdx}, 'front', this.value)" 
+            placeholder="Question, concept prompt, or definition to recall..." 
+            class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white font-medium focus:ring-1 focus:ring-g11pink-500 resize-y"
+          >${c.front || ''}</textarea>
+          <div class="text-[11px] text-slate-600 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/60 p-2 rounded-lg border border-slate-200/50 dark:border-slate-800">
+            <span class="text-[9.5px] font-bold uppercase text-slate-400 block mb-0.5">Live Front Preview:</span>
+            ${renderMathInHtml(c.front || '<span class="italic text-slate-400">Card prompt empty...</span>')}
+          </div>
         </div>
-        <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'prompt', this.value)" placeholder="Enter question..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">${q.prompt || ''}</textarea>
+
+        <!-- Back Recall -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Back (Recall / Solution / Answer)
+            </label>
+            <span class="text-[9.5px] text-slate-400 font-mono">LaTeX ($$) ok</span>
+          </div>
+          <textarea 
+            rows="3" 
+            oninput="window.updateQuestionField(${cIdx}, 'back', this.value)" 
+            placeholder="Answer, detailed breakdown, or explanation to reveal..." 
+            class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white font-medium focus:ring-1 focus:ring-g11pink-500 resize-y"
+          >${c.back || ''}</textarea>
+          <div class="text-[11px] text-slate-600 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/60 p-2 rounded-lg border border-slate-200/50 dark:border-slate-800">
+            <span class="text-[9.5px] font-bold uppercase text-slate-400 block mb-0.5">Live Back Preview:</span>
+            ${renderMathInHtml(c.back || '<span class="italic text-slate-400">Card answer empty...</span>')}
+          </div>
+        </div>
       </div>
 
-      ${typeSpecificHtml}
-
-      <div>
-        <div class="flex items-center justify-between mb-1">
-          <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">Solution / Step-by-Step Explanation:</label>
-          <button onclick="window.openMathBuilderModal()" class="text-[10px] text-tagsci-700 dark:text-tagsci-400 hover:underline inline-flex items-center gap-0.5 font-bold">
-            <i data-lucide="function-square" class="w-3 h-3"></i> Insert Math
-          </button>
-        </div>
-        <textarea rows="2" oninput="window.updateQuestionField(${qIdx}, 'explanation', this.value)" placeholder="Explanation shown to student after answering..." class="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">${q.explanation || ''}</textarea>
+      <!-- Hint Field -->
+      <div class="pt-1">
+        <label class="block text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+          <i data-lucide="lightbulb" class="w-3 h-3"></i>
+          Optional Hint / Mnemonic
+        </label>
+        <input 
+          type="text" 
+          value="${c.hint || ''}" 
+          oninput="window.updateQuestionField(${cIdx}, 'hint', this.value)" 
+          placeholder="e.g. Tandaan ang dalawang salitang-ugat: Salaysay at Saysay..." 
+          class="w-full px-2.5 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300"
+        >
       </div>
     `;
 
-    // Only allow dragging via the drag-handle
-    const handle = qCard.querySelector('.drag-handle');
-    if (handle) {
-      handle.addEventListener('mousedown', () => {
-        qCard.setAttribute('draggable', 'true');
-      });
-      handle.addEventListener('mouseup', () => {
-        qCard.setAttribute('draggable', 'false');
-      });
-      handle.addEventListener('touchstart', () => {
-        qCard.setAttribute('draggable', 'true');
-      }, { passive: true });
-    }
-
-    qCard.addEventListener('dragstart', (e) => {
-      if (qCard.getAttribute('draggable') !== 'true') {
-        e.preventDefault();
-        return;
-      }
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', String(qIdx));
-      qCard.classList.add('opacity-40', 'scale-[0.99]', 'border-g11pink-500', 'ring-2', 'ring-g11pink-500/30');
-    });
-
-    qCard.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      const rect = qCard.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      if (e.clientY < midY) {
-        qCard.classList.add('border-t-4', 'border-t-g11pink-500');
-        qCard.classList.remove('border-b-4', 'border-b-g11pink-500');
-      } else {
-        qCard.classList.add('border-b-4', 'border-b-g11pink-500');
-        qCard.classList.remove('border-t-4', 'border-t-g11pink-500');
-      }
-    });
-
-    qCard.addEventListener('dragleave', () => {
-      qCard.classList.remove('border-t-4', 'border-b-4', 'border-t-g11pink-500', 'border-b-g11pink-500');
-    });
-
-    qCard.addEventListener('drop', (e) => {
-      e.preventDefault();
-      qCard.classList.remove('border-t-4', 'border-b-4', 'border-t-g11pink-500', 'border-b-g11pink-500');
-      const fromIdxStr = e.dataTransfer.getData('text/plain');
-      const fromIdx = parseInt(fromIdxStr, 10);
-      if (isNaN(fromIdx) || fromIdx === qIdx) return;
-
-      const rect = qCard.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      const insertBefore = e.clientY < midY;
-
-      const [moved] = set.questions.splice(fromIdx, 1);
-      let targetIdx = qIdx;
-      if (fromIdx < qIdx) {
-        targetIdx = insertBefore ? qIdx - 1 : qIdx;
-      } else {
-        targetIdx = insertBefore ? qIdx : qIdx + 1;
-      }
-      set.questions.splice(targetIdx, 0, moved);
-
-      renderQuestionsBuilder();
-      renderLiveQuizTester();
-      if (window.showToast) window.showToast('Question placement updated!');
-    });
-
-    qCard.addEventListener('dragend', () => {
-      qCard.setAttribute('draggable', 'false');
-      qCard.classList.remove('opacity-40', 'scale-[0.99]', 'border-g11pink-500', 'ring-2', 'ring-g11pink-500/30', 'border-t-4', 'border-b-4', 'border-t-g11pink-500', 'border-b-g11pink-500');
-    });
-
-    container.appendChild(qCard);
+    container.appendChild(cardEl);
   });
+
+  // Bottom action bar
+  const bottomBar = document.createElement('div');
+  bottomBar.className = 'pt-2 flex items-center justify-between';
+  bottomBar.innerHTML = `
+    <button onclick="window.addQuestionBlock('flashcard')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
+      <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add New Flashcard
+    </button>
+    <span class="text-[11px] text-slate-400">Auto-saved to local draft</span>
+  `;
+  container.appendChild(bottomBar);
+
   if (window.lucide) window.lucide.createIcons();
 }
-function updateQuestionField(qIdx, field, val) {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
-  if (set && set.questions && set.questions[qIdx]) {
-    set.questions[qIdx][field] = val;
-    renderLiveQuizTester();
+function updateQuestionField(cardIdx, field, value) {
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
+  if (!deck || !deck.cards || !deck.cards[cardIdx]) return;
+  deck.cards[cardIdx][field] = value;
+  renderLiveQuizTester();
+}
+function addQuestionBlock(type = 'flashcard') {
+  const decks = getDecks();
+  if (!decks[currentQuizSetIndex]) {
+    decks.push({
+      id: `deck_${Date.now()}`,
+      subject: 'Kasaysayan',
+      tag: 'Main',
+      color: 'border-l-4 border-amber-600',
+      title: 'New Flashcard Deck Draft',
+      desc: 'Active recall & spaced repetition deck',
+      cards: []
+    });
+    setCurrentQuizSetIndex(decks.length - 1);
   }
-}
-function changeQuestionType(qIdx, type) {
-  const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
-  if (!q) return;
-  q.type = type;
-  if ((type === 'mcq' || type === 'multi_select') && (!q.options || q.options.length === 0)) {
-    q.options = ['Option 1', 'Option 2', 'Option 3', 'Option 4'];
-    q.answerIndex = 0;
-    q.answerIndices = [0];
-  }
-  if (type === 'true_false' && q.answerBoolean === undefined) {
-    q.answerBoolean = true;
-  }
-  renderQuestionsBuilder();
-  renderLiveQuizTester();
-}
-function updateTrueFalse(qIdx, boolVal) {
-  STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx].answerBoolean = boolVal;
-  renderQuestionsBuilder();
-  renderLiveQuizTester();
-}
-function toggleMultiSelectOption(qIdx, oIdx) {
-  const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
-  if (!q) return;
-  if (!q.answerIndices) q.answerIndices = [];
-  const pos = q.answerIndices.indexOf(oIdx);
-  if (pos > -1) q.answerIndices.splice(pos, 1);
-  else q.answerIndices.push(oIdx);
-  renderQuestionsBuilder();
-  renderLiveQuizTester();
-}
-function moveQuestion(qIdx, dir) {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
-  if (!set) return;
-  const target = qIdx + dir;
-  if (target < 0 || target >= set.questions.length) return;
-  const temp = set.questions[qIdx];
-  set.questions[qIdx] = set.questions[target];
-  set.questions[target] = temp;
-  renderQuestionsBuilder();
-  renderLiveQuizTester();
-}
-function duplicateQuestion(qIdx) {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
-  if (!set) return;
-  const clone = JSON.parse(JSON.stringify(set.questions[qIdx]));
-  set.questions.splice(qIdx + 1, 0, clone);
-  renderQuestionsBuilder();
-  renderLiveQuizTester();
-  renderQuizSetsList();
-  if (window.showToast) window.showToast('Question duplicated!');
-}
-function addQuestionBlock(type) {
-  let newQ = null;
-  if (type === 'mcq') {
-    newQ = {
-      type: 'mcq',
-      topic: 'Multiple Choice',
-      prompt: '',
-      options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
-      answerIndex: 0,
-      correctValue: '',
-      tolerance: '0.05',
-      front: '',
-      back: '',
-      explanation: ''
-    };
-  } else if (type === 'true_false') {
-    newQ = {
-      type: 'true_false',
-      topic: 'True or False',
-      prompt: '',
-      answerBoolean: true,
-      explanation: ''
-    };
-  } else if (type === 'identification') {
-    newQ = {
-      type: 'identification',
-      topic: 'Identification',
-      prompt: '',
-      correctText: '',
-      aliases: '',
-      explanation: ''
-    };
-  } else if (type === 'numerical') {
-    newQ = {
-      type: 'numerical',
-      topic: 'Numerical Calculation',
-      prompt: '',
-      options: [],
-      answerIndex: 0,
-      correctValue: '',
-      tolerance: '0.05',
-      unit: '',
-      front: '',
-      back: '',
-      explanation: ''
-    };
-  } else if (type === 'multi_select') {
-    newQ = {
-      type: 'multi_select',
-      topic: 'Multi-Select',
-      prompt: '',
-      options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
-      answerIndices: [0],
-      explanation: ''
-    };
-  } else if (type === 'flashcard') {
-    newQ = {
-      type: 'flashcard',
-      topic: 'Flashcard',
-      prompt: '',
-      front: '',
-      back: '',
-      hint: '',
-      frontImage: '',
-      backImage: '',
-      explanation: ''
-    };
-  }
-  if (newQ) {
-    if (!STUDIO_DATA.quizSets[currentQuizSetIndex]) {
-      STUDIO_DATA.quizSets.push({
-        id: `quiz_${Date.now()}`,
-        subject: 'Effective Communications',
-        tag: 'Main',
-        title: '',
-        desc: '',
-        timeLimitMinutes: 15,
-        questions: []
-      });
-      setCurrentQuizSetIndex(0);
-    }
-    STUDIO_DATA.quizSets[currentQuizSetIndex].questions.push(newQ);
-    renderQuestionsBuilder();
-    renderLiveQuizTester();
-    renderQuizSetsList();
-    if (window.showToast) window.showToast(`Added ${type.toUpperCase().replace('_', ' ')} question!`);
-  }
-}
-function updateCorrectMcq(qIdx, oIdx) {
-  STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx].answerIndex = oIdx;
-  renderLiveQuizTester();
-}
-function updateMcqOption(qIdx, oIdx, val) {
-  STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx].options[oIdx] = val;
-  renderLiveQuizTester();
-}
-function removeMcqOption(qIdx, oIdx) {
-  const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
-  if (!q) return;
-  if (q.options.length <= 2) {
-    if (window.showToast) window.showToast('At least 2 options required.');
-    return;
-  }
-  q.options.splice(oIdx, 1);
-  if (q.answerIndex >= q.options.length) q.answerIndex = 0;
-  if (q.answerIndices) {
-    q.answerIndices = q.answerIndices.filter(i => i !== oIdx).map(i => i > oIdx ? i - 1 : i);
-  }
-  renderQuestionsBuilder();
-  renderLiveQuizTester();
-}
-function addMcqOption(qIdx) {
-  const q = STUDIO_DATA.quizSets[currentQuizSetIndex].questions[qIdx];
-  if (!q) return;
-  q.options.push(`Option ${q.options.length + 1}`);
-  renderQuestionsBuilder();
-  renderLiveQuizTester();
-}
-function deleteQuestion(qIdx) {
-  const set = (STUDIO_DATA.quizSets || [])[currentQuizSetIndex];
-  if (!set || !set.questions) return;
-  set.questions.splice(qIdx, 1);
+
+  const deck = decks[currentQuizSetIndex];
+  if (!deck.cards) deck.cards = [];
+
+  deck.cards.push({
+    id: `c_${Date.now()}_${deck.cards.length + 1}`,
+    topic: 'Core Concept',
+    front: 'Enter prompt or definition to recall...',
+    back: 'Enter answer, solution, or breakdown...',
+    hint: ''
+  });
+
   renderQuestionsBuilder();
   renderLiveQuizTester();
   renderQuizSetsList();
 }
+function deleteQuestion(cardIdx) {
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
+  if (!deck || !deck.cards || !deck.cards[cardIdx]) return;
+  deck.cards.splice(cardIdx, 1);
+  if (testerCardIdx >= deck.cards.length) {
+    testerCardIdx = Math.max(0, deck.cards.length - 1);
+  }
+  renderQuestionsBuilder();
+  renderLiveQuizTester();
+  renderQuizSetsList();
+}
+function duplicateQuestion(cardIdx) {
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
+  if (!deck || !deck.cards || !deck.cards[cardIdx]) return;
+  const clone = JSON.parse(JSON.stringify(deck.cards[cardIdx]));
+  clone.id = `c_${Date.now()}`;
+  deck.cards.splice(cardIdx + 1, 0, clone);
+  renderQuestionsBuilder();
+  renderLiveQuizTester();
+  renderQuizSetsList();
+}
+function moveQuestion(cardIdx, direction) {
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
+  if (!deck || !deck.cards) return;
+  const newIdx = cardIdx + direction;
+  if (newIdx < 0 || newIdx >= deck.cards.length) return;
+  const item = deck.cards.splice(cardIdx, 1)[0];
+  deck.cards.splice(newIdx, 0, item);
+  renderQuestionsBuilder();
+  renderLiveQuizTester();
+}
+
+// -------------------------------------------------------------
+// Interactive Live Flashcard Simulator
+// -------------------------------------------------------------
 function renderLiveQuizTester() {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
   const container = document.getElementById('quiz-interactive-preview');
   if (!container) return;
 
-  if (!set || set.questions.length === 0) {
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
+
+  if (!deck || !deck.cards || deck.cards.length === 0) {
     container.innerHTML = `
-      <div class="text-slate-400 text-xs">
-        <i data-lucide="help-circle" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-        Add questions on the left to test the interactive drill here!
+      <div class="p-6 text-center text-slate-400 text-xs">
+        <i data-lucide="layers" class="w-10 h-10 mx-auto text-slate-300 dark:text-slate-700 mb-2"></i>
+        <h4 class="font-bold text-slate-700 dark:text-slate-300">Live Simulator Empty</h4>
+        <p class="text-[11px] text-slate-400 mt-1">Add cards in the builder to simulate student active recall drills.</p>
       </div>
     `;
     if (window.lucide) window.lucide.createIcons();
     return;
   }
 
-  if (testerQuestionIdx >= set.questions.length) testerQuestionIdx = 0;
-  const q = set.questions[testerQuestionIdx];
-
-  let testerBodyHtml = '';
-
-  if (q.type === 'mcq') {
-    testerBodyHtml = `
-      <div class="space-y-1.5 mb-3">
-        ${(q.options || []).map((opt, i) => `
-          <button onclick="window.checkTesterAnswer(${i})" class="w-full text-left p-2 rounded-lg text-xs font-semibold border transition-all ${
-            testerRevealed
-              ? (i === q.answerIndex
-                  ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-500 text-emerald-800 dark:text-emerald-300'
-                  : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-500')
-              : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-g11pink-400 text-slate-800 dark:text-slate-200'
-          }">
-            <span class="font-mono mr-1">${String.fromCharCode(65 + i)}.</span> ${renderMathInHtml(opt)}
-          </button>
-        `).join('')}
-      </div>
-    `;
-  } else if (q.type === 'true_false') {
-    const isTrueCorrect = q.answerBoolean === true || q.answerBoolean === 'true';
-    testerBodyHtml = `
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <button onclick="window.checkTesterTrueFalse(true)" class="p-2.5 rounded-xl font-bold text-xs border transition-all ${
-          testerRevealed
-            ? (isTrueCorrect
-                ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-500 text-emerald-700 dark:text-emerald-300'
-                : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-400')
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-slate-800 dark:text-slate-200'
-        }">
-          ✓ TRUE
-        </button>
-        <button onclick="window.checkTesterTrueFalse(false)" class="p-2.5 rounded-xl font-bold text-xs border transition-all ${
-          testerRevealed
-            ? (!isTrueCorrect
-                ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-500 text-emerald-700 dark:text-emerald-300'
-                : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-400')
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-red-500 text-slate-800 dark:text-slate-200'
-        }">
-          ✕ FALSE
-        </button>
-      </div>
-    `;
-  } else if (q.type === 'identification') {
-    testerBodyHtml = `
-      <div class="space-y-2 mb-3">
-        <input type="text" id="tester-ident-input" placeholder="Type your answer here..." class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-        <button onclick="window.checkTesterIdentification()" class="w-full py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white font-bold text-xs">Submit Answer</button>
-        ${testerRevealed ? `
-          <div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-700 dark:text-slate-300">
-            <span class="font-bold text-tagsci-700 dark:text-tagsci-400">Accepted Answer:</span> ${q.correctText || ''}
-            ${q.aliases ? `<span class="text-slate-400 text-[10px] block">Aliases: ${q.aliases}</span>` : ''}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  } else if (q.type === 'numerical') {
-    testerBodyHtml = `
-      <div class="space-y-2 mb-3">
-        <div class="flex items-center gap-1.5">
-          <input type="text" id="tester-num-input" placeholder="Type numerical value..." class="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-          ${q.unit ? `<span class="text-xs font-mono text-slate-400">${q.unit}</span>` : ''}
-        </div>
-        <button onclick="window.checkTesterNumerical()" class="w-full py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white font-bold text-xs">Check Value</button>
-        ${testerRevealed ? `
-          <div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px]">
-            <span class="font-bold text-emerald-600 dark:text-emerald-400">Target Value:</span> ${q.correctValue} ± ${q.tolerance || '0.05'} ${q.unit || ''}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  } else if (q.type === 'multi_select') {
-    testerBodyHtml = `
-      <div class="space-y-1.5 mb-3">
-        ${(q.options || []).map((opt, i) => {
-          const isSelected = testerSelectedMulti.includes(i);
-          const isActuallyCorrect = (q.answerIndices || []).includes(i);
-          return `
-            <div onclick="window.toggleTesterMultiSelectOption(${i})" class="flex items-center gap-2 p-2 rounded-lg text-xs font-semibold border cursor-pointer transition-all ${
-              testerRevealed
-                ? (isActuallyCorrect
-                    ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-500 text-emerald-800 dark:text-emerald-300'
-                    : (isSelected ? 'bg-red-50 dark:bg-red-950/60 border-red-500 text-red-600' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-400'))
-                : (isSelected
-                    ? 'bg-teal-50 dark:bg-teal-950/60 border-teal-500 text-teal-800 dark:text-teal-300'
-                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-teal-400')
-            }">
-              <input type="checkbox" ${isSelected ? 'checked' : ''} class="rounded text-teal-600 pointer-events-none">
-              <span class="flex-1">${renderMathInHtml(opt)}</span>
-            </div>
-          `;
-        }).join('')}
-        <button onclick="window.checkTesterMultiSelect()" class="w-full py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs mt-2">Submit Selections</button>
-      </div>
-    `;
-  } else if (q.type === 'flashcard') {
-    testerBodyHtml = `
-      <div class="p-4 rounded-xl border ${testerRevealed ? 'border-emerald-500/60 bg-emerald-50/50 dark:bg-emerald-950/40' : 'border-tagsci-500/50 bg-slate-50 dark:bg-slate-800/60'} mb-3 space-y-2 cursor-pointer transition-all select-none" onclick="window.revealTesterFlashcard()">
-        <div class="flex items-center justify-between text-[10px] font-bold">
-          <span class="${testerRevealed ? 'text-emerald-700 dark:text-emerald-300' : 'text-g11pink-600 dark:text-g11pink-400'} uppercase">
-            ${testerRevealed ? '💡 Solution & Formula (Back)' : '❓ Prompt (Front)'}
-          </span>
-          <span class="text-slate-400 text-[9.5px]">Tap to Flip Card 🔄</span>
-        </div>
-        ${!testerRevealed ? `
-          ${q.frontImage ? `<img src="${q.frontImage}" alt="Front Diagram" class="max-h-28 max-w-full rounded-lg mx-auto mb-2 object-contain shadow-sm" />` : ''}
-          <div class="text-xs font-bold text-slate-900 dark:text-white font-mono-math">
-            ${renderMathInHtml(q.front || q.prompt || 'Untitled Card Front')}
-          </div>
-          ${q.hint ? `
-            <div class="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-left" onclick="event.stopPropagation()">
-              <button onclick="window.toggleTesterHint()" class="text-[10.5px] font-bold text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1">
-                <span>💡</span> ${testerHintRevealed ? 'Hide Hint' : 'Need a Hint?'}
-              </button>
-              ${testerHintRevealed ? `
-                <div class="mt-1 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900/60 text-[11px] text-amber-900 dark:text-amber-200 font-mono-math">
-                  ${renderMathInHtml(q.hint)}
-                </div>
-              ` : ''}
-            </div>
-          ` : ''}
-        ` : `
-          ${q.backImage ? `<img src="${q.backImage}" alt="Back Solution Diagram" class="max-h-28 max-w-full rounded-lg mx-auto mb-2 object-contain shadow-sm" />` : ''}
-          <div class="pt-2 text-xs text-emerald-700 dark:text-emerald-400 font-mono-math">
-            ${renderMathInHtml(q.back || 'No definition or answer back provided')}
-          </div>
-        `}
-      </div>
-      <div class="grid grid-cols-3 gap-1.5 pt-1 mb-2">
-        <button class="py-1 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-[10px] border border-rose-200">🔴 Again</button>
-        <button class="py-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold text-[10px] border border-amber-200">🟡 Hard</button>
-        <button class="py-1 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] border border-emerald-200">🟢 Mastered</button>
-      </div>
-    `;
-  }
+  if (testerCardIdx >= deck.cards.length) testerCardIdx = 0;
+  const currentCard = deck.cards[testerCardIdx];
 
   container.innerHTML = `
-    <div class="w-full max-w-sm text-left bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-[10px] font-black uppercase text-g11pink-600 dark:text-g11pink-400">${q.topic || q.type}</span>
-        <span class="text-[10px] font-bold text-slate-400">Q ${testerQuestionIdx + 1} of ${set.questions.length}</span>
+    <div class="w-full max-w-md mx-auto space-y-4">
+      <!-- Tester Top Bar -->
+      <div class="flex items-center justify-between text-xs pb-1 border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-g11pink-100 dark:bg-g11pink-950 text-g11pink-700 dark:text-g11pink-300">
+            ${deck.subject || 'STEM'}
+          </span>
+          <span class="font-bold text-slate-600 dark:text-slate-300">
+            Card ${testerCardIdx + 1} of ${deck.cards.length}
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="window.shuffleCurrentDeckSimulator()" class="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" title="Shuffle Cards">
+            <i data-lucide="shuffle" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="window.resetLiveTester()" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
+            Reset
+          </button>
+        </div>
       </div>
 
-      <div class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mb-3">
-        ${renderMathInHtml(q.prompt || 'Untitled Prompt')}
+      <!-- 3D Flashcard Flip Card -->
+      <div 
+        onclick="window.revealTesterFlashcard()" 
+        class="cursor-pointer select-none rounded-2xl p-6 min-h-[220px] flex flex-col justify-between transition-all duration-300 shadow-md ${
+          testerFlipped
+            ? 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-900 dark:to-emerald-950/40 border-2 border-emerald-400 text-slate-900 dark:text-white'
+            : 'bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white hover:border-g11pink-400'
+        }"
+      >
+        <!-- Card Header Info -->
+        <div class="flex items-center justify-between text-[11px] font-bold text-slate-400">
+          <span class="uppercase tracking-wider">${currentCard.topic || 'General Topic'}</span>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+            testerFlipped 
+              ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300' 
+              : 'bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300'
+          }">
+            ${testerFlipped ? 'Answer Revealed' : 'Prompt / Front'}
+          </span>
+        </div>
+
+        <!-- Main Card Content -->
+        <div class="my-auto py-3 text-center">
+          <div class="text-sm sm:text-base font-bold leading-relaxed">
+            ${renderMathInHtml(testerFlipped ? currentCard.back : currentCard.front)}
+          </div>
+        </div>
+
+        <!-- Card Footer Instruction -->
+        <div class="text-center text-[10px] font-semibold text-slate-400 flex items-center justify-center gap-1">
+          <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+          <span>${testerFlipped ? 'Click to flip back to question' : 'Click to flip and reveal answer'}</span>
+        </div>
       </div>
 
-      ${testerBodyHtml}
-
-      ${testerRevealed && q.explanation ? `
-        <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-[11px] text-slate-600 dark:text-slate-300 border-l-2 border-tagsci-500 mb-2">
-          <strong class="text-tagsci-700 dark:text-tagsci-400">Explanation:</strong> ${renderMathInHtml(q.explanation)}
+      <!-- Hint Reveal Accordion -->
+      ${currentCard.hint ? `
+        <div class="text-left">
+          <button 
+            onclick="window.toggleTesterHint()" 
+            class="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+          >
+            <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i>
+            <span>${testerHintRevealed ? 'Hide Hint' : 'Show Memory Hint'}</span>
+          </button>
+          ${testerHintRevealed ? `
+            <div class="mt-1.5 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-xs text-amber-900 dark:text-amber-200">
+              ${renderMathInHtml(currentCard.hint)}
+            </div>
+          ` : ''}
         </div>
       ` : ''}
 
-      <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-2 mt-2">
-        <button onclick="window.prevTesterQ()" ${testerQuestionIdx === 0 ? 'disabled' : ''} class="text-xs text-slate-400 hover:text-slate-700 disabled:opacity-30 font-semibold">Previous</button>
-        <button onclick="window.nextTesterQ()" class="text-xs font-bold text-g11pink-600 dark:text-g11pink-400 hover:underline">Next Question &rarr;</button>
+      <!-- Spaced Repetition Rating Buttons (Visible when flipped) -->
+      ${testerFlipped ? `
+        <div class="space-y-1.5 pt-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block text-center">Simulate Spaced Repetition Rating:</span>
+          <div class="grid grid-cols-4 gap-1.5 text-xs font-bold">
+            <button onclick="window.nextTesterQ()" class="py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 transition text-center">
+              <div>Again</div>
+              <div class="text-[9px] font-normal opacity-70">&lt;1m</div>
+            </button>
+            <button onclick="window.nextTesterQ()" class="py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60 transition text-center">
+              <div>Hard</div>
+              <div class="text-[9px] font-normal opacity-70">12h</div>
+            </button>
+            <button onclick="window.nextTesterQ()" class="py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60 transition text-center">
+              <div>Good</div>
+              <div class="text-[9px] font-normal opacity-70">1d</div>
+            </button>
+            <button onclick="window.nextTesterQ()" class="py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60 transition text-center">
+              <div>Easy</div>
+              <div class="text-[9px] font-normal opacity-70">3d</div>
+            </button>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Bottom Card Navigation Controls -->
+      <div class="flex items-center justify-between pt-2">
+        <button 
+          onclick="window.prevTesterQ()" 
+          ${testerCardIdx === 0 ? 'disabled' : ''} 
+          class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 disabled:opacity-30 flex items-center gap-1"
+        >
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Prev
+        </button>
+        <button 
+          onclick="window.revealTesterFlashcard()" 
+          class="px-4 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition"
+        >
+          ${testerFlipped ? 'Flip Front' : 'Flip Card'}
+        </button>
+        <button 
+          onclick="window.nextTesterQ()" 
+          ${testerCardIdx === deck.cards.length - 1 ? 'disabled' : ''} 
+          class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 disabled:opacity-30 flex items-center gap-1"
+        >
+          Next <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </button>
       </div>
     </div>
   `;
+
   if (window.lucide) window.lucide.createIcons();
 }
-function checkTesterAnswer(idx) {
-  testerRevealed = true;
-  renderLiveQuizTester();
-}
-function checkTesterTrueFalse(boolVal) {
-  testerRevealed = true;
-  renderLiveQuizTester();
-}
-function checkTesterIdentification() {
-  testerRevealed = true;
-  renderLiveQuizTester();
-}
-function checkTesterNumerical() {
-  testerRevealed = true;
-  renderLiveQuizTester();
-}
-function toggleTesterMultiSelectOption(oIdx) {
-  const pos = testerSelectedMulti.indexOf(oIdx);
-  if (pos > -1) testerSelectedMulti.splice(pos, 1);
-  else testerSelectedMulti.push(oIdx);
-  renderLiveQuizTester();
-}
-function checkTesterMultiSelect() {
-  testerRevealed = true;
-  renderLiveQuizTester();
-}
 function revealTesterFlashcard() {
-  testerRevealed = !testerRevealed;
+  testerFlipped = !testerFlipped;
   renderLiveQuizTester();
 }
 function toggleTesterHint() {
@@ -7314,28 +7046,60 @@ function toggleTesterHint() {
   renderLiveQuizTester();
 }
 function nextTesterQ() {
-  testerRevealed = false;
-  testerHintRevealed = false;
-  testerSelectedMulti = [];
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
-  if (!set || set.questions.length === 0) return;
-  testerQuestionIdx = (testerQuestionIdx + 1) % set.questions.length;
-  renderLiveQuizTester();
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
+  if (!deck || !deck.cards) return;
+  if (testerCardIdx < deck.cards.length - 1) {
+    testerCardIdx++;
+    testerFlipped = false;
+    testerHintRevealed = false;
+    renderLiveQuizTester();
+  }
 }
 function prevTesterQ() {
-  testerRevealed = false;
-  testerHintRevealed = false;
-  testerSelectedMulti = [];
-  if (testerQuestionIdx > 0) testerQuestionIdx--;
-  renderLiveQuizTester();
+  if (testerCardIdx > 0) {
+    testerCardIdx--;
+    testerFlipped = false;
+    testerHintRevealed = false;
+    renderLiveQuizTester();
+  }
 }
 function resetLiveTester() {
-  testerQuestionIdx = 0;
-  testerRevealed = false;
+  testerCardIdx = 0;
+  testerFlipped = false;
   testerHintRevealed = false;
-  testerSelectedMulti = [];
   renderLiveQuizTester();
 }
+function shuffleCurrentDeckSimulator() {
+  const decks = getDecks();
+  const deck = decks[currentQuizSetIndex];
+  if (!deck || !deck.cards || deck.cards.length <= 1) return;
+  // Fisher-Yates shuffle
+  for (let i = deck.cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck.cards[i], deck.cards[j]] = [deck.cards[j], deck.cards[i]];
+  }
+  resetLiveTester();
+  renderQuestionsBuilder();
+  if (window.showToast) window.showToast('Shuffled flashcard deck!');
+}
+
+// -------------------------------------------------------------
+// Backwards Compatibility Aliases
+// -------------------------------------------------------------
+function changeQuestionType() {}
+function updateTrueFalse() {}
+function toggleMultiSelectOption() {}
+function updateCorrectMcq() {}
+function updateMcqOption() {}
+function removeMcqOption() {}
+function addMcqOption() {}
+function checkTesterAnswer() {}
+function checkTesterTrueFalse() {}
+function checkTesterIdentification() {}
+function checkTesterNumerical() {}
+function toggleTesterMultiSelectOption() {}
+function checkTesterMultiSelect() {}
 
 
     /* =========================================================
@@ -7463,14 +7227,16 @@ function renderHubStats() {
   const revCount = STUDIO_DATA.stemReviewers ? STUDIO_DATA.stemReviewers.length : 0;
   const matCount = STUDIO_DATA.studyMaterials ? STUDIO_DATA.studyMaterials.length : 0;
   
-  let totalQuestions = 0;
-  if (STUDIO_DATA.quizSets && Array.isArray(STUDIO_DATA.quizSets)) {
-    STUDIO_DATA.quizSets.forEach(set => {
-      if (set.questions && Array.isArray(set.questions)) {
-        totalQuestions += set.questions.length;
-      }
-    });
-  }
+  // Flashcards & active recall counts
+  let totalCards = 0;
+  const decks = STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [];
+  decks.forEach(deck => {
+    if (deck.cards && Array.isArray(deck.cards)) {
+      totalCards += deck.cards.length;
+    } else if (deck.questions && Array.isArray(deck.questions)) {
+      totalCards += deck.questions.length;
+    }
+  });
 
   const calCount = STUDIO_DATA.calendarEvents ? STUDIO_DATA.calendarEvents.length : 0;
 
@@ -7482,7 +7248,7 @@ function renderHubStats() {
   if (statMat) statMat.innerText = matCount;
 
   const statQuiz = document.getElementById('hub-stat-quiz-count');
-  if (statQuiz) statQuiz.innerText = totalQuestions;
+  if (statQuiz) statQuiz.innerText = totalCards;
 
   const statCal = document.getElementById('hub-stat-cal-count');
   if (statCal) statCal.innerText = calCount;
@@ -7495,7 +7261,7 @@ function renderHubStats() {
   if (badgeMat) badgeMat.innerText = matCount;
 
   const badgeQuiz = document.getElementById('badge-count-quiz');
-  if (badgeQuiz) badgeQuiz.innerText = `${totalQuestions} Qs`;
+  if (badgeQuiz) badgeQuiz.innerText = `${decks.length} Decks`;
 
   const badgeCal = document.getElementById('badge-count-cal');
   if (badgeCal) badgeCal.innerText = calCount;
@@ -7539,22 +7305,24 @@ function renderHubVault() {
     });
   }
 
-  // 3. Add Quiz Sets
-  if (STUDIO_DATA.quizSets) {
-    STUDIO_DATA.quizSets.forEach((qSet, idx) => {
-      const qCount = qSet.questions ? qSet.questions.length : 0;
-      items.push({
-        type: 'quiz',
-        index: idx,
-        id: qSet.id,
-        title: qSet.title || 'Untitled Quiz Bank',
-        subject: qSet.subject || 'General Math',
-        tag: qSet.tag || 'Main',
-        summary: qSet.desc || `${qCount} Interactive Questions • ${qSet.timeLimitMinutes || 15} mins`,
-        meta: `${qCount} Questions Bank`
-      });
+  // 3. Add Flashcard Decks
+  const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0)
+    ? STUDIO_DATA.flashcardDecks
+    : (STUDIO_DATA.quizSets || []);
+
+  decks.forEach((deck, idx) => {
+    const cCount = deck.cards ? deck.cards.length : (deck.questions ? deck.questions.length : 0);
+    items.push({
+      type: 'flashcard',
+      index: idx,
+      id: deck.id,
+      title: deck.title || 'Untitled Flashcard Deck',
+      subject: deck.subject || 'Kasaysayan',
+      tag: deck.tag || 'Flashcards',
+      summary: deck.desc || `${cCount} Active Recall Cards • Spaced Repetition`,
+      meta: `${cCount} Cards`
     });
-  }
+  });
 
   // 4. Add Calendar Deadlines
   if (STUDIO_DATA.calendarEvents) {
@@ -7578,8 +7346,8 @@ function renderHubVault() {
     filtered = filtered.filter(i => i.type === 'reviewer');
   } else if (currentVaultFilter === 'materials') {
     filtered = filtered.filter(i => i.type === 'material');
-  } else if (currentVaultFilter === 'quizzes') {
-    filtered = filtered.filter(i => i.type === 'quiz');
+  } else if (currentVaultFilter === 'quizzes' || currentVaultFilter === 'flashcards') {
+    filtered = filtered.filter(i => i.type === 'flashcard' || i.type === 'quiz');
   } else if (currentVaultFilter === 'calendar') {
     filtered = filtered.filter(i => i.type === 'calendar');
   }
@@ -7610,8 +7378,8 @@ function renderHubVault() {
           <button onclick="window.createQuickMaterial()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
             <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> New Study Material
           </button>
-          <button onclick="window.createQuickQuizSet()" class="px-3 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
-            <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i> New Quiz Bank
+          <button onclick="window.createQuickDeck()" class="px-3 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i> New Flashcard Deck
           </button>
         </div>
       </div>
@@ -7633,10 +7401,10 @@ function renderHubVault() {
       iconBg = 'bg-blue-100 dark:bg-blue-950/80 text-blue-600';
       badgeType = 'Study Material';
       badgeColor = 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300';
-    } else if (item.type === 'quiz') {
-      icon = 'brain-circuit';
+    } else if (item.type === 'flashcard' || item.type === 'quiz') {
+      icon = 'layers';
       iconBg = 'bg-pink-100 dark:bg-pink-950/80 text-g11pink-600';
-      badgeType = 'Quiz Bank';
+      badgeType = 'Flashcard Deck';
       badgeColor = 'bg-pink-100 dark:bg-pink-950 text-g11pink-700 dark:text-pink-300';
     } else if (item.type === 'calendar') {
       icon = 'calendar';
@@ -7686,12 +7454,28 @@ function base64ToUtf8(str) {
   return decodeURIComponent(escape(window.atob(str)));
 }
 function generateProductionJson() {
+  const flashcardDecks = (STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || []).map(d => ({
+    id: d.id,
+    subject: d.subject,
+    tag: d.tag || 'Main',
+    color: d.color || 'border-l-4 border-amber-600',
+    title: d.title,
+    desc: d.desc || '',
+    cards: (d.cards || []).map(c => ({
+      id: c.id,
+      topic: c.topic || '',
+      front: c.front || '',
+      back: c.back || '',
+      hint: c.hint || ''
+    }))
+  }));
+
   return {
-    version: STUDIO_DATA.version || "1.4.0",
+    version: STUDIO_DATA.version || "1.9.2",
     updatedAt: new Date().toISOString(),
-    announcement: `Refreshed ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.calendarEvents.length} Deadlines, and ${STUDIO_DATA.quizSets.length} Quiz Banks.`,
+    announcement: `Refreshed ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.calendarEvents.length} Deadlines, and ${flashcardDecks.length} Flashcard Decks.`,
     calendarEvents: STUDIO_DATA.calendarEvents,
-    stemReviewers: STUDIO_DATA.stemReviewers.map(r => ({
+    stemReviewers: (STUDIO_DATA.stemReviewers || []).map(r => ({
       id: r.id,
       subject: r.subject,
       tag: r.tag,
@@ -7710,7 +7494,8 @@ function generateProductionJson() {
       blocks: m.blocks || []
     })),
     problemSets: STUDIO_DATA.problemSets || [],
-    quizSets: STUDIO_DATA.quizSets
+    flashcardDecks: flashcardDecks,
+    quizSets: flashcardDecks
   };
 }
 function renderJsonHub() {
@@ -7758,7 +7543,23 @@ ${mdBody}
   if (window.showToast) window.showToast(`Downloaded ${rev.id}.md!`);
 }
 function exportQuizSetMarkdown() {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
+  const decks = STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [];
+  const set = decks[currentQuizSetIndex];
+  if (!set) return;
+
+  if (set.cards && set.cards.length > 0) {
+    let md = `---\nid: ${set.id}\nsubject: ${set.subject}\ntag: ${set.tag || 'Flashcards'}\ntitle: ${set.title}\ndesc: ${set.desc || ''}\n---\n\n# ${set.title}\n*${set.cards.length} Active Recall Flashcards*\n\n`;
+    set.cards.forEach((c, idx) => {
+      md += `## Card ${idx + 1}: ${c.topic || 'Concept'}\n`;
+      md += `**Front (Prompt):**\n${c.front || ''}\n\n`;
+      md += `**Back (Recall):**\n${c.back || ''}\n\n`;
+      if (c.hint) md += `> **Hint:** *${c.hint}*\n\n`;
+      md += `---\n\n`;
+    });
+    downloadFile(`${set.id || 'flashcards'}.md`, md, 'text/markdown');
+    if (window.showToast) window.showToast(`Downloaded ${set.id}.md!`);
+    return;
+  }
   if (!set) return;
   let mdLines = `---
 id: ${set.id}
@@ -8012,15 +7813,16 @@ function mergeStudioDatasets(localData, remoteData, baselineData = null) {
     'Study Material'
   );
 
-  // 3. Quiz Sets merge
-  const quizRes = mergeItemArray(
-    localData.quizSets || [],
-    remoteData.quizSets || [],
-    base.quizSets || [],
-    (item, idx) => item.id || `quiz_${idx}`,
+  // 3. Flashcard Decks merge
+  const deckRes = mergeItemArray(
+    localData.flashcardDecks || localData.quizSets || [],
+    remoteData.flashcardDecks || remoteData.quizSets || [],
+    base.flashcardDecks || base.quizSets || [],
+    (item, idx) => item.id || `deck_${idx}`,
     (item) => item.title || item.subject,
-    'Quiz Bank'
+    'Flashcard Deck'
   );
+  const quizRes = deckRes;
 
   // 4. Calendar Events merge (using ID or date+title fallback)
   const calRes = mergeItemArray(
@@ -8060,7 +7862,8 @@ function mergeStudioDatasets(localData, remoteData, baselineData = null) {
     stemReviewers: revRes.merged,
     studyMaterials: matRes.merged,
     problemSets: probRes.merged,
-    quizSets: quizRes.merged
+    flashcardDecks: deckRes.merged,
+    quizSets: deckRes.merged
   };
 
   const report = {
@@ -8371,7 +8174,8 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
         STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
         STUDIO_DATA.stemReviewers = mergedData.stemReviewers || [];
         STUDIO_DATA.studyMaterials = mergedData.studyMaterials || [];
-        STUDIO_DATA.quizSets = mergedData.quizSets || [];
+        STUDIO_DATA.flashcardDecks = mergedData.flashcardDecks || mergedData.quizSets || [];
+        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
         STUDIO_DATA.calendarEvents = mergedData.calendarEvents || [];
         STUDIO_DATA.problemSets = mergedData.problemSets || [];
       } else {
@@ -8380,7 +8184,8 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
         STUDIO_DATA.announcement = json.announcement;
         STUDIO_DATA.stemReviewers = json.stemReviewers || [];
         STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-        STUDIO_DATA.quizSets = json.quizSets || [];
+        STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
+        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
         STUDIO_DATA.calendarEvents = json.calendarEvents || [];
         STUDIO_DATA.problemSets = json.problemSets || [];
       }
@@ -8605,6 +8410,7 @@ async function pushDirectUpdatesJsonToGitHub() {
     /* =========================================================
    TagSci Content Studio - Main Application Bootstrap (Concept 1: Document Hub)
    ========================================================= */
+window.shuffleCurrentDeckSimulator = shuffleCurrentDeckSimulator;
 // Global Toast Utility
 window.showToast = function(message) {
   const toast = document.getElementById('toast-msg');
@@ -8852,7 +8658,7 @@ window.openVaultItem = function(type, index) {
     loadMaterialToEditor();
     renderMaterialsList();
     switchTab('materials');
-  } else if (type === 'quiz') {
+  } else if (type === 'quiz' || type === 'flashcard') {
     setCurrentQuizSetIndex(index);
     loadQuizSetToEditor();
     renderQuizSetsList();
@@ -8931,32 +8737,35 @@ window.createQuickReviewer = function() {
   window.showToast('New reviewer draft opened!');
 };
 
-window.createQuickQuizSet = function() {
-  const newSet = {
-    id: `quiz_${Date.now()}`,
-    subject: 'General Math',
+window.createQuickDeck = function() {
+  const newDeck = {
+    id: `deck_${Date.now()}`,
+    subject: 'Kasaysayan',
     tag: 'Main',
-    title: 'New Quiz Bank Draft',
-    desc: 'Interactive examination & drill questions',
-    timeLimitMinutes: 15,
-    questions: [
+    color: 'border-l-4 border-amber-600',
+    title: 'New Flashcard Deck Draft',
+    desc: 'Active recall & spaced repetition deck',
+    cards: [
       {
-        type: 'mcq',
-        question: 'Sample Question: What is the primary characteristic of this concept?',
-        options: ['Option A', 'Option B', 'Option C', 'Option D'],
-        correct: 0,
-        explanation: 'Explanation of why Option A is correct.'
+        id: `c_${Date.now()}_1`,
+        topic: 'Batayang Kahulugan',
+        front: 'What is the primary concept or definition to recall?',
+        back: 'The concept defines that...',
+        hint: 'Key takeaway mnemonic'
       }
     ]
   };
-  STUDIO_DATA.quizSets.unshift(newSet);
+  STUDIO_DATA.flashcardDecks = STUDIO_DATA.flashcardDecks || [];
+  STUDIO_DATA.flashcardDecks.unshift(newDeck);
+  STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
   setCurrentQuizSetIndex(0);
   renderQuizSetsList();
   loadQuizSetToEditor();
   renderHubDashboard();
   switchTab('quizzes');
-  window.showToast('New quiz bank created!');
+  window.showToast('Created new Flashcard Deck!');
 };
+window.createQuickQuizSet = window.createQuickDeck;
 
 // Breadcrumbs Controller
 function updateBreadcrumbs(tabId) {

@@ -22,22 +22,25 @@ export function getSubjectClassification(subj) {
 }
 
 export const STUDIO_DATA = {
-  version: "1.4.0",
+  version: "1.9.2",
   updatedAt: new Date().toISOString(),
   announcement: "Materials authored via TagSci G11 Content Studio.",
   calendarEvents: [],
   stemReviewers: [],
   studyMaterials: [],
   problemSets: [],
+  flashcardDecks: [],
   quizSets: []
 };
 
 export let currentRevIndex = 0;
 export let currentMatIndex = 0;
-export let currentQuizSetIndex = 0;
+export let currentDeckIndex = 0;
+export let currentQuizSetIndex = 0; // Backwards-compatible alias
 export let currentEditorMode = 'visual';
 
 export function setCurrentRevIndex(idx) { currentRevIndex = idx; }
 export function setCurrentMatIndex(idx) { currentMatIndex = idx; }
-export function setCurrentQuizSetIndex(idx) { currentQuizSetIndex = idx; }
+export function setCurrentDeckIndex(idx) { currentDeckIndex = idx; currentQuizSetIndex = idx; }
+export function setCurrentQuizSetIndex(idx) { currentDeckIndex = idx; currentQuizSetIndex = idx; }
 export function setCurrentEditorMode(mode) { currentEditorMode = mode; }

@@ -15,12 +15,28 @@ function base64ToUtf8(str) {
 }
 
 export function generateProductionJson() {
+  const flashcardDecks = (STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || []).map(d => ({
+    id: d.id,
+    subject: d.subject,
+    tag: d.tag || 'Main',
+    color: d.color || 'border-l-4 border-amber-600',
+    title: d.title,
+    desc: d.desc || '',
+    cards: (d.cards || []).map(c => ({
+      id: c.id,
+      topic: c.topic || '',
+      front: c.front || '',
+      back: c.back || '',
+      hint: c.hint || ''
+    }))
+  }));
+
   return {
-    version: STUDIO_DATA.version || "1.4.0",
+    version: STUDIO_DATA.version || "1.9.2",
     updatedAt: new Date().toISOString(),
-    announcement: `Refreshed ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.calendarEvents.length} Deadlines, and ${STUDIO_DATA.quizSets.length} Quiz Banks.`,
+    announcement: `Refreshed ${STUDIO_DATA.stemReviewers.length} Reviewers, ${STUDIO_DATA.studyMaterials.length} Study Materials, ${STUDIO_DATA.calendarEvents.length} Deadlines, and ${flashcardDecks.length} Flashcard Decks.`,
     calendarEvents: STUDIO_DATA.calendarEvents,
-    stemReviewers: STUDIO_DATA.stemReviewers.map(r => ({
+    stemReviewers: (STUDIO_DATA.stemReviewers || []).map(r => ({
       id: r.id,
       subject: r.subject,
       tag: r.tag,
@@ -39,7 +55,8 @@ export function generateProductionJson() {
       blocks: m.blocks || []
     })),
     problemSets: STUDIO_DATA.problemSets || [],
-    quizSets: STUDIO_DATA.quizSets
+    flashcardDecks: flashcardDecks,
+    quizSets: flashcardDecks
   };
 }
 
@@ -93,7 +110,23 @@ ${mdBody}
 }
 
 export function exportQuizSetMarkdown() {
-  const set = STUDIO_DATA.quizSets[currentQuizSetIndex];
+  const decks = STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [];
+  const set = decks[currentQuizSetIndex];
+  if (!set) return;
+
+  if (set.cards && set.cards.length > 0) {
+    let md = `---\nid: ${set.id}\nsubject: ${set.subject}\ntag: ${set.tag || 'Flashcards'}\ntitle: ${set.title}\ndesc: ${set.desc || ''}\n---\n\n# ${set.title}\n*${set.cards.length} Active Recall Flashcards*\n\n`;
+    set.cards.forEach((c, idx) => {
+      md += `## Card ${idx + 1}: ${c.topic || 'Concept'}\n`;
+      md += `**Front (Prompt):**\n${c.front || ''}\n\n`;
+      md += `**Back (Recall):**\n${c.back || ''}\n\n`;
+      if (c.hint) md += `> **Hint:** *${c.hint}*\n\n`;
+      md += `---\n\n`;
+    });
+    downloadFile(`${set.id || 'flashcards'}.md`, md, 'text/markdown');
+    if (window.showToast) window.showToast(`Downloaded ${set.id}.md!`);
+    return;
+  }
   if (!set) return;
   let mdLines = `---
 id: ${set.id}
@@ -350,15 +383,16 @@ export function mergeStudioDatasets(localData, remoteData, baselineData = null) 
     'Study Material'
   );
 
-  // 3. Quiz Sets merge
-  const quizRes = mergeItemArray(
-    localData.quizSets || [],
-    remoteData.quizSets || [],
-    base.quizSets || [],
-    (item, idx) => item.id || `quiz_${idx}`,
+  // 3. Flashcard Decks merge
+  const deckRes = mergeItemArray(
+    localData.flashcardDecks || localData.quizSets || [],
+    remoteData.flashcardDecks || remoteData.quizSets || [],
+    base.flashcardDecks || base.quizSets || [],
+    (item, idx) => item.id || `deck_${idx}`,
     (item) => item.title || item.subject,
-    'Quiz Bank'
+    'Flashcard Deck'
   );
+  const quizRes = deckRes;
 
   // 4. Calendar Events merge (using ID or date+title fallback)
   const calRes = mergeItemArray(
@@ -398,7 +432,8 @@ export function mergeStudioDatasets(localData, remoteData, baselineData = null) 
     stemReviewers: revRes.merged,
     studyMaterials: matRes.merged,
     problemSets: probRes.merged,
-    quizSets: quizRes.merged
+    flashcardDecks: deckRes.merged,
+    quizSets: deckRes.merged
   };
 
   const report = {
@@ -715,7 +750,8 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
         STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
         STUDIO_DATA.stemReviewers = mergedData.stemReviewers || [];
         STUDIO_DATA.studyMaterials = mergedData.studyMaterials || [];
-        STUDIO_DATA.quizSets = mergedData.quizSets || [];
+        STUDIO_DATA.flashcardDecks = mergedData.flashcardDecks || mergedData.quizSets || [];
+        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
         STUDIO_DATA.calendarEvents = mergedData.calendarEvents || [];
         STUDIO_DATA.problemSets = mergedData.problemSets || [];
       } else {
@@ -724,7 +760,8 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
         STUDIO_DATA.announcement = json.announcement;
         STUDIO_DATA.stemReviewers = json.stemReviewers || [];
         STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-        STUDIO_DATA.quizSets = json.quizSets || [];
+        STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
+        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
         STUDIO_DATA.calendarEvents = json.calendarEvents || [];
         STUDIO_DATA.problemSets = json.problemSets || [];
       }

@@ -191,10 +191,10 @@
 
           <button data-tab="quizzes" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
             <div class="flex items-center gap-2.5">
-              <i data-lucide="brain-circuit" class="w-4 h-4 text-g11pink-500"></i>
-              <span>Quiz & Exam Banks</span>
+              <i data-lucide="layers" class="w-4 h-4 text-g11pink-500"></i>
+              <span>Flashcards & Active Recall</span>
             </div>
-            <span id="badge-count-quiz" class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.2 rounded font-bold">1</span>
+            <span id="badge-count-quiz" class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.2 rounded font-bold">2 Decks</span>
           </button>
 
           <button data-tab="calendar" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
@@ -903,12 +903,12 @@
         <aside class="w-full md:w-72 lg:w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-1/3 md:h-full shrink-0">
           <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Quiz Sets</span>
-              <span id="quiz-list-count" class="text-[11px] font-bold text-slate-400">(1 bank)</span>
+              <span class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Flashcard Decks</span>
+              <span id="quiz-list-count" class="text-[11px] font-bold text-slate-400">(2 decks)</span>
             </div>
             <button id="btn-add-quiz-set" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              New Quiz Set
+              New Deck
             </button>
           </div>
 
@@ -952,18 +952,18 @@
               </select>
             </div>
             <div class="sm:col-span-5">
-              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Quiz Bank Title</label>
-              <input type="text" id="quiz-input-title" placeholder="Enter quiz bank title..." class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
+              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Flashcard Deck Title</label>
+              <input type="text" id="quiz-input-title" placeholder="Enter flashcard deck title..." class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
             </div>
             <div class="sm:col-span-2">
-              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Time Limit (Min)</label>
-              <input type="number" id="quiz-input-timelimit" value="15" min="1" max="180" class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-g11pink-500">
+              <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Cards</label>
+              <input type="number" id="quiz-input-timelimit" value="0" readonly class="w-full px-2.5 py-1.5 text-xs font-bold bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none text-slate-500 cursor-not-allowed">
             </div>
             <div class="sm:col-span-2">
               <label class="block text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">Action</label>
               <button id="btn-add-question" class="w-full py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1">
                 <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
-                Add Question
+                Add Card
               </button>
             </div>
           </div>
@@ -1037,8 +1037,8 @@
             <div class="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4 bg-white dark:bg-slate-900/30">
               <div class="flex items-center justify-between">
                 <h2 class="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
-                  <i data-lucide="list-ordered" class="w-4 h-4 text-g11pink-500"></i>
-                  Questions in this Bank
+                  <i data-lucide="layers" class="w-4 h-4 text-g11pink-500"></i>
+                  Flashcards in this Deck
                 </h2>
                 <span id="question-count-badge" class="text-xs font-bold text-g11pink-600 dark:text-g11pink-400">0 Questions</span>
               </div>
@@ -1052,8 +1052,8 @@
             <div class="lg:col-span-5 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
               <div class="p-3 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <i data-lucide="play-circle" class="w-4 h-4 text-emerald-500"></i>
-                  Live Quiz Player Test
+                  <i data-lucide="sparkles" class="w-4 h-4 text-emerald-500"></i>
+                  Interactive Flashcard Simulator
                 </span>
                 <button id="btn-reset-quiz-preview" class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
                   Restart Test

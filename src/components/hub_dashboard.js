@@ -27,14 +27,16 @@ export function renderHubStats() {
   const revCount = STUDIO_DATA.stemReviewers ? STUDIO_DATA.stemReviewers.length : 0;
   const matCount = STUDIO_DATA.studyMaterials ? STUDIO_DATA.studyMaterials.length : 0;
   
-  let totalQuestions = 0;
-  if (STUDIO_DATA.quizSets && Array.isArray(STUDIO_DATA.quizSets)) {
-    STUDIO_DATA.quizSets.forEach(set => {
-      if (set.questions && Array.isArray(set.questions)) {
-        totalQuestions += set.questions.length;
-      }
-    });
-  }
+  // Flashcards & active recall counts
+  let totalCards = 0;
+  const decks = STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [];
+  decks.forEach(deck => {
+    if (deck.cards && Array.isArray(deck.cards)) {
+      totalCards += deck.cards.length;
+    } else if (deck.questions && Array.isArray(deck.questions)) {
+      totalCards += deck.questions.length;
+    }
+  });
 
   const calCount = STUDIO_DATA.calendarEvents ? STUDIO_DATA.calendarEvents.length : 0;
 
@@ -46,7 +48,7 @@ export function renderHubStats() {
   if (statMat) statMat.innerText = matCount;
 
   const statQuiz = document.getElementById('hub-stat-quiz-count');
-  if (statQuiz) statQuiz.innerText = totalQuestions;
+  if (statQuiz) statQuiz.innerText = totalCards;
 
   const statCal = document.getElementById('hub-stat-cal-count');
   if (statCal) statCal.innerText = calCount;
@@ -59,7 +61,7 @@ export function renderHubStats() {
   if (badgeMat) badgeMat.innerText = matCount;
 
   const badgeQuiz = document.getElementById('badge-count-quiz');
-  if (badgeQuiz) badgeQuiz.innerText = `${totalQuestions} Qs`;
+  if (badgeQuiz) badgeQuiz.innerText = `${decks.length} Decks`;
 
   const badgeCal = document.getElementById('badge-count-cal');
   if (badgeCal) badgeCal.innerText = calCount;
@@ -104,22 +106,24 @@ export function renderHubVault() {
     });
   }
 
-  // 3. Add Quiz Sets
-  if (STUDIO_DATA.quizSets) {
-    STUDIO_DATA.quizSets.forEach((qSet, idx) => {
-      const qCount = qSet.questions ? qSet.questions.length : 0;
-      items.push({
-        type: 'quiz',
-        index: idx,
-        id: qSet.id,
-        title: qSet.title || 'Untitled Quiz Bank',
-        subject: qSet.subject || 'General Math',
-        tag: qSet.tag || 'Main',
-        summary: qSet.desc || `${qCount} Interactive Questions • ${qSet.timeLimitMinutes || 15} mins`,
-        meta: `${qCount} Questions Bank`
-      });
+  // 3. Add Flashcard Decks
+  const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0)
+    ? STUDIO_DATA.flashcardDecks
+    : (STUDIO_DATA.quizSets || []);
+
+  decks.forEach((deck, idx) => {
+    const cCount = deck.cards ? deck.cards.length : (deck.questions ? deck.questions.length : 0);
+    items.push({
+      type: 'flashcard',
+      index: idx,
+      id: deck.id,
+      title: deck.title || 'Untitled Flashcard Deck',
+      subject: deck.subject || 'Kasaysayan',
+      tag: deck.tag || 'Flashcards',
+      summary: deck.desc || `${cCount} Active Recall Cards • Spaced Repetition`,
+      meta: `${cCount} Cards`
     });
-  }
+  });
 
   // 4. Add Calendar Deadlines
   if (STUDIO_DATA.calendarEvents) {
@@ -143,8 +147,8 @@ export function renderHubVault() {
     filtered = filtered.filter(i => i.type === 'reviewer');
   } else if (currentVaultFilter === 'materials') {
     filtered = filtered.filter(i => i.type === 'material');
-  } else if (currentVaultFilter === 'quizzes') {
-    filtered = filtered.filter(i => i.type === 'quiz');
+  } else if (currentVaultFilter === 'quizzes' || currentVaultFilter === 'flashcards') {
+    filtered = filtered.filter(i => i.type === 'flashcard' || i.type === 'quiz');
   } else if (currentVaultFilter === 'calendar') {
     filtered = filtered.filter(i => i.type === 'calendar');
   }
@@ -175,8 +179,8 @@ export function renderHubVault() {
           <button onclick="window.createQuickMaterial()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
             <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> New Study Material
           </button>
-          <button onclick="window.createQuickQuizSet()" class="px-3 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
-            <i data-lucide="brain-circuit" class="w-3.5 h-3.5"></i> New Quiz Bank
+          <button onclick="window.createQuickDeck()" class="px-3 py-1.5 rounded-lg bg-g11pink-600 hover:bg-g11pink-700 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i> New Flashcard Deck
           </button>
         </div>
       </div>
@@ -198,10 +202,10 @@ export function renderHubVault() {
       iconBg = 'bg-blue-100 dark:bg-blue-950/80 text-blue-600';
       badgeType = 'Study Material';
       badgeColor = 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300';
-    } else if (item.type === 'quiz') {
-      icon = 'brain-circuit';
+    } else if (item.type === 'flashcard' || item.type === 'quiz') {
+      icon = 'layers';
       iconBg = 'bg-pink-100 dark:bg-pink-950/80 text-g11pink-600';
-      badgeType = 'Quiz Bank';
+      badgeType = 'Flashcard Deck';
       badgeColor = 'bg-pink-100 dark:bg-pink-950 text-g11pink-700 dark:text-pink-300';
     } else if (item.type === 'calendar') {
       icon = 'calendar';

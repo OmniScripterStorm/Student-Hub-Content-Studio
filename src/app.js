@@ -62,7 +62,8 @@ import {
   togglePiecewiseEndpoint,
   loadPlotPreset
 } from './components/reviewer_studio.js';
-import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, toggleTesterHint, nextTesterQ, prevTesterQ, resetLiveTester } from './components/quiz_studio.js';
+import { renderQuizSetsList, loadQuizSetToEditor, renderQuestionsBuilder, renderLiveQuizTester, updateQuestionField, changeQuestionType, updateTrueFalse, toggleMultiSelectOption, moveQuestion, duplicateQuestion, addQuestionBlock, updateCorrectMcq, updateMcqOption, removeMcqOption, addMcqOption, deleteQuestion, checkTesterAnswer, checkTesterTrueFalse, checkTesterIdentification, checkTesterNumerical, toggleTesterMultiSelectOption, checkTesterMultiSelect, revealTesterFlashcard, toggleTesterHint, nextTesterQ, prevTesterQ, resetLiveTester, shuffleCurrentDeckSimulator } from './components/quiz_studio.js';
+window.shuffleCurrentDeckSimulator = shuffleCurrentDeckSimulator;
 import { renderCalendarEvents, deleteCalendarEvent, handleAddCalendarEvent } from './components/calendar_studio.js';
 import { renderHubDashboard, renderHubStats, renderHubVault, applyVaultFilter, setVaultSearchQuery } from './components/hub_dashboard.js';
 import { 
@@ -342,7 +343,7 @@ window.openVaultItem = function(type, index) {
     loadMaterialToEditor();
     renderMaterialsList();
     switchTab('materials');
-  } else if (type === 'quiz') {
+  } else if (type === 'quiz' || type === 'flashcard') {
     setCurrentQuizSetIndex(index);
     loadQuizSetToEditor();
     renderQuizSetsList();
@@ -421,32 +422,35 @@ window.createQuickReviewer = function() {
   window.showToast('New reviewer draft opened!');
 };
 
-window.createQuickQuizSet = function() {
-  const newSet = {
-    id: `quiz_${Date.now()}`,
-    subject: 'General Math',
+window.createQuickDeck = function() {
+  const newDeck = {
+    id: `deck_${Date.now()}`,
+    subject: 'Kasaysayan',
     tag: 'Main',
-    title: 'New Quiz Bank Draft',
-    desc: 'Interactive examination & drill questions',
-    timeLimitMinutes: 15,
-    questions: [
+    color: 'border-l-4 border-amber-600',
+    title: 'New Flashcard Deck Draft',
+    desc: 'Active recall & spaced repetition deck',
+    cards: [
       {
-        type: 'mcq',
-        question: 'Sample Question: What is the primary characteristic of this concept?',
-        options: ['Option A', 'Option B', 'Option C', 'Option D'],
-        correct: 0,
-        explanation: 'Explanation of why Option A is correct.'
+        id: `c_${Date.now()}_1`,
+        topic: 'Batayang Kahulugan',
+        front: 'What is the primary concept or definition to recall?',
+        back: 'The concept defines that...',
+        hint: 'Key takeaway mnemonic'
       }
     ]
   };
-  STUDIO_DATA.quizSets.unshift(newSet);
+  STUDIO_DATA.flashcardDecks = STUDIO_DATA.flashcardDecks || [];
+  STUDIO_DATA.flashcardDecks.unshift(newDeck);
+  STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
   setCurrentQuizSetIndex(0);
   renderQuizSetsList();
   loadQuizSetToEditor();
   renderHubDashboard();
   switchTab('quizzes');
-  window.showToast('New quiz bank created!');
+  window.showToast('Created new Flashcard Deck!');
 };
+window.createQuickQuizSet = window.createQuickDeck;
 
 // Breadcrumbs Controller
 export function updateBreadcrumbs(tabId) {
