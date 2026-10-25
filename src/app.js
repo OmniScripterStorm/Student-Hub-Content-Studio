@@ -846,32 +846,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Quiz Sets Listeners
   document.getElementById('btn-add-question')?.addEventListener('click', () => {
-    addQuestionBlock('mcq');
+    addQuestionBlock('flashcard');
     renderHubDashboard();
   });
   document.getElementById('btn-reset-quiz-preview')?.addEventListener('click', resetLiveTester);
 
   document.getElementById('quiz-input-title')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
-    STUDIO_DATA.quizSets[currentQuizSetIndex].title = e.target.value;
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || !decks[currentQuizSetIndex]) return;
+    decks[currentQuizSetIndex].title = e.target.value;
+    STUDIO_DATA.flashcardDecks = decks;
+    STUDIO_DATA.quizSets = decks;
     renderQuizSetsList();
     updateBreadcrumbs('quizzes');
     renderHubDashboard();
   });
 
   document.getElementById('quiz-input-subject')?.addEventListener('change', (e) => {
-    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
-    STUDIO_DATA.quizSets[currentQuizSetIndex].subject = e.target.value;
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || !decks[currentQuizSetIndex]) return;
+    decks[currentQuizSetIndex].subject = e.target.value;
     const classification = getSubjectClassification(e.target.value);
-    STUDIO_DATA.quizSets[currentQuizSetIndex].tag = classification.type;
+    decks[currentQuizSetIndex].tag = classification.type;
+    STUDIO_DATA.flashcardDecks = decks;
+    STUDIO_DATA.quizSets = decks;
     renderQuizSetsList();
     updateBreadcrumbs('quizzes');
     renderHubDashboard();
   });
 
   document.getElementById('quiz-input-timelimit')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
-    STUDIO_DATA.quizSets[currentQuizSetIndex].timeLimitMinutes = parseInt(e.target.value) || 15;
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || !decks[currentQuizSetIndex]) return;
+    decks[currentQuizSetIndex].timeLimitMinutes = parseInt(e.target.value) || 15;
   });
 
   document.getElementById('btn-add-quiz-set')?.addEventListener('click', () => {
@@ -879,19 +886,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-delete-quiz-set')?.addEventListener('click', () => {
-    if (!STUDIO_DATA.quizSets || STUDIO_DATA.quizSets.length === 0) {
-      window.showToast('No quiz sets to delete.');
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || decks.length === 0) {
+      window.showToast('No flashcard decks to delete.');
       return;
     }
-    STUDIO_DATA.quizSets.splice(currentQuizSetIndex, 1);
-    if (currentQuizSetIndex >= STUDIO_DATA.quizSets.length) {
-      setCurrentQuizSetIndex(Math.max(0, STUDIO_DATA.quizSets.length - 1));
+    decks.splice(currentQuizSetIndex, 1);
+    STUDIO_DATA.flashcardDecks = decks;
+    STUDIO_DATA.quizSets = decks;
+    if (currentQuizSetIndex >= decks.length) {
+      setCurrentQuizSetIndex(Math.max(0, decks.length - 1));
     }
     renderQuizSetsList();
     loadQuizSetToEditor();
     updateBreadcrumbs('quizzes');
     renderHubDashboard();
-    window.showToast('Quiz bank removed.');
+    window.showToast('Flashcard deck removed.');
   });
 
   // Calendar Listeners
@@ -988,15 +998,15 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshAllStudioViews();
   switchTab('hub'); // Start in Hub Dashboard by default
 
-  // Load and apply author name / prompt if first visit
+  // Expose global store to window for debugging, extensions & harness
+  window.STUDIO_DATA = STUDIO_DATA;
+
+  // Load and apply author name if previously set
   const savedAuthorName = localStorage.getItem(USER_PROFILE_KEY);
   if (savedAuthorName) {
     updateUserProfileUI(savedAuthorName);
   } else {
     updateUserProfileUI('Editorial Council');
-    setTimeout(() => {
-      promptUserProfileName(false);
-    }, 500);
   }
 
   // Auto-fetch latest updates.json on load to ensure freshest dataset

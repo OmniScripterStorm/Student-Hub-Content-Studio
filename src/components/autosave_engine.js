@@ -104,7 +104,8 @@ export function forceImmediateAutosave() {
       stemReviewers: STUDIO_DATA.stemReviewers || [],
       studyMaterials: STUDIO_DATA.studyMaterials || [],
       problemSets: STUDIO_DATA.problemSets || [],
-      quizSets: STUDIO_DATA.quizSets || [],
+      flashcardDecks: STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [],
+      quizSets: STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [],
       // Active state snapshot
       _uiState: {
         currentRevIndex,
@@ -128,7 +129,7 @@ export function forceImmediateAutosave() {
       itemsCount: {
         reviewers: payload.stemReviewers.length,
         materials: payload.studyMaterials.length,
-        quizzes: payload.quizSets.length,
+        quizzes: (payload.flashcardDecks || payload.quizSets || []).length,
         events: payload.calendarEvents.length
       }
     };
@@ -161,7 +162,13 @@ export function restoreAutosavedData() {
     if (Array.isArray(parsed.stemReviewers)) STUDIO_DATA.stemReviewers = parsed.stemReviewers;
     if (Array.isArray(parsed.studyMaterials)) STUDIO_DATA.studyMaterials = parsed.studyMaterials;
     if (Array.isArray(parsed.problemSets)) STUDIO_DATA.problemSets = parsed.problemSets;
-    if (Array.isArray(parsed.quizSets)) STUDIO_DATA.quizSets = parsed.quizSets;
+    const restoredDecks = (Array.isArray(parsed.flashcardDecks) && parsed.flashcardDecks.length > 0)
+      ? parsed.flashcardDecks
+      : (Array.isArray(parsed.quizSets) ? parsed.quizSets : null);
+    if (restoredDecks) {
+      STUDIO_DATA.flashcardDecks = restoredDecks;
+      STUDIO_DATA.quizSets = restoredDecks;
+    }
 
     // Restore UI state if available
     if (parsed._uiState) {

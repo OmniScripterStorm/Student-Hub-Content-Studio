@@ -11,26 +11,46 @@ let testerFlipped = false;
 let testerHintRevealed = false;
 
 // Ensure flashcardDecks array exists and sync with quizSets
-function getDecks() {
-  if (!STUDIO_DATA.flashcardDecks || !Array.isArray(STUDIO_DATA.flashcardDecks)) {
-    STUDIO_DATA.flashcardDecks = STUDIO_DATA.quizSets && STUDIO_DATA.quizSets.length > 0
-      ? STUDIO_DATA.quizSets.map(q => ({
-          id: q.id,
-          subject: q.subject,
-          tag: q.tag || 'Main',
-          color: q.color || 'border-l-4 border-amber-600',
-          title: q.title,
-          desc: q.desc,
-          cards: (q.questions || []).map((qu, i) => ({
-            id: `c_${i}`,
-            topic: qu.topic || qu.question || 'Concept',
-            front: qu.question || qu.front || '',
-            back: qu.explanation || qu.correctText || qu.back || '',
-            hint: qu.hint || ''
-          }))
-        }))
-      : [];
+export function getDecks() {
+  let rawDecks = [];
+  if (Array.isArray(STUDIO_DATA.flashcardDecks) && STUDIO_DATA.flashcardDecks.length > 0) {
+    rawDecks = STUDIO_DATA.flashcardDecks;
+  } else if (Array.isArray(STUDIO_DATA.quizSets) && STUDIO_DATA.quizSets.length > 0) {
+    rawDecks = STUDIO_DATA.quizSets;
   }
+
+  // Normalize each deck to ensure deck.cards exists with front / back
+  STUDIO_DATA.flashcardDecks = rawDecks.map((d, dIdx) => {
+    let cards = [];
+    if (Array.isArray(d.cards)) {
+      cards = d.cards.map((c, cIdx) => ({
+        id: c.id || `c_${dIdx}_${cIdx}`,
+        topic: c.topic || 'Concept',
+        front: c.front || c.question || '',
+        back: c.back || c.explanation || c.correctText || '',
+        hint: c.hint || ''
+      }));
+    } else if (Array.isArray(d.questions)) {
+      cards = d.questions.map((qu, qIdx) => ({
+        id: qu.id || `c_${dIdx}_${qIdx}`,
+        topic: qu.topic || qu.question || 'Concept',
+        front: qu.front || qu.question || '',
+        back: qu.back || qu.explanation || qu.correctText || '',
+        hint: qu.hint || ''
+      }));
+    }
+
+    return {
+      id: d.id || `deck_${dIdx}`,
+      subject: d.subject || 'Kasaysayan',
+      tag: d.tag || 'Main',
+      color: d.color || 'border-l-4 border-amber-600',
+      title: d.title || 'Untitled Flashcard Deck',
+      desc: d.desc || '',
+      cards: cards
+    };
+  });
+
   // Keep quizSets synced as an alias for backwards compatibility
   STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
   return STUDIO_DATA.flashcardDecks;

@@ -176,11 +176,18 @@ export function handleImportJsonFile(e, onComplete) {
   reader.onload = (event) => {
     try {
       const json = JSON.parse(event.target.result);
+      if (json.version) STUDIO_DATA.version = json.version;
+      if (json.updatedAt) STUDIO_DATA.updatedAt = json.updatedAt;
+      if (json.announcement) STUDIO_DATA.announcement = json.announcement;
       if (json.stemReviewers) STUDIO_DATA.stemReviewers = json.stemReviewers;
       if (json.calendarEvents) STUDIO_DATA.calendarEvents = json.calendarEvents;
-      if (json.quizSets) STUDIO_DATA.quizSets = json.quizSets;
       if (json.studyMaterials) STUDIO_DATA.studyMaterials = json.studyMaterials;
       if (json.problemSets) STUDIO_DATA.problemSets = json.problemSets;
+      const loadedDecks = (json.flashcardDecks && Array.isArray(json.flashcardDecks) && json.flashcardDecks.length > 0)
+        ? json.flashcardDecks
+        : (Array.isArray(json.quizSets) ? json.quizSets : []);
+      STUDIO_DATA.flashcardDecks = loadedDecks;
+      STUDIO_DATA.quizSets = loadedDecks;
       
       setBaselineData(json);
       if (window.forceImmediateAutosave) window.forceImmediateAutosave();
@@ -740,7 +747,10 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
 
     // Check if we should reconcile with local draft or load directly
     const baseline = getBaselineData();
-    const hasLocalDraft = STUDIO_DATA.stemReviewers.length > 0 || STUDIO_DATA.studyMaterials.length > 0 || STUDIO_DATA.quizSets.length > 0;
+    const hasLocalDraft = STUDIO_DATA.stemReviewers.length > 0 || 
+                          STUDIO_DATA.studyMaterials.length > 0 || 
+                          (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ||
+                          (STUDIO_DATA.quizSets && STUDIO_DATA.quizSets.length > 0);
 
     if (baseline && hasLocalDraft) {
       const { mergedData, report } = mergeStudioDatasets(STUDIO_DATA, json, baseline);
@@ -771,7 +781,8 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
       STUDIO_DATA.announcement = json.announcement;
       STUDIO_DATA.stemReviewers = json.stemReviewers || [];
       STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-      STUDIO_DATA.quizSets = json.quizSets || [];
+      STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
+      STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
       STUDIO_DATA.calendarEvents = json.calendarEvents || [];
       STUDIO_DATA.problemSets = json.problemSets || [];
     }
@@ -882,7 +893,8 @@ export async function pushDirectUpdatesJsonToGitHub() {
         // Apply merged entities back to local STUDIO_DATA
         STUDIO_DATA.stemReviewers = mergedData.stemReviewers;
         STUDIO_DATA.studyMaterials = mergedData.studyMaterials;
-        STUDIO_DATA.quizSets = mergedData.quizSets;
+        STUDIO_DATA.flashcardDecks = mergedData.flashcardDecks || mergedData.quizSets || [];
+        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
         STUDIO_DATA.calendarEvents = mergedData.calendarEvents;
         if (mergedData.problemSets) STUDIO_DATA.problemSets = mergedData.problemSets;
       }

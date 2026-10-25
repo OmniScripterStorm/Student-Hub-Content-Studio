@@ -1688,7 +1688,8 @@ function forceImmediateAutosave() {
       stemReviewers: STUDIO_DATA.stemReviewers || [],
       studyMaterials: STUDIO_DATA.studyMaterials || [],
       problemSets: STUDIO_DATA.problemSets || [],
-      quizSets: STUDIO_DATA.quizSets || [],
+      flashcardDecks: STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [],
+      quizSets: STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || [],
       // Active state snapshot
       _uiState: {
         currentRevIndex,
@@ -1712,7 +1713,7 @@ function forceImmediateAutosave() {
       itemsCount: {
         reviewers: payload.stemReviewers.length,
         materials: payload.studyMaterials.length,
-        quizzes: payload.quizSets.length,
+        quizzes: (payload.flashcardDecks || payload.quizSets || []).length,
         events: payload.calendarEvents.length
       }
     };
@@ -1745,7 +1746,13 @@ function restoreAutosavedData() {
     if (Array.isArray(parsed.stemReviewers)) STUDIO_DATA.stemReviewers = parsed.stemReviewers;
     if (Array.isArray(parsed.studyMaterials)) STUDIO_DATA.studyMaterials = parsed.studyMaterials;
     if (Array.isArray(parsed.problemSets)) STUDIO_DATA.problemSets = parsed.problemSets;
-    if (Array.isArray(parsed.quizSets)) STUDIO_DATA.quizSets = parsed.quizSets;
+    const restoredDecks = (Array.isArray(parsed.flashcardDecks) && parsed.flashcardDecks.length > 0)
+      ? parsed.flashcardDecks
+      : (Array.isArray(parsed.quizSets) ? parsed.quizSets : null);
+    if (restoredDecks) {
+      STUDIO_DATA.flashcardDecks = restoredDecks;
+      STUDIO_DATA.quizSets = restoredDecks;
+    }
 
     // Restore UI state if available
     if (parsed._uiState) {
@@ -6573,25 +6580,45 @@ let testerHintRevealed = false;
 
 // Ensure flashcardDecks array exists and sync with quizSets
 function getDecks() {
-  if (!STUDIO_DATA.flashcardDecks || !Array.isArray(STUDIO_DATA.flashcardDecks)) {
-    STUDIO_DATA.flashcardDecks = STUDIO_DATA.quizSets && STUDIO_DATA.quizSets.length > 0
-      ? STUDIO_DATA.quizSets.map(q => ({
-          id: q.id,
-          subject: q.subject,
-          tag: q.tag || 'Main',
-          color: q.color || 'border-l-4 border-amber-600',
-          title: q.title,
-          desc: q.desc,
-          cards: (q.questions || []).map((qu, i) => ({
-            id: `c_${i}`,
-            topic: qu.topic || qu.question || 'Concept',
-            front: qu.question || qu.front || '',
-            back: qu.explanation || qu.correctText || qu.back || '',
-            hint: qu.hint || ''
-          }))
-        }))
-      : [];
+  let rawDecks = [];
+  if (Array.isArray(STUDIO_DATA.flashcardDecks) && STUDIO_DATA.flashcardDecks.length > 0) {
+    rawDecks = STUDIO_DATA.flashcardDecks;
+  } else if (Array.isArray(STUDIO_DATA.quizSets) && STUDIO_DATA.quizSets.length > 0) {
+    rawDecks = STUDIO_DATA.quizSets;
   }
+
+  // Normalize each deck to ensure deck.cards exists with front / back
+  STUDIO_DATA.flashcardDecks = rawDecks.map((d, dIdx) => {
+    let cards = [];
+    if (Array.isArray(d.cards)) {
+      cards = d.cards.map((c, cIdx) => ({
+        id: c.id || `c_${dIdx}_${cIdx}`,
+        topic: c.topic || 'Concept',
+        front: c.front || c.question || '',
+        back: c.back || c.explanation || c.correctText || '',
+        hint: c.hint || ''
+      }));
+    } else if (Array.isArray(d.questions)) {
+      cards = d.questions.map((qu, qIdx) => ({
+        id: qu.id || `c_${dIdx}_${qIdx}`,
+        topic: qu.topic || qu.question || 'Concept',
+        front: qu.front || qu.question || '',
+        back: qu.back || qu.explanation || qu.correctText || '',
+        hint: qu.hint || ''
+      }));
+    }
+
+    return {
+      id: d.id || `deck_${dIdx}`,
+      subject: d.subject || 'Kasaysayan',
+      tag: d.tag || 'Main',
+      color: d.color || 'border-l-4 border-amber-600',
+      title: d.title || 'Untitled Flashcard Deck',
+      desc: d.desc || '',
+      cards: cards
+    };
+  });
+
   // Keep quizSets synced as an alias for backwards compatibility
   STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
   return STUDIO_DATA.flashcardDecks;
@@ -7608,11 +7635,18 @@ function handleImportJsonFile(e, onComplete) {
   reader.onload = (event) => {
     try {
       const json = JSON.parse(event.target.result);
+      if (json.version) STUDIO_DATA.version = json.version;
+      if (json.updatedAt) STUDIO_DATA.updatedAt = json.updatedAt;
+      if (json.announcement) STUDIO_DATA.announcement = json.announcement;
       if (json.stemReviewers) STUDIO_DATA.stemReviewers = json.stemReviewers;
       if (json.calendarEvents) STUDIO_DATA.calendarEvents = json.calendarEvents;
-      if (json.quizSets) STUDIO_DATA.quizSets = json.quizSets;
       if (json.studyMaterials) STUDIO_DATA.studyMaterials = json.studyMaterials;
       if (json.problemSets) STUDIO_DATA.problemSets = json.problemSets;
+      const loadedDecks = (json.flashcardDecks && Array.isArray(json.flashcardDecks) && json.flashcardDecks.length > 0)
+        ? json.flashcardDecks
+        : (Array.isArray(json.quizSets) ? json.quizSets : []);
+      STUDIO_DATA.flashcardDecks = loadedDecks;
+      STUDIO_DATA.quizSets = loadedDecks;
       
       setBaselineData(json);
       if (window.forceImmediateAutosave) window.forceImmediateAutosave();
@@ -8164,7 +8198,10 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
 
     // Check if we should reconcile with local draft or load directly
     const baseline = getBaselineData();
-    const hasLocalDraft = STUDIO_DATA.stemReviewers.length > 0 || STUDIO_DATA.studyMaterials.length > 0 || STUDIO_DATA.quizSets.length > 0;
+    const hasLocalDraft = STUDIO_DATA.stemReviewers.length > 0 || 
+                          STUDIO_DATA.studyMaterials.length > 0 || 
+                          (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ||
+                          (STUDIO_DATA.quizSets && STUDIO_DATA.quizSets.length > 0);
 
     if (baseline && hasLocalDraft) {
       const { mergedData, report } = mergeStudioDatasets(STUDIO_DATA, json, baseline);
@@ -8195,7 +8232,8 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
       STUDIO_DATA.announcement = json.announcement;
       STUDIO_DATA.stemReviewers = json.stemReviewers || [];
       STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-      STUDIO_DATA.quizSets = json.quizSets || [];
+      STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
+      STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
       STUDIO_DATA.calendarEvents = json.calendarEvents || [];
       STUDIO_DATA.problemSets = json.problemSets || [];
     }
@@ -8306,7 +8344,8 @@ async function pushDirectUpdatesJsonToGitHub() {
         // Apply merged entities back to local STUDIO_DATA
         STUDIO_DATA.stemReviewers = mergedData.stemReviewers;
         STUDIO_DATA.studyMaterials = mergedData.studyMaterials;
-        STUDIO_DATA.quizSets = mergedData.quizSets;
+        STUDIO_DATA.flashcardDecks = mergedData.flashcardDecks || mergedData.quizSets || [];
+        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
         STUDIO_DATA.calendarEvents = mergedData.calendarEvents;
         if (mergedData.problemSets) STUDIO_DATA.problemSets = mergedData.problemSets;
       }
@@ -9161,32 +9200,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Quiz Sets Listeners
   document.getElementById('btn-add-question')?.addEventListener('click', () => {
-    addQuestionBlock('mcq');
+    addQuestionBlock('flashcard');
     renderHubDashboard();
   });
   document.getElementById('btn-reset-quiz-preview')?.addEventListener('click', resetLiveTester);
 
   document.getElementById('quiz-input-title')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
-    STUDIO_DATA.quizSets[currentQuizSetIndex].title = e.target.value;
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || !decks[currentQuizSetIndex]) return;
+    decks[currentQuizSetIndex].title = e.target.value;
+    STUDIO_DATA.flashcardDecks = decks;
+    STUDIO_DATA.quizSets = decks;
     renderQuizSetsList();
     updateBreadcrumbs('quizzes');
     renderHubDashboard();
   });
 
   document.getElementById('quiz-input-subject')?.addEventListener('change', (e) => {
-    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
-    STUDIO_DATA.quizSets[currentQuizSetIndex].subject = e.target.value;
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || !decks[currentQuizSetIndex]) return;
+    decks[currentQuizSetIndex].subject = e.target.value;
     const classification = getSubjectClassification(e.target.value);
-    STUDIO_DATA.quizSets[currentQuizSetIndex].tag = classification.type;
+    decks[currentQuizSetIndex].tag = classification.type;
+    STUDIO_DATA.flashcardDecks = decks;
+    STUDIO_DATA.quizSets = decks;
     renderQuizSetsList();
     updateBreadcrumbs('quizzes');
     renderHubDashboard();
   });
 
   document.getElementById('quiz-input-timelimit')?.addEventListener('input', (e) => {
-    if (!STUDIO_DATA.quizSets || !STUDIO_DATA.quizSets[currentQuizSetIndex]) return;
-    STUDIO_DATA.quizSets[currentQuizSetIndex].timeLimitMinutes = parseInt(e.target.value) || 15;
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || !decks[currentQuizSetIndex]) return;
+    decks[currentQuizSetIndex].timeLimitMinutes = parseInt(e.target.value) || 15;
   });
 
   document.getElementById('btn-add-quiz-set')?.addEventListener('click', () => {
@@ -9194,19 +9240,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-delete-quiz-set')?.addEventListener('click', () => {
-    if (!STUDIO_DATA.quizSets || STUDIO_DATA.quizSets.length === 0) {
-      window.showToast('No quiz sets to delete.');
+    const decks = (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ? STUDIO_DATA.flashcardDecks : STUDIO_DATA.quizSets;
+    if (!decks || decks.length === 0) {
+      window.showToast('No flashcard decks to delete.');
       return;
     }
-    STUDIO_DATA.quizSets.splice(currentQuizSetIndex, 1);
-    if (currentQuizSetIndex >= STUDIO_DATA.quizSets.length) {
-      setCurrentQuizSetIndex(Math.max(0, STUDIO_DATA.quizSets.length - 1));
+    decks.splice(currentQuizSetIndex, 1);
+    STUDIO_DATA.flashcardDecks = decks;
+    STUDIO_DATA.quizSets = decks;
+    if (currentQuizSetIndex >= decks.length) {
+      setCurrentQuizSetIndex(Math.max(0, decks.length - 1));
     }
     renderQuizSetsList();
     loadQuizSetToEditor();
     updateBreadcrumbs('quizzes');
     renderHubDashboard();
-    window.showToast('Quiz bank removed.');
+    window.showToast('Flashcard deck removed.');
   });
 
   // Calendar Listeners
@@ -9303,15 +9352,15 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshAllStudioViews();
   switchTab('hub'); // Start in Hub Dashboard by default
 
-  // Load and apply author name / prompt if first visit
+  // Expose global store to window for debugging, extensions & harness
+  window.STUDIO_DATA = STUDIO_DATA;
+
+  // Load and apply author name if previously set
   const savedAuthorName = localStorage.getItem(USER_PROFILE_KEY);
   if (savedAuthorName) {
     updateUserProfileUI(savedAuthorName);
   } else {
     updateUserProfileUI('Editorial Council');
-    setTimeout(() => {
-      promptUserProfileName(false);
-    }, 500);
   }
 
   // Auto-fetch latest updates.json on load to ensure freshest dataset
