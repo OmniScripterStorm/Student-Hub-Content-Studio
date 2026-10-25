@@ -1572,16 +1572,94 @@ const OFFICIAL_SUBJECTS = {
 function getSubjectClassification(subj) {
   return OFFICIAL_SUBJECTS[subj] || { type: 'Main', color: 'border-l-4 border-tagsci-600' };
 }
+const DEFAULT_FLASHCARD_DECKS = [
+  {
+    "id": "deck_kasaysayan_aralin_1",
+    "subject": "Kasaysayan",
+    "tag": "Main",
+    "color": "border-l-4 border-amber-600",
+    "title": "Summative 1: Zeus Salazar & Konsepto ng Kasaysayan",
+    "desc": "Active recall on Pantayong Pananaw, Tatlong Yugto ng Kasaysayan, and historical methodologies.",
+    "cards": [
+      {
+        "id": "kas_01",
+        "topic": "Batayang Kahulugan",
+        "front": "Ano ang depinisyon ng **Kasaysayan** ayon sa Pantayong Pananaw ni Dr. Zeus Salazar?",
+        "back": "Ang kasaysayan ay **salaysay na may saysay para sa sinasalaysayang grupo ng tao** (kailangang may saysay para sa sariling kabuuan).",
+        "hint": "Tandaan ang dalawang salitang-ugat: Salaysay (kuwento) at Saysay (katuturan o kabuluhan)."
+      },
+      {
+        "id": "kas_02",
+        "topic": "Pananaw sa Kasaysayan",
+        "front": "Ano ang pagkakaiba ng **Pangkaming Pananaw** sa **Pantayong Pananaw**?",
+        "back": "• **Pangkami**: Mula sa Pilipino tungo sa banyagang tagapakinig/mambabasa gamit ang banyagang wika (pagpapaliwanag sa iba).\n• **Pantayo**: Mula sa Pilipino para sa sariling kapwa Pilipino gamit ang wikang nauunawaan ng lahat sa loob ng sariling kultura.",
+        "hint": "Sino ang kausap? Taga-labas o sariling kapwa Pilipino?"
+      },
+      {
+        "id": "kas_03",
+        "topic": "Tatlong Yugto",
+        "front": "Ano ang **Tatlong Yugto ng Kasaysayan ng Kapilipinuhan** ayon sa Bagong Balangkas?",
+        "back": "1. **Unang Yugto**: Pamayanan (bago ang 1588 / kolonyalismo)\n2. **Ikalawang Yugto**: Bayan (pagbuo ng kamalayang Pilipino noong ika-19 na dantaon hanggang Himagsikan)\n3. **Ikatlong Yugto**: Bansa (Republika at pangkalahatang kaisahan ng Kapilipinuhan).",
+        "hint": "Pamayanan -> Bayan -> Bansa."
+      },
+      {
+        "id": "kas_04",
+        "topic": "Metodolohiya",
+        "front": "Ano ang kaibahan ng **Primaryang Batis** sa **Sekondaryang Batis**?",
+        "back": "• **Primaryang Batis**: Direktang ebidensya o saksi mula sa mismong panahong pinag-aaralan (e.g. talaarawan, liham, batas, artifacts, ulat ng saksi).\n• **Sekondaryang Batis**: Pagsusuri, interpretasyon, o pagtalakay batay sa mga primaryang batis (e.g. aklat-aralin, artikulong pangkasaysayan).",
+        "hint": "Mismong saksi ba o komentaryo/pagsusuri lang pagkatapos ng pangyayari?"
+      }
+    ]
+  },
+  {
+    "id": "deck_imfa_chem_flashcards",
+    "subject": "General Chemistry",
+    "tag": "Flashcard Deck",
+    "color": "border-l-4 border-emerald-500",
+    "title": "Intermolecular Forces & Physical Properties (Active Recall)",
+    "desc": "Master London dispersion, dipole-dipole, hydrogen bonding, and their effects on boiling points and vapor pressure.",
+    "cards": [
+      {
+        "id": "chem_01",
+        "topic": "Intermolecular Forces",
+        "front": "What is the primary condition required for **Hydrogen Bonding** to form between molecules?",
+        "back": "A hydrogen atom covalently bonded to a strongly electronegative atom with small atomic radius ($\\text{N}$, $\\text{O}$, or $\\text{F}$) interacts with a lone pair on a nearby $\\text{N}$, $\\text{O}$, or $\\text{F}$ atom.",
+        "hint": "Think of the acronym: FON (Fluorine, Oxygen, Nitrogen)."
+      },
+      {
+        "id": "chem_02",
+        "topic": "Dispersion Forces",
+        "front": "How does molecular size / molar mass affect the strength of **London Dispersion Forces (LDF)**?",
+        "back": "Larger molecules with higher molar mass have larger electron clouds, increasing **polarizability**, which produces stronger temporary dipoles and higher boiling points.",
+        "hint": "More electrons = easier to distort the electron cloud."
+      },
+      {
+        "id": "chem_03",
+        "topic": "Ion-Dipole Forces",
+        "front": "How do water ($\\text{H}_2\\text{O}$) molecules orient around a $\\text{Na}^+$ cation vs a $\\text{Cl}^-$ anion during hydration?",
+        "back": "Around $\\text{Na}^+$, water orients its partially negative Oxygen atom ($\\delta^- \\text{O}$). Around $\\text{Cl}^-$, water orients its partially positive Hydrogen atoms ($\\delta^+ \\text{H}$).",
+        "hint": "Opposite charges attract: $\\delta^-$ toward (+) and $\\delta^+$ toward (-)."
+      },
+      {
+        "id": "chem_04",
+        "topic": "Physical Properties",
+        "front": "What is the relationship between Intermolecular Force (IMF) strength and **Vapor Pressure** at a given temperature?",
+        "back": "**Inversely proportional**: Stronger IMFs $\\implies$ Fewer surface molecules can escape into gas phase $\\implies$ **Lower Vapor Pressure** (and Higher Boiling Point).",
+        "hint": "If molecules stick tightly together, can they easily evaporate into vapor?"
+      }
+    ]
+  }
+];
 const STUDIO_DATA = {
-  version: "1.9.2",
+  version: "1.9.4",
   updatedAt: new Date().toISOString(),
   announcement: "Materials authored via TagSci G11 Content Studio.",
   calendarEvents: [],
   stemReviewers: [],
   studyMaterials: [],
   problemSets: [],
-  flashcardDecks: [],
-  quizSets: []
+  flashcardDecks: JSON.parse(JSON.stringify(DEFAULT_FLASHCARD_DECKS)),
+  quizSets: JSON.parse(JSON.stringify(DEFAULT_FLASHCARD_DECKS))
 };
 let currentRevIndex = 0;
 let currentMatIndex = 0;
@@ -7478,7 +7556,16 @@ function utf8ToBase64(str) {
 }
 
 function base64ToUtf8(str) {
-  return decodeURIComponent(escape(window.atob(str)));
+  try {
+    const binStr = window.atob(str);
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) {
+      bytes[i] = binStr.charCodeAt(i);
+    }
+    return new TextDecoder('utf-8').decode(bytes);
+  } catch (e) {
+    return decodeURIComponent(escape(window.atob(str)));
+  }
 }
 function generateProductionJson() {
   const flashcardDecks = (STUDIO_DATA.flashcardDecks || STUDIO_DATA.quizSets || []).map(d => ({
@@ -7848,14 +7935,23 @@ function mergeStudioDatasets(localData, remoteData, baselineData = null) {
   );
 
   // 3. Flashcard Decks merge
-  const deckRes = mergeItemArray(
-    localData.flashcardDecks || localData.quizSets || [],
-    remoteData.flashcardDecks || remoteData.quizSets || [],
-    base.flashcardDecks || base.quizSets || [],
-    (item, idx) => item.id || `deck_${idx}`,
-    (item) => item.title || item.subject,
-    'Flashcard Deck'
-  );
+  const localDecks = localData.flashcardDecks || localData.quizSets || [];
+  const remoteDecks = remoteData.flashcardDecks || remoteData.quizSets || [];
+  const baseDecks = base.flashcardDecks || base.quizSets || [];
+  // Critical Safety Guard: If local draft has 0 decks, NEVER drop remote decks!
+  const deckRes = (localDecks.length === 0 && remoteDecks.length > 0)
+    ? {
+        merged: remoteDecks,
+        report: { addedRemote: remoteDecks, addedLocal: [], updatedRemote: [], updatedLocal: [], conflicts: [], keptLocal: [] }
+      }
+    : mergeItemArray(
+        localDecks,
+        remoteDecks,
+        baseDecks,
+        (item, idx) => item.id || `deck_${idx}`,
+        (item) => item.title || item.subject,
+        'Flashcard Deck'
+      );
   const quizRes = deckRes;
 
   // 4. Calendar Events merge (using ID or date+title fallback)
@@ -8203,37 +8299,35 @@ async function fetchLatestUpdatesJson(isSilent = false, onComplete = null) {
                           (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ||
                           (STUDIO_DATA.quizSets && STUDIO_DATA.quizSets.length > 0);
 
+    const rawRemoteDecks = (json.flashcardDecks && json.flashcardDecks.length > 0)
+      ? json.flashcardDecks
+      : (json.quizSets || []);
+
     if (baseline && hasLocalDraft) {
       const { mergedData, report } = mergeStudioDatasets(STUDIO_DATA, json, baseline);
-      if (report && (report.hasRemoteChanges || report.totalLocalUpdated > 0 || report.totalLocalAdded > 0)) {
-        STUDIO_DATA.version = mergedData.version || json.version;
-        STUDIO_DATA.updatedAt = json.updatedAt;
-        STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
-        STUDIO_DATA.stemReviewers = mergedData.stemReviewers || [];
-        STUDIO_DATA.studyMaterials = mergedData.studyMaterials || [];
-        STUDIO_DATA.flashcardDecks = mergedData.flashcardDecks || mergedData.quizSets || [];
-        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
-        STUDIO_DATA.calendarEvents = mergedData.calendarEvents || [];
-        STUDIO_DATA.problemSets = mergedData.problemSets || [];
-      } else {
-        STUDIO_DATA.version = json.version;
-        STUDIO_DATA.updatedAt = json.updatedAt;
-        STUDIO_DATA.announcement = json.announcement;
-        STUDIO_DATA.stemReviewers = json.stemReviewers || [];
-        STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-        STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
-        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
-        STUDIO_DATA.calendarEvents = json.calendarEvents || [];
-        STUDIO_DATA.problemSets = json.problemSets || [];
-      }
+      STUDIO_DATA.version = mergedData.version || json.version;
+      STUDIO_DATA.updatedAt = json.updatedAt;
+      STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
+      STUDIO_DATA.stemReviewers = mergedData.stemReviewers || [];
+      STUDIO_DATA.studyMaterials = mergedData.studyMaterials || [];
+
+      // Guarantee flashcard decks are never dropped if remote has decks
+      const safeDecks = (mergedData.flashcardDecks && mergedData.flashcardDecks.length > 0)
+        ? mergedData.flashcardDecks
+        : rawRemoteDecks;
+      STUDIO_DATA.flashcardDecks = safeDecks;
+      STUDIO_DATA.quizSets = safeDecks;
+
+      STUDIO_DATA.calendarEvents = mergedData.calendarEvents || [];
+      STUDIO_DATA.problemSets = mergedData.problemSets || [];
     } else {
       STUDIO_DATA.version = json.version;
       STUDIO_DATA.updatedAt = json.updatedAt;
       STUDIO_DATA.announcement = json.announcement;
       STUDIO_DATA.stemReviewers = json.stemReviewers || [];
       STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-      STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
-      STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
+      STUDIO_DATA.flashcardDecks = rawRemoteDecks;
+      STUDIO_DATA.quizSets = rawRemoteDecks;
       STUDIO_DATA.calendarEvents = json.calendarEvents || [];
       STUDIO_DATA.problemSets = json.problemSets || [];
     }

@@ -11,7 +11,16 @@ function utf8ToBase64(str) {
 }
 
 function base64ToUtf8(str) {
-  return decodeURIComponent(escape(window.atob(str)));
+  try {
+    const binStr = window.atob(str);
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) {
+      bytes[i] = binStr.charCodeAt(i);
+    }
+    return new TextDecoder('utf-8').decode(bytes);
+  } catch (e) {
+    return decodeURIComponent(escape(window.atob(str)));
+  }
 }
 
 export function generateProductionJson() {
@@ -391,14 +400,23 @@ export function mergeStudioDatasets(localData, remoteData, baselineData = null) 
   );
 
   // 3. Flashcard Decks merge
-  const deckRes = mergeItemArray(
-    localData.flashcardDecks || localData.quizSets || [],
-    remoteData.flashcardDecks || remoteData.quizSets || [],
-    base.flashcardDecks || base.quizSets || [],
-    (item, idx) => item.id || `deck_${idx}`,
-    (item) => item.title || item.subject,
-    'Flashcard Deck'
-  );
+  const localDecks = localData.flashcardDecks || localData.quizSets || [];
+  const remoteDecks = remoteData.flashcardDecks || remoteData.quizSets || [];
+  const baseDecks = base.flashcardDecks || base.quizSets || [];
+  // Critical Safety Guard: If local draft has 0 decks, NEVER drop remote decks!
+  const deckRes = (localDecks.length === 0 && remoteDecks.length > 0)
+    ? {
+        merged: remoteDecks,
+        report: { addedRemote: remoteDecks, addedLocal: [], updatedRemote: [], updatedLocal: [], conflicts: [], keptLocal: [] }
+      }
+    : mergeItemArray(
+        localDecks,
+        remoteDecks,
+        baseDecks,
+        (item, idx) => item.id || `deck_${idx}`,
+        (item) => item.title || item.subject,
+        'Flashcard Deck'
+      );
   const quizRes = deckRes;
 
   // 4. Calendar Events merge (using ID or date+title fallback)
@@ -752,37 +770,35 @@ export async function fetchLatestUpdatesJson(isSilent = false, onComplete = null
                           (STUDIO_DATA.flashcardDecks && STUDIO_DATA.flashcardDecks.length > 0) ||
                           (STUDIO_DATA.quizSets && STUDIO_DATA.quizSets.length > 0);
 
+    const rawRemoteDecks = (json.flashcardDecks && json.flashcardDecks.length > 0)
+      ? json.flashcardDecks
+      : (json.quizSets || []);
+
     if (baseline && hasLocalDraft) {
       const { mergedData, report } = mergeStudioDatasets(STUDIO_DATA, json, baseline);
-      if (report && (report.hasRemoteChanges || report.totalLocalUpdated > 0 || report.totalLocalAdded > 0)) {
-        STUDIO_DATA.version = mergedData.version || json.version;
-        STUDIO_DATA.updatedAt = json.updatedAt;
-        STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
-        STUDIO_DATA.stemReviewers = mergedData.stemReviewers || [];
-        STUDIO_DATA.studyMaterials = mergedData.studyMaterials || [];
-        STUDIO_DATA.flashcardDecks = mergedData.flashcardDecks || mergedData.quizSets || [];
-        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
-        STUDIO_DATA.calendarEvents = mergedData.calendarEvents || [];
-        STUDIO_DATA.problemSets = mergedData.problemSets || [];
-      } else {
-        STUDIO_DATA.version = json.version;
-        STUDIO_DATA.updatedAt = json.updatedAt;
-        STUDIO_DATA.announcement = json.announcement;
-        STUDIO_DATA.stemReviewers = json.stemReviewers || [];
-        STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-        STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
-        STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
-        STUDIO_DATA.calendarEvents = json.calendarEvents || [];
-        STUDIO_DATA.problemSets = json.problemSets || [];
-      }
+      STUDIO_DATA.version = mergedData.version || json.version;
+      STUDIO_DATA.updatedAt = json.updatedAt;
+      STUDIO_DATA.announcement = mergedData.announcement || json.announcement;
+      STUDIO_DATA.stemReviewers = mergedData.stemReviewers || [];
+      STUDIO_DATA.studyMaterials = mergedData.studyMaterials || [];
+
+      // Guarantee flashcard decks are never dropped if remote has decks
+      const safeDecks = (mergedData.flashcardDecks && mergedData.flashcardDecks.length > 0)
+        ? mergedData.flashcardDecks
+        : rawRemoteDecks;
+      STUDIO_DATA.flashcardDecks = safeDecks;
+      STUDIO_DATA.quizSets = safeDecks;
+
+      STUDIO_DATA.calendarEvents = mergedData.calendarEvents || [];
+      STUDIO_DATA.problemSets = mergedData.problemSets || [];
     } else {
       STUDIO_DATA.version = json.version;
       STUDIO_DATA.updatedAt = json.updatedAt;
       STUDIO_DATA.announcement = json.announcement;
       STUDIO_DATA.stemReviewers = json.stemReviewers || [];
       STUDIO_DATA.studyMaterials = json.studyMaterials || [];
-      STUDIO_DATA.flashcardDecks = json.flashcardDecks || json.quizSets || [];
-      STUDIO_DATA.quizSets = STUDIO_DATA.flashcardDecks;
+      STUDIO_DATA.flashcardDecks = rawRemoteDecks;
+      STUDIO_DATA.quizSets = rawRemoteDecks;
       STUDIO_DATA.calendarEvents = json.calendarEvents || [];
       STUDIO_DATA.problemSets = json.problemSets || [];
     }
